@@ -8,12 +8,16 @@ import {
   Store,
   Menu,
   MapPin,
+  LogOut,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Header() {
   const cartCount = useStore((s) => s.cart.reduce((a, i) => a + i.qty, 0));
   const favCount = useStore((s) => s.favorites.length);
+  const { user, signOut } = useAuth();
+  const displayName = (user?.user_metadata?.full_name as string) || user?.email?.split("@")[0];
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background border-b border-border shadow-sm">
