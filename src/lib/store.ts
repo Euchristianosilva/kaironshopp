@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Product } from "./mock-data";
+import type { Product } from "./products";
 
 type CartItem = { product: Product; qty: number };
 

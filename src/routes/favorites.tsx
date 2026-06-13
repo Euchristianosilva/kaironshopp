@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { useStore } from "@/lib/store";
-import { products } from "@/lib/mock-data";
+import { fetchAllProducts } from "@/lib/products";
 import { HeartCrack } from "lucide-react";
 
 export const Route = createFileRoute("/favorites")({
@@ -13,7 +14,12 @@ export const Route = createFileRoute("/favorites")({
 
 function FavPage() {
   const favIds = useStore((s) => s.favorites);
+  const { data: products = [] } = useQuery({
+    queryKey: ["products", "all"],
+    queryFn: fetchAllProducts,
+  });
   const items = products.filter((p) => favIds.includes(p.id));
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />

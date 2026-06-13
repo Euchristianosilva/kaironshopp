@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Star, Heart, ShoppingCart, Truck } from "lucide-react";
-import type { Product } from "@/lib/mock-data";
+import type { Product } from "@/lib/products";
 import { formatBRL } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
