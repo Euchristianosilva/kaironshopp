@@ -80,16 +80,56 @@ export function Header() {
               <Store className="h-3.5 w-3.5" /> Vendedor
             </span>
           </Link>
-          <IconBtn to="/favorites" icon={<Heart className="h-5 w-5" />} count={favCount} label="Favoritos" />
-          <IconBtn to="/account" icon={<Bell className="h-5 w-5" />} label="Notificações" />
-          <IconBtn
-            to="/cart"
-            icon={<ShoppingCart className="h-5 w-5" />}
-            count={cartCount}
-            label="Carrinho"
-          />
+          <Link to="/favorites" aria-label="Favoritos" className="relative p-2.5 rounded-lg hover:bg-secondary transition">
+            <Heart className="h-5 w-5" />
+            {favCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold grid place-items-center">{favCount}</span>
+            )}
+          </Link>
+          <Link to="/account" aria-label="Notificações" className="relative p-2.5 rounded-lg hover:bg-secondary transition">
+            <Bell className="h-5 w-5" />
+          </Link>
+          <Link to="/cart" aria-label="Carrinho" className="relative p-2.5 rounded-lg hover:bg-secondary transition">
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold grid place-items-center">{cartCount}</span>
+            )}
+          </Link>
         </nav>
       </div>
+
+      {/* Categories nav */}
+      <div className="border-t border-border bg-secondary/30">
+        <div className="container mx-auto px-4 h-11 flex items-center gap-6 overflow-x-auto text-sm whitespace-nowrap">
+          <button className="flex items-center gap-1.5 font-semibold text-primary">
+            <Menu className="h-4 w-4" /> Todas as categorias
+          </button>
+          {[
+            { s: "eletronicos", n: "Eletrônicos" },
+            { s: "celulares", n: "Celulares" },
+            { s: "informatica", n: "Informática" },
+            { s: "moda-feminina", n: "Moda" },
+            { s: "casa", n: "Casa" },
+            { s: "esportes", n: "Esportes" },
+            { s: "games", n: "Games" },
+            { s: "beleza", n: "Beleza" },
+            { s: "petshop", n: "Pet Shop" },
+          ].map((c) => (
+            <Link
+              key={c.s}
+              to="/category/$slug"
+              params={{ slug: c.s }}
+              className="text-foreground/70 hover:text-primary transition"
+            >
+              {c.n}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </header>
+  );
+}
+
 
       {/* Categories nav */}
       <div className="border-t border-border bg-secondary/30">
