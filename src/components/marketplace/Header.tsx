@@ -67,14 +67,24 @@ export function Header() {
         {/* Actions */}
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link
-            to="/account"
+            to={user ? "/account" : "/auth"}
             className="hidden md:flex flex-col items-start px-3 py-1.5 rounded hover:bg-secondary transition"
           >
-            <span className="text-[11px] text-muted-foreground">Olá, entre</span>
+            <span className="text-[11px] text-muted-foreground">{user ? "Olá," : "Olá, entre"}</span>
             <span className="font-semibold flex items-center gap-1">
-              <User className="h-3.5 w-3.5" /> Minha conta
+              <User className="h-3.5 w-3.5" /> {user ? displayName : "Minha conta"}
             </span>
           </Link>
+          {user && (
+            <button
+              onClick={() => signOut()}
+              aria-label="Sair"
+              className="hidden md:inline-flex p-2.5 rounded-lg hover:bg-secondary transition"
+              title="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          )}
           <Link
             to="/seller"
             className="hidden lg:flex flex-col items-start px-3 py-1.5 rounded hover:bg-secondary transition"
