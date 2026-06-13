@@ -1,15 +1,67 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Entrar — MercaBrasil" }] }),
-  component: Auth,
+  component: AuthPage,
 });
 
-function Auth() {
+function AuthPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) navigate({ to: "/account" });
+  }, [user, navigate]);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (mode === "register") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { full_name: name },
+          },
+        });
+        if (error) throw error;
+        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Bem-vindo de volta!");
+        navigate({ to: "/account" });
+      }
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao autenticar");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogle() {
+    setBusy(true);
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (res.error) {
+      toast.error(res.error.message);
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -23,18 +75,20 @@ function Auth() {
           <p className="text-sm text-muted-foreground mt-1 mb-6">
             {mode === "login" ? "Acesse para comprar e acompanhar pedidos." : "É grátis e leva menos de 1 minuto."}
           </p>
-          <form className="space-y-3">
+          <form className="space-y-3" onSubmit={onSubmit}>
             {mode === "register" && (
-              <input placeholder="Nome completo" className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo" className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
             )}
-            <input placeholder="E-mail" type="email" className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
-            <input placeholder="Senha" type="password" className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
-            <button type="button" className="w-full h-11 rounded-lg bg-gradient-brand text-primary-foreground font-bold hover:opacity-95">
-              {mode === "login" ? "Entrar" : "Criar conta"}
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" type="email" required className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
+            <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" type="password" required minLength={6} className="w-full h-11 px-3 rounded-md border border-border bg-background focus:ring-2 focus:ring-primary/40 outline-none text-sm" />
+            <button type="submit" disabled={busy} className="w-full h-11 rounded-lg bg-gradient-brand text-primary-foreground font-bold hover:opacity-95 disabled:opacity-60">
+              {busy ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}
             </button>
           </form>
           <div className="text-center text-xs text-muted-foreground my-4">ou</div>
-          <button className="w-full h-11 rounded-lg border border-border font-semibold text-sm hover:bg-secondary">Continuar com Google</button>
+          <button onClick={onGoogle} disabled={busy} className="w-full h-11 rounded-lg border border-border font-semibold text-sm hover:bg-secondary disabled:opacity-60">
+            Continuar com Google
+          </button>
           {mode === "login" && (
             <div className="text-center text-sm mt-4">
               <Link to="/" className="text-primary hover:underline">Esqueci minha senha</Link>
