@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
-import { Users, Store, ShoppingBag, DollarSign, Image as ImageIcon, Ticket, Edit, Trash2, Rocket } from "lucide-react";
+import { Users, Store, ShoppingBag, DollarSign, Image as ImageIcon, Ticket, Edit, Trash2, Rocket, Truck } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MercaBrasil" }] }),
