@@ -37,6 +37,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicHooksAdSchedulerRouteImport } from './routes/api/public/hooks/ad-scheduler'
 
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
@@ -178,6 +179,12 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksAdSchedulerRoute =
+  ApiPublicHooksAdSchedulerRouteImport.update({
+    id: '/api/public/hooks/ad-scheduler',
+    path: '/api/public/hooks/ad-scheduler',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/seller/subscription': typeof SellerSubscriptionRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/seller/subscription': typeof SellerSubscriptionRoute
   '/seller': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -268,6 +277,7 @@ export interface FileRoutesById {
   '/seller/subscription': typeof SellerSubscriptionRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/seller/subscription'
     | '/seller/'
     | '/api/public/stripe-webhook'
+    | '/api/public/hooks/ad-scheduler'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/seller/subscription'
     | '/seller'
     | '/api/public/stripe-webhook'
+    | '/api/public/hooks/ad-scheduler'
   id:
     | '__root__'
     | '/'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/seller/subscription'
     | '/seller/'
     | '/api/public/stripe-webhook'
+    | '/api/public/hooks/ad-scheduler'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -374,6 +387,7 @@ export interface RootRouteChildren {
   CategorySlugRoute: typeof CategorySlugRoute
   ProductIdRoute: typeof ProductIdRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicHooksAdSchedulerRoute: typeof ApiPublicHooksAdSchedulerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -574,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/ad-scheduler': {
+      id: '/api/public/hooks/ad-scheduler'
+      path: '/api/public/hooks/ad-scheduler'
+      fullPath: '/api/public/hooks/ad-scheduler'
+      preLoaderRoute: typeof ApiPublicHooksAdSchedulerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -639,6 +660,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategorySlugRoute: CategorySlugRoute,
   ProductIdRoute: ProductIdRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicHooksAdSchedulerRoute: ApiPublicHooksAdSchedulerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
