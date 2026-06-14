@@ -112,6 +112,34 @@ function SellerDashboard({ userId }: { userId: string }) {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const toggleActiveMut = useMutation({
+    mutationFn: async (p: ProductRow) => {
+      const { error } = await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status atualizado");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const duplicateMut = useMutation({
+    mutationFn: async (p: ProductRow) => {
+      const { data: full, error: e1 } = await supabase.from("products").select("*").eq("id", p.id).single();
+      if (e1) throw e1;
+      const { id, created_at, updated_at, views, sales_count, ...rest } = full as any;
+      const { error } = await supabase.from("products").insert({ ...rest, title: `${rest.title} (cópia)`, is_active: false });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Produto duplicado");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   if (sellerLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
