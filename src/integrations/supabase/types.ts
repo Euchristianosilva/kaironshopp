@@ -1025,6 +1025,14 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      user_is_order_buyer: {
+        Args: { _order_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_order_item: {
+        Args: { _order_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "seller" | "user"
