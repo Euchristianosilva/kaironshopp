@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Pencil, Trash2, Copy, Eye, Power, Search, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Trash2, Copy, Eye, Power, Search, ChevronUp, ChevronDown, Rocket } from "lucide-react";
 import { formatBRL } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -27,11 +27,12 @@ type Props = {
   onDelete: (p: ProductRow) => void;
   onToggleActive: (p: ProductRow) => void;
   onDuplicate: (p: ProductRow) => void;
+  onBoost?: (p: ProductRow) => void;
 };
 
 const PAGE_SIZE = 10;
 
-export function ProductsTable({ products, loading, onEdit, onDelete, onToggleActive, onDuplicate }: Props) {
+export function ProductsTable({ products, loading, onEdit, onDelete, onToggleActive, onDuplicate, onBoost }: Props) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "paused" | "low">("all");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "title", dir: "asc" });
@@ -135,6 +136,15 @@ export function ProductsTable({ products, loading, onEdit, onDelete, onToggleAct
                         <Link to="/product/$id" params={{ id: p.id }} target="_blank" className="p-2 rounded hover:bg-secondary" title="Visualizar"><Eye className="h-4 w-4" /></Link>
                         <button onClick={() => onEdit(p)} className="p-2 rounded hover:bg-secondary" title="Editar"><Pencil className="h-4 w-4" /></button>
                         <button onClick={() => onDuplicate(p)} className="p-2 rounded hover:bg-secondary" title="Duplicar"><Copy className="h-4 w-4" /></button>
+                        {onBoost && p.is_active && (p.stock ?? 0) > 0 && (
+                          <button
+                            onClick={() => onBoost(p)}
+                            className="p-2 rounded hover:bg-primary/10 text-primary"
+                            title="🚀 Turbinar produto"
+                          >
+                            <Rocket className="h-4 w-4" />
+                          </button>
+                        )}
                         <button onClick={() => onToggleActive(p)} className="p-2 rounded hover:bg-secondary" title={p.is_active ? "Pausar" : "Ativar"}><Power className="h-4 w-4" /></button>
                         <button
                           onClick={() => { if (confirm(`Excluir "${p.title}"?`)) onDelete(p); }}

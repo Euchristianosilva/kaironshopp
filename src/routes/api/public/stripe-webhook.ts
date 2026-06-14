@@ -39,6 +39,33 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
           switch (event.type) {
             case "checkout.session.completed": {
               const s = event.data.object as Stripe.Checkout.Session;
+              const kind = s.metadata?.kind;
+
+              // Ad campaign checkout
+              if (kind === "ad_campaign") {
+                const campaignId = s.metadata?.campaign_id;
+                if (campaignId && s.payment_status === "paid") {
+                  const { data: camp } = await supabaseAdmin
+                    .from("ad_campaigns")
+                    .select("starts_at")
+                    .eq("id", campaignId)
+                    .maybeSingle();
+                  const startsAt = camp?.starts_at ? new Date(camp.starts_at).getTime() : 0;
+                  const newStatus = startsAt <= Date.now() ? "active" : "scheduled";
+                  await supabaseAdmin
+                    .from("ad_campaigns")
+                    .update({
+                      status: newStatus,
+                      paid_at: new Date().toISOString(),
+                      stripe_payment_intent_id:
+                        typeof s.payment_intent === "string" ? s.payment_intent : null,
+                    })
+                    .eq("id", campaignId);
+                }
+                break;
+              }
+
+              // Order checkout (existing flow)
               const orderId = s.metadata?.order_id;
               if (orderId) {
                 await supabaseAdmin
