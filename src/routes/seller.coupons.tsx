@@ -86,7 +86,7 @@ function Page() {
         )}
       </div>
 
-      <CouponDialog open={open} onOpenChange={setOpen} editing={editing} onSave={(v) => saveMut.mutate(v)} saving={saveMut.isPending} />
+      <CouponDialog open={open} onOpenChange={setOpen} editing={editing} onSave={(v: any) => saveMut.mutate(v)} saving={saveMut.isPending} />
     </Shell>
   );
 }

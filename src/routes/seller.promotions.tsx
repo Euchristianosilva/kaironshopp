@@ -101,7 +101,7 @@ function Page() {
         )}
       </div>
 
-      <PromoDialog open={open} onOpenChange={setOpen} editing={editing} products={products} onSave={(v) => saveMut.mutate(v)} saving={saveMut.isPending} />
+      <PromoDialog open={open} onOpenChange={setOpen} editing={editing} products={products} onSave={(v: any) => saveMut.mutate(v)} saving={saveMut.isPending} />
     </Shell>
   );
 }
