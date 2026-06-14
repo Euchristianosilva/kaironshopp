@@ -4,7 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
-import { Truck, CheckCircle2, XCircle, Loader2, Copy, ExternalLink, ArrowLeft, Save } from "lucide-react";
+import {
+  Truck, CheckCircle2, XCircle, Loader2, ArrowLeft, ArrowRight,
+  KeyRound, ShieldCheck, Sparkles, RefreshCw,
+} from "lucide-react";
 import {
   getShippingDiagnostics,
   pingMelhorEnvio,
@@ -13,21 +16,26 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/shipping")({
-  head: () => ({ meta: [{ title: "Configuração Melhor Envio — Admin" }] }),
-  component: AdminShipping,
+  head: () => ({ meta: [{ title: "Assistente Melhor Envio — Admin" }] }),
+  component: AdminShippingWizard,
 });
 
-type FormState = {
+type Wizard = {
   environment: "sandbox" | "production";
   client_id: string;
   client_secret: string;
   access_token: string;
   refresh_token: string;
-  callback_url: string;
-  webhook_url: string;
 };
 
-function AdminShipping() {
+const STEPS = [
+  { key: "env", title: "Ambiente", icon: Sparkles },
+  { key: "client", title: "Client ID & Secret", icon: KeyRound },
+  { key: "tokens", title: "Tokens de acesso", icon: ShieldCheck },
+  { key: "test", title: "Validar e salvar", icon: CheckCircle2 },
+] as const;
+
+function AdminShippingWizard() {
   const fetchDiag = useServerFn(getShippingDiagnostics);
   const ping = useServerFn(pingMelhorEnvio);
   const save = useServerFn(saveMelhorEnvioConfig);
@@ -38,237 +46,318 @@ function AdminShipping() {
     queryFn: () => fetchDiag(),
   });
 
-  const [form, setForm] = useState<FormState>({
+  const [step, setStep] = useState(0);
+  const [reconfigure, setReconfigure] = useState(false);
+  const [form, setForm] = useState<Wizard>({
     environment: "sandbox",
     client_id: "",
     client_secret: "",
     access_token: "",
     refresh_token: "",
-    callback_url: "",
-    webhook_url: "",
   });
 
   useEffect(() => {
     if (!data) return;
-    setForm((prev) => ({
-      ...prev,
+    setForm((p) => ({
+      ...p,
       environment: (data.config.environment as "sandbox" | "production") ?? "sandbox",
       client_id: data.config.client_id ?? "",
-      callback_url: data.config.callback_url ?? "",
-      webhook_url: data.config.webhook_url ?? "",
     }));
   }, [data]);
 
+  const cfg = data?.config;
+  const diag = data?.diagnostics;
+  const alreadyConfigured = Boolean(cfg?.access_token_preview) && !reconfigure;
+
   const saveMut = useMutation({
     mutationFn: () => save({ data: form }),
-    onSuccess: async () => {
-      toast.success("Configuração salva");
-      setForm((p) => ({ ...p, client_secret: "", access_token: "", refresh_token: "" }));
-      await qc.invalidateQueries({ queryKey: ["me-config"] });
-    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao salvar"),
   });
 
   const pingMut = useMutation({
     mutationFn: () => ping(),
-    onSuccess: async (res) => {
-      if (res.ok) toast.success(`Conexão OK (${res.status})${res.user?.email ? ` — ${res.user.email}` : ""}`);
-      else toast.error(`Falha (${res.status}): ${res.error ?? res.body ?? "ver detalhes"}`);
-      await qc.invalidateQueries({ queryKey: ["me-config"] });
-    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
   });
 
-  const copy = (v: string) => { navigator.clipboard.writeText(v); toast.success("Copiado"); };
+  async function handleFinish() {
+    try {
+      await saveMut.mutateAsync();
+      const res = await pingMut.mutateAsync();
+      if (res.ok) {
+        toast.success("Integração ativada com sucesso!");
+        setForm((p) => ({ ...p, client_secret: "", access_token: "", refresh_token: "" }));
+        setReconfigure(false);
+        await qc.invalidateQueries({ queryKey: ["me-config"] });
+      } else {
+        toast.error(`Credenciais inválidas (${res.status}). Revise os tokens.`);
+      }
+    } catch {}
+  }
 
-  const cfg = data?.config;
-  const diag = data?.diagnostics;
+  if (isLoading) {
+    return (
+      <Shell>
+        <div className="py-20 text-center text-muted-foreground">Carregando…</div>
+      </Shell>
+    );
+  }
+  if (!data) {
+    return (
+      <Shell>
+        <div className="py-20 text-center text-destructive">Sem acesso (somente admin).</div>
+      </Shell>
+    );
+  }
+
+  // Configured summary screen
+  if (alreadyConfigured) {
+    const pingRes = pingMut.data;
+    return (
+      <Shell>
+        <div className="bg-card border border-border rounded-xl p-8 max-w-2xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-success/15 text-success mb-4">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-black mb-1">Integração ativa</h2>
+          <p className="text-muted-foreground mb-6">
+            Ambiente <strong>{cfg?.environment}</strong> · Token {cfg?.access_token_preview}
+          </p>
+
+          <div className="grid sm:grid-cols-2 gap-3 text-sm text-left mb-6">
+            <InfoRow label="Última atualização" value={cfg?.updated_at ? new Date(cfg.updated_at).toLocaleString("pt-BR") : "—"} />
+            <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
+            <InfoRow label="Último erro" value={diag?.last_error_at ? `${diag.last_error_status ?? "?"} · ${new Date(diag.last_error_at).toLocaleString("pt-BR")}` : "—"} />
+            <InfoRow label="Endpoint" value={data.base_url} />
+          </div>
+
+          {pingRes && (
+            <div className={`text-sm rounded-md p-3 mb-4 ${pingRes.ok ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+              {pingRes.ok ? `Conexão OK (${pingRes.status})${pingRes.user?.email ? ` — ${pingRes.user.email}` : ""}` : `Falha (${pingRes.status}): ${pingRes.error ?? pingRes.body ?? ""}`}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button
+              onClick={() => pingMut.mutate()}
+              disabled={pingMut.isPending}
+              className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-secondary hover:bg-secondary/70 font-semibold disabled:opacity-60"
+            >
+              {pingMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              Testar conexão
+            </button>
+            <button
+              onClick={() => { setReconfigure(true); setStep(0); }}
+              className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reconfigurar
+            </button>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  // Wizard
+  const canNext = (() => {
+    if (step === 0) return !!form.environment;
+    if (step === 1) return form.client_id.trim().length > 0 && form.client_secret.trim().length > 0;
+    if (step === 2) return form.access_token.trim().length > 20;
+    return true;
+  })();
+
+  const StepIcon = STEPS[step].icon;
+  const isBusy = saveMut.isPending || pingMut.isPending;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
-        <Link to="/admin" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
-          <ArrowLeft className="h-4 w-4" /> Voltar ao admin
-        </Link>
+    <Shell>
+      {/* Stepper */}
+      <ol className="flex items-center justify-between mb-8 gap-2">
+        {STEPS.map((s, i) => {
+          const Active = i === step;
+          const Done = i < step;
+          return (
+            <li key={s.key} className="flex-1 flex items-center gap-2">
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                Done ? "bg-success text-white" : Active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+              }`}>
+                {Done ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+              </div>
+              <span className={`text-xs font-semibold hidden sm:inline ${Active ? "text-foreground" : "text-muted-foreground"}`}>{s.title}</span>
+              {i < STEPS.length - 1 && <div className="flex-1 h-px bg-border" />}
+            </li>
+          );
+        })}
+      </ol>
 
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-black flex items-center gap-2">
-              <Truck className="h-7 w-7 text-primary" /> Configuração Melhor Envio
-            </h1>
-            <p className="text-muted-foreground">
-              Integração centralizada da plataforma. Nenhum vendedor precisa configurar uma conta própria.
-            </p>
+      <div className="bg-card border border-border rounded-xl p-6 sm:p-8 max-w-2xl mx-auto">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <StepIcon className="h-5 w-5" />
           </div>
-          <button
-            onClick={() => pingMut.mutate()}
-            disabled={pingMut.isPending}
-            className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-60"
-          >
-            {pingMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Testar conexão
-          </button>
+          <div>
+            <h2 className="text-xl font-black">{STEPS[step].title}</h2>
+            <p className="text-xs text-muted-foreground">Passo {step + 1} de {STEPS.length}</p>
+          </div>
         </div>
 
-        {isLoading ? (
-          <div className="py-20 text-center text-muted-foreground">Carregando…</div>
-        ) : !data ? (
-          <div className="py-20 text-center text-destructive">Sem acesso (somente admin).</div>
-        ) : (
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Form */}
-            <form
-              className="lg:col-span-2 bg-card border border-border rounded-xl p-6 space-y-4"
-              onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }}
-            >
-              <h2 className="font-bold text-lg">Credenciais</h2>
-
-              <Field label="Ambiente">
-                <select
-                  className="input"
-                  value={form.environment}
-                  onChange={(e) => setForm({ ...form, environment: e.target.value as "sandbox" | "production" })}
-                >
-                  <option value="sandbox">Sandbox (teste)</option>
-                  <option value="production">Produção</option>
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Endpoint: {data.base_url}</p>
-              </Field>
-
-              <Field label="Client ID">
-                <input
-                  className="input"
-                  value={form.client_id}
-                  onChange={(e) => setForm({ ...form, client_id: e.target.value })}
-                  placeholder="ex.: 12345"
-                />
-              </Field>
-
-              <Field label="Client Secret">
-                <input
-                  className="input"
-                  type="password"
-                  autoComplete="new-password"
-                  value={form.client_secret}
-                  onChange={(e) => setForm({ ...form, client_secret: e.target.value })}
-                  placeholder={cfg?.client_secret_preview ? `Atual: ${cfg.client_secret_preview} — preencha para alterar` : "Cole o Client Secret"}
-                />
-              </Field>
-
-              <Field label="Access Token">
-                <textarea
-                  className="input min-h-[80px] font-mono text-xs"
-                  value={form.access_token}
-                  onChange={(e) => setForm({ ...form, access_token: e.target.value })}
-                  placeholder={cfg?.access_token_preview ? `Atual: ${cfg.access_token_preview} — preencha para alterar` : "Cole o Access Token"}
-                />
-              </Field>
-
-              <Field label="Refresh Token (opcional)">
-                <textarea
-                  className="input min-h-[60px] font-mono text-xs"
-                  value={form.refresh_token}
-                  onChange={(e) => setForm({ ...form, refresh_token: e.target.value })}
-                  placeholder={cfg?.refresh_token_preview ? `Atual: ${cfg.refresh_token_preview} — preencha para alterar` : "Cole o Refresh Token"}
-                />
-              </Field>
-
-              <Field label="URL de Callback (OAuth)">
-                <input
-                  className="input"
-                  value={form.callback_url}
-                  onChange={(e) => setForm({ ...form, callback_url: e.target.value })}
-                  placeholder="https://kaironshopp.lovable.app/api/public/melhor-envio/oauth-callback"
-                />
-              </Field>
-
-              <Field label="Webhook URL">
-                <div className="flex items-center gap-2">
-                  <input
-                    className="input flex-1"
-                    value={form.webhook_url}
-                    onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-                    placeholder="https://kaironshopp.lovable.app/api/public/melhor-envio/webhook"
-                  />
-                  <button type="button" onClick={() => copy(form.webhook_url)} className="h-10 px-3 rounded bg-secondary hover:bg-secondary/70 text-sm inline-flex items-center gap-1">
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Cole esta URL no painel Melhor Envio em Webhooks.</p>
-              </Field>
-
-              <div className="flex justify-end pt-2">
+        {step === 0 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Escolha onde a integração vai operar. Use <strong>Sandbox</strong> para testes (não envia de verdade) e <strong>Produção</strong> para uso real.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {(["sandbox", "production"] as const).map((env) => (
                 <button
-                  type="submit"
-                  disabled={saveMut.isPending}
-                  className="inline-flex items-center gap-2 px-5 h-10 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-60"
+                  key={env}
+                  type="button"
+                  onClick={() => setForm({ ...form, environment: env })}
+                  className={`text-left rounded-lg border p-4 transition ${
+                    form.environment === env ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/50"
+                  }`}
                 >
-                  {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Salvar configuração
+                  <div className="font-bold capitalize mb-1">{env === "sandbox" ? "Sandbox (teste)" : "Produção"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {env === "sandbox" ? "sandbox.melhorenvio.com.br" : "melhorenvio.com.br"}
+                  </div>
                 </button>
-              </div>
-            </form>
-
-            {/* Status side */}
-            <aside className="space-y-4">
-              <Card title="Status">
-                <Row k="Ambiente" v={
-                  <Badge tone={cfg?.environment === "production" ? "success" : "warn"}>{cfg?.environment}</Badge>
-                } />
-                <Row k="Access Token" v={
-                  cfg?.access_token_preview
-                    ? <Badge tone="success">configurado</Badge>
-                    : <Badge tone="error">ausente</Badge>
-                } />
-                <Row k="Última atualização" v={
-                  cfg?.updated_at ? new Date(cfg.updated_at).toLocaleString("pt-BR") : "—"
-                } />
-                <Row k="Último sucesso" v={
-                  diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"
-                } />
-                <Row k="Último erro" v={
-                  diag?.last_error_at ? (
-                    <span><Badge tone="error">{diag.last_error_status ?? "?"}</Badge> {new Date(diag.last_error_at).toLocaleString("pt-BR")}</span>
-                  ) : "—"
-                } />
-              </Card>
-
-              {diag?.last_error_at && (
-                <Card title="Detalhe do último erro">
-                  <p className="text-xs text-muted-foreground mb-1">Endpoint</p>
-                  <p className="text-xs break-all mb-2">{diag.last_error_endpoint ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground mb-1">Resposta</p>
-                  <pre className="bg-secondary rounded p-2 text-xs overflow-x-auto whitespace-pre-wrap break-all">{diag.last_error_body ?? "—"}</pre>
-                </Card>
-              )}
-
-              <Card title="Como gerar credenciais">
-                <ol className="text-xs space-y-1 list-decimal list-inside text-muted-foreground">
-                  <li>
-                    <a className="text-primary inline-flex items-center gap-1 hover:underline" href={cfg?.environment === "production" ? "https://melhorenvio.com.br" : "https://sandbox.melhorenvio.com.br"} target="_blank" rel="noreferrer">
-                      Painel Melhor Envio <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </li>
-                  <li>Apps → Criar aplicação → copie Client ID/Secret</li>
-                  <li>Gere Access Token com escopos: <code className="text-[10px]">shipping-calculate shipping-tracking cart-read cart-write</code></li>
-                  <li>Cole tudo aqui e salve</li>
-                </ol>
-              </Card>
-            </aside>
+              ))}
+            </div>
           </div>
         )}
-      </main>
-      <Footer />
-    </div>
+
+        {step === 1 && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              No painel Melhor Envio, acesse <strong>Apps → Criar aplicação</strong> e copie as credenciais.
+            </p>
+            <Field label="Client ID">
+              <input
+                autoFocus
+                className="input"
+                value={form.client_id}
+                onChange={(e) => setForm({ ...form, client_id: e.target.value })}
+                placeholder="ex.: 12345"
+              />
+            </Field>
+            <Field label="Client Secret">
+              <input
+                className="input"
+                type="password"
+                autoComplete="new-password"
+                value={form.client_secret}
+                onChange={(e) => setForm({ ...form, client_secret: e.target.value })}
+                placeholder="Cole o Client Secret"
+              />
+            </Field>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Gere um <strong>Access Token</strong> com os escopos:
+              <code className="block mt-1 text-[10px] bg-secondary rounded p-2">shipping-calculate shipping-tracking cart-read cart-write</code>
+            </p>
+            <Field label="Access Token">
+              <textarea
+                autoFocus
+                className="input min-h-[100px] font-mono text-xs"
+                value={form.access_token}
+                onChange={(e) => setForm({ ...form, access_token: e.target.value })}
+                placeholder="Cole o Access Token (JWT)"
+              />
+            </Field>
+            <Field label="Refresh Token (opcional)">
+              <textarea
+                className="input min-h-[70px] font-mono text-xs"
+                value={form.refresh_token}
+                onChange={(e) => setForm({ ...form, refresh_token: e.target.value })}
+                placeholder="Cole o Refresh Token, se houver"
+              />
+            </Field>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Revise as informações. Ao confirmar, vamos <strong>salvar com segurança</strong> e <strong>testar a conexão</strong> automaticamente.
+            </p>
+            <div className="rounded-lg bg-secondary/40 p-4 text-sm space-y-1">
+              <InfoRow label="Ambiente" value={form.environment} />
+              <InfoRow label="Client ID" value={form.client_id || "—"} />
+              <InfoRow label="Client Secret" value={form.client_secret ? "••••••" : "—"} />
+              <InfoRow label="Access Token" value={form.access_token ? `${form.access_token.slice(0, 8)}…${form.access_token.slice(-6)}` : "—"} />
+              <InfoRow label="Refresh Token" value={form.refresh_token ? "informado" : "—"} />
+            </div>
+
+            {pingMut.data && (
+              <div className={`text-sm rounded-md p-3 flex items-start gap-2 ${pingMut.data.ok ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
+                {pingMut.data.ok ? <CheckCircle2 className="h-4 w-4 mt-0.5" /> : <XCircle className="h-4 w-4 mt-0.5" />}
+                <div>
+                  {pingMut.data.ok
+                    ? `Conexão OK (${pingMut.data.status})${pingMut.data.user?.email ? ` — ${pingMut.data.user.email}` : ""}`
+                    : `Falha (${pingMut.data.status}): ${pingMut.data.error ?? pingMut.data.body ?? "verifique credenciais"}`}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-6 mt-6 border-t border-border">
+          <button
+            type="button"
+            onClick={() => (step === 0 ? setReconfigure(false) : setStep(step - 1))}
+            disabled={isBusy || (step === 0 && !cfg?.access_token_preview)}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
+          >
+            <ArrowLeft className="h-4 w-4" /> Voltar
+          </button>
+
+          {step < STEPS.length - 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep(step + 1)}
+              disabled={!canNext}
+              className="inline-flex items-center gap-2 px-5 h-10 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50"
+            >
+              Continuar <ArrowRight className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleFinish}
+              disabled={isBusy}
+              className="inline-flex items-center gap-2 px-5 h-10 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-60"
+            >
+              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              Validar e ativar
+            </button>
+          )}
+        </div>
+      </div>
+    </Shell>
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
-      <h3 className="font-bold text-xs uppercase tracking-wide text-muted-foreground mb-3">{title}</h3>
-      <div className="space-y-2">{children}</div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        <Link to="/admin" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
+          <ArrowLeft className="h-4 w-4" /> Voltar ao admin
+        </Link>
+        <div className="mb-6">
+          <h1 className="text-3xl font-black flex items-center gap-2">
+            <Truck className="h-7 w-7 text-primary" /> Assistente Melhor Envio
+          </h1>
+          <p className="text-muted-foreground">Configuração guiada — passo a passo.</p>
+        </div>
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 }
@@ -282,24 +371,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Badge({ tone, children }: { tone: "success" | "warn" | "error"; children: React.ReactNode }) {
-  const cls =
-    tone === "success" ? "bg-success/15 text-success" :
-    tone === "warn" ? "bg-warning/15 text-warning" :
-    "bg-destructive/15 text-destructive";
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>
-      {tone === "success" ? <CheckCircle2 className="h-3 w-3" /> : tone === "error" ? <XCircle className="h-3 w-3" /> : null}
-      {children}
-    </span>
-  );
-}
-
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="text-xs text-muted-foreground">{k}</span>
-      <span className="text-right">{v}</span>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-right break-all">{value}</span>
     </div>
   );
 }
