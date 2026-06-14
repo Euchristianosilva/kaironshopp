@@ -329,8 +329,12 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         {tab === "variants" && <VariantsEditor value={variants} onChange={setVariants} />}
         {tab === "shipping" && (
           <div className="grid sm:grid-cols-2 gap-3">
+            <p className="sm:col-span-2 text-xs text-muted-foreground bg-secondary/50 border border-border rounded p-3">
+              ℹ O CEP de origem é o da sua loja e é configurado uma única vez em{" "}
+              <a href="/seller/shipping" className="text-primary font-semibold hover:underline">Configurações de Envio</a>.
+              Aqui você informa apenas peso e dimensões do produto.
+            </p>
             <Field label="Peso (g)"><input type="number" min="0" value={form.weight_g} onChange={(e) => setForm({ ...form, weight_g: e.target.value })} className="input" /></Field>
-            <Field label="CEP de origem"><input value={form.origin_zip} onChange={(e) => setForm({ ...form, origin_zip: e.target.value })} placeholder="00000-000" className="input" /></Field>
             <Field label="Altura (cm)"><input type="number" min="0" step="0.1" value={form.height_cm} onChange={(e) => setForm({ ...form, height_cm: e.target.value })} className="input" /></Field>
             <Field label="Largura (cm)"><input type="number" min="0" step="0.1" value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} className="input" /></Field>
             <Field label="Comprimento (cm)"><input type="number" min="0" step="0.1" value={form.length_cm} onChange={(e) => setForm({ ...form, length_cm: e.target.value })} className="input" /></Field>
