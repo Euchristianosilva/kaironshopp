@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SellerRouteImport } from './routes/seller'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
@@ -33,6 +34,11 @@ import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/favorites': typeof FavoritesRoute
+  '/messages': typeof MessagesRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/favorites': typeof FavoritesRoute
+  '/messages': typeof MessagesRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/favorites': typeof FavoritesRoute
+  '/messages': typeof MessagesRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/favorites'
+    | '/messages'
     | '/seller'
     | '/admin/finance'
     | '/category/$slug'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/favorites'
+    | '/messages'
     | '/seller'
     | '/admin/finance'
     | '/category/$slug'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/favorites'
+    | '/messages'
     | '/seller'
     | '/admin/finance'
     | '/category/$slug'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   FavoritesRoute: typeof FavoritesRoute
+  MessagesRoute: typeof MessagesRoute
   SellerRoute: typeof SellerRouteWithChildren
   CategorySlugRoute: typeof CategorySlugRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -288,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/seller'
       fullPath: '/seller'
       preLoaderRoute: typeof SellerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   FavoritesRoute: FavoritesRoute,
+  MessagesRoute: MessagesRoute,
   SellerRoute: SellerRouteWithChildren,
   CategorySlugRoute: CategorySlugRoute,
   ProductIdRoute: ProductIdRoute,
@@ -477,3 +498,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
