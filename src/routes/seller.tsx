@@ -12,6 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
 import { CategorySelect } from "@/components/seller/CategorySelect";
+import { VariantsEditor, emptyVariant, type VariantDraft } from "@/components/seller/VariantsEditor";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
