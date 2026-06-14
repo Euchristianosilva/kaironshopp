@@ -12,6 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
 import { CategorySelect } from "@/components/seller/CategorySelect";
+import { VariantsEditor, type VariantDraft } from "@/components/seller/VariantsEditor";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
@@ -405,7 +406,7 @@ function CreateSellerForm({ userId }: { userId: string }) {
 
 function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; product: ProductRow | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "shipping">("basic");
+  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "variants" | "shipping">("basic");
   const [form, setForm] = useState<any>({
     title: product?.title ?? "",
     description: product?.description ?? "",
@@ -414,6 +415,7 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     category_id: (product as any)?.category_id ?? null,
     category_slug: product?.category_slug ?? "eletronicos",
     stock: product?.stock ?? 10,
+    min_stock: (product as any)?.min_stock ?? 0,
     free_shipping: product?.free_shipping ?? false,
     is_active: product?.is_active ?? true,
     brand: (product as any)?.brand ?? "",
@@ -428,7 +430,12 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     material: (product as any)?.material ?? "",
     warranty: (product as any)?.warranty ?? "",
     condition: (product as any)?.condition ?? "new",
+    origin_zip: (product as any)?.origin_zip ?? "",
+    own_delivery: (product as any)?.own_delivery ?? false,
+    carrier: (product as any)?.carrier ?? "",
   });
+
+  const [variants, setVariants] = useState<VariantDraft[]>([]);
 
   // load existing images when editing
   const { data: existingImages = [] } = useQuery({
@@ -453,6 +460,33 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
   const [images, setImages] = useState<any[]>([]);
   useEffect(() => { setImages(existingImages); }, [existingImages]);
 
+  // load existing variants when editing
+  const { data: existingVariants = [] } = useQuery({
+    queryKey: ["product-variants", product?.id],
+    enabled: !!product?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("id,option1_name,option1_value,option2_name,option2_value,sku,price,stock,min_stock,is_active")
+        .eq("product_id", product!.id)
+        .order("position");
+      if (error) throw error;
+      return (data ?? []).map((v: any) => ({
+        id: v.id,
+        option1_name: v.option1_name ?? "",
+        option1_value: v.option1_value ?? "",
+        option2_name: v.option2_name ?? "",
+        option2_value: v.option2_value ?? "",
+        sku: v.sku ?? "",
+        price: v.price != null ? String(v.price) : "",
+        stock: String(v.stock ?? 0),
+        min_stock: String(v.min_stock ?? 0),
+        is_active: !!v.is_active,
+      })) as VariantDraft[];
+    },
+  });
+  useEffect(() => { setVariants(existingVariants); }, [existingVariants]);
+
   const saveMut = useMutation({
     mutationFn: async () => {
       const primary = images.find((i) => i.is_primary) ?? images[0];
@@ -466,6 +500,7 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         category_id: form.category_id,
         image_url: primary?.url ?? null,
         stock: Number(form.stock),
+        min_stock: Number(form.min_stock) || 0,
         free_shipping: form.free_shipping,
         is_active: form.is_active,
         brand: form.brand || null,
@@ -480,6 +515,10 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         material: form.material || null,
         warranty: form.warranty || null,
         condition: form.condition,
+        origin_zip: form.origin_zip || null,
+        own_delivery: form.own_delivery,
+        carrier: form.carrier || null,
+        has_variants: variants.length > 0,
       };
 
       let productId = product?.id;
@@ -492,7 +531,7 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         productId = data!.id;
       }
 
-      // sync images: delete existing rows for this product (storage files stay until removed via UI), then insert current
+      // sync images
       if (productId) {
         await supabase.from("product_images").delete().eq("product_id", productId);
         if (images.length) {
@@ -506,12 +545,34 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
           const { error } = await supabase.from("product_images").insert(rows);
           if (error) throw error;
         }
+
+        // sync variants: replace
+        await supabase.from("product_variants").delete().eq("product_id", productId);
+        if (variants.length) {
+          const rows = variants.map((v, idx) => ({
+            product_id: productId!,
+            seller_id: sellerId,
+            option1_name: v.option1_name || null,
+            option1_value: v.option1_value || null,
+            option2_name: v.option2_name || null,
+            option2_value: v.option2_value || null,
+            sku: v.sku || null,
+            price: v.price ? Number(v.price) : null,
+            stock: Number(v.stock) || 0,
+            min_stock: Number(v.min_stock) || 0,
+            is_active: v.is_active,
+            position: idx,
+          }));
+          const { error } = await supabase.from("product_variants").insert(rows);
+          if (error) throw error;
+        }
       }
     },
     onSuccess: () => {
       toast.success(product ? "Produto atualizado" : "Produto criado");
       qc.invalidateQueries({ queryKey: ["seller-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["product-variants", product?.id] });
       onClose();
     },
     onError: (e: any) => toast.error(e.message),
@@ -522,6 +583,7 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     { id: "media", label: "Mídias" },
     { id: "specs", label: "Especificações" },
     { id: "stock", label: "Estoque" },
+    { id: "variants", label: `Variações${variants.length ? ` (${variants.length})` : ""}` },
     { id: "shipping", label: "Frete" },
   ];
 
@@ -609,21 +671,46 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
             <Field label="Estoque atual">
               <input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="input" />
             </Field>
+            <Field label="Estoque mínimo (alerta)">
+              <input type="number" min="0" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: Number(e.target.value) })} className="input" />
+            </Field>
+            {Number(form.stock) <= Number(form.min_stock) && Number(form.min_stock) > 0 && (
+              <p className="sm:col-span-2 text-xs text-amber-600 font-semibold">⚠ Estoque abaixo ou igual ao mínimo definido.</p>
+            )}
             <p className="sm:col-span-2 text-xs text-muted-foreground">
-              Variações de produto, estoque mínimo e histórico de movimentação chegam na próxima fase.
+              Quando o produto tiver variações, o estoque por variação tem prioridade sobre este campo.
             </p>
           </div>
+        )}
+
+        {tab === "variants" && (
+          <VariantsEditor value={variants} onChange={setVariants} />
         )}
 
         {tab === "shipping" && (
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Peso (g)"><input type="number" min="0" value={form.weight_g} onChange={(e) => setForm({ ...form, weight_g: e.target.value })} className="input" /></Field>
+            <Field label="CEP de origem"><input value={form.origin_zip} onChange={(e) => setForm({ ...form, origin_zip: e.target.value })} placeholder="00000-000" className="input" /></Field>
             <Field label="Altura (cm)"><input type="number" min="0" step="0.1" value={form.height_cm} onChange={(e) => setForm({ ...form, height_cm: e.target.value })} className="input" /></Field>
             <Field label="Largura (cm)"><input type="number" min="0" step="0.1" value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} className="input" /></Field>
             <Field label="Comprimento (cm)"><input type="number" min="0" step="0.1" value={form.length_cm} onChange={(e) => setForm({ ...form, length_cm: e.target.value })} className="input" /></Field>
+            <Field label="Transportadora">
+              <select value={form.carrier} onChange={(e) => setForm({ ...form, carrier: e.target.value })} className="input">
+                <option value="">Selecione</option>
+                <option value="correios">Correios</option>
+                <option value="jadlog">Jadlog</option>
+                <option value="loggi">Loggi</option>
+                <option value="azul_cargo">Azul Cargo</option>
+                <option value="outra">Outra</option>
+              </select>
+            </Field>
             <label className="flex items-center gap-2 text-sm sm:col-span-2">
               <input type="checkbox" checked={form.free_shipping} onChange={(e) => setForm({ ...form, free_shipping: e.target.checked })} />
               Frete grátis
+            </label>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={form.own_delivery} onChange={(e) => setForm({ ...form, own_delivery: e.target.checked })} />
+              Entrega própria (sem transportadora)
             </label>
           </div>
         )}

@@ -70,6 +70,8 @@ export type Database = {
           stripe_transfer_id: string | null
           title: string
           unit_price: number
+          variant_id: string | null
+          variant_label: string | null
         }
         Insert: {
           created_at?: string
@@ -85,6 +87,8 @@ export type Database = {
           stripe_transfer_id?: string | null
           title: string
           unit_price: number
+          variant_id?: string | null
+          variant_label?: string | null
         }
         Update: {
           created_at?: string
@@ -100,6 +104,8 @@ export type Database = {
           stripe_transfer_id?: string | null
           title?: string
           unit_price?: number
+          variant_id?: string | null
+          variant_label?: string | null
         }
         Relationships: [
           {
@@ -121,6 +127,13 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -284,10 +297,83 @@ export type Database = {
           },
         ]
       }
+      product_variants: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          min_stock: number
+          option1_name: string | null
+          option1_value: string | null
+          option2_name: string | null
+          option2_value: string | null
+          position: number
+          price: number | null
+          product_id: string
+          seller_id: string
+          sku: string | null
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          min_stock?: number
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          position?: number
+          price?: number | null
+          product_id: string
+          seller_id: string
+          sku?: string | null
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          min_stock?: number
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          position?: number
+          price?: number | null
+          product_id?: string
+          seller_id?: string
+          sku?: string | null
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null
           brand: string | null
+          carrier: string | null
           category_id: string | null
           category_slug: string
           color: string | null
@@ -295,6 +381,7 @@ export type Database = {
           created_at: string
           description: string | null
           free_shipping: boolean | null
+          has_variants: boolean
           height_cm: number | null
           id: string
           image_url: string | null
@@ -303,8 +390,11 @@ export type Database = {
           is_featured: boolean | null
           length_cm: number | null
           material: string | null
+          min_stock: number
           model: string | null
+          origin_zip: string | null
           original_price: number | null
+          own_delivery: boolean
           price: number
           rating: number | null
           reviews_count: number | null
@@ -322,6 +412,7 @@ export type Database = {
         Insert: {
           barcode?: string | null
           brand?: string | null
+          carrier?: string | null
           category_id?: string | null
           category_slug: string
           color?: string | null
@@ -329,6 +420,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           free_shipping?: boolean | null
+          has_variants?: boolean
           height_cm?: number | null
           id?: string
           image_url?: string | null
@@ -337,8 +429,11 @@ export type Database = {
           is_featured?: boolean | null
           length_cm?: number | null
           material?: string | null
+          min_stock?: number
           model?: string | null
+          origin_zip?: string | null
           original_price?: number | null
+          own_delivery?: boolean
           price: number
           rating?: number | null
           reviews_count?: number | null
@@ -356,6 +451,7 @@ export type Database = {
         Update: {
           barcode?: string | null
           brand?: string | null
+          carrier?: string | null
           category_id?: string | null
           category_slug?: string
           color?: string | null
@@ -363,6 +459,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           free_shipping?: boolean | null
+          has_variants?: boolean
           height_cm?: number | null
           id?: string
           image_url?: string | null
@@ -371,8 +468,11 @@ export type Database = {
           is_featured?: boolean | null
           length_cm?: number | null
           material?: string | null
+          min_stock?: number
           model?: string | null
+          origin_zip?: string | null
           original_price?: number | null
+          own_delivery?: boolean
           price?: number
           rating?: number | null
           reviews_count?: number | null
@@ -468,6 +568,64 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          product_id: string
+          quantity: number
+          reason: string | null
+          seller_id: string
+          variant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          product_id: string
+          quantity: number
+          reason?: string | null
+          seller_id: string
+          variant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          seller_id?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_events: {
         Row: {
