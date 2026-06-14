@@ -40,7 +40,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
     const ids = data.items.map((i) => i.product_id);
     const { data: products, error: pErr } = await supabaseAdmin
       .from("products")
-      .select("id, seller_id, title, price, weight_g, height_cm, width_cm, length_cm, origin_zip")
+      .select("id, seller_id, title, price, weight_g, height_cm, width_cm, length_cm")
       .in("id", ids);
     if (pErr) throw new Error(pErr.message);
     if (!products?.length) throw new Error("Produtos não encontrados.");
