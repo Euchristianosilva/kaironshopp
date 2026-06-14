@@ -24,7 +24,7 @@ export const listStockMovements = createServerFn({ method: "POST" })
 
     const { data: products } = await context.supabase
       .from("products")
-      .select("id, title, stock, min_stock, active")
+      .select("id, title, stock, min_stock, is_active")
       .eq("seller_id", seller.id)
       .order("title");
 
