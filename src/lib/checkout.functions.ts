@@ -111,7 +111,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         unit_price: unit / 100,
         gross_cents: subtotal,
         seller_id: sellerId,
-        stripe_account_id: seller.stripe_account_id,
+        stripe_account_id: seller.stripe_account_id ?? null,
       });
     }
 
