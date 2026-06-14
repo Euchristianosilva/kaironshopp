@@ -128,11 +128,11 @@ function Checkout() {
                 <div className="flex justify-between font-black text-lg pt-2"><span>Total</span><span className="text-primary">{formatBRL(total)}</span></div>
               </div>
               <button
-                disabled={cart.length === 0}
-                onClick={() => { clear(); setDone(true); }}
+                disabled={cart.length === 0 || loading}
+                onClick={handlePay}
                 className="w-full h-12 rounded-lg bg-gradient-brand text-primary-foreground font-bold flex items-center justify-center gap-2 hover:opacity-95 disabled:opacity-50"
               >
-                <Lock className="h-4 w-4" /> Pagar agora
+                <Lock className="h-4 w-4" /> {loading ? "Redirecionando..." : method === "credit" ? "Pagar com Stripe" : "Pagar agora"}
               </button>
               <div className="text-[11px] text-muted-foreground text-center">Pagamento 100% seguro · Criptografia SSL</div>
             </div>
