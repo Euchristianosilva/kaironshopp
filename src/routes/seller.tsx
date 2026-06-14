@@ -152,8 +152,6 @@ function SellerDashboard({ userId }: { userId: string }) {
 
   if (!seller) return <CreateSellerForm userId={userId} />;
 
-  const revenue = products.reduce((a, p) => a + Number(p.price), 0);
-  const active = products.filter((p) => p.is_active).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
