@@ -91,8 +91,9 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       row.seller_net_cents = row.gross_cents - fee;
     });
 
-    // Create order (pending)
-    const { data: order, error: orderErr } = await supabase
+    // Create order (pending) — uses admin client to bypass RLS for trusted server-computed financial fields
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error: orderErr } = await supabaseAdmin
       .from("orders")
       .insert({
         buyer_id: userId,
@@ -120,7 +121,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       platform_fee_cents: r.platform_fee_cents,
       seller_net_cents: r.seller_net_cents,
     }));
-    const { error: itemsErr } = await supabase.from("order_items").insert(itemsPayload);
+    const { error: itemsErr } = await supabaseAdmin.from("order_items").insert(itemsPayload);
     if (itemsErr) throw new Error("Falha ao criar itens: " + itemsErr.message);
 
     // Stripe Checkout with destination charge + application fee
@@ -137,10 +138,11 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       cancel_url: `${data.origin}/checkout?payment=canceled`,
     });
 
-    await supabase
+    await supabaseAdmin
       .from("orders")
       .update({ stripe_session_id: session.id, stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null })
       .eq("id", order.id);
 
     return { url: session.url };
   });
+

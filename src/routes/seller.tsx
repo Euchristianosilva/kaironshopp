@@ -10,6 +10,7 @@ import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Packag
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
+import { createMyStore } from "@/lib/seller-onboarding.functions";
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
 import { CategorySelect } from "@/components/seller/CategorySelect";
 import { VariantsEditor, type VariantDraft } from "@/components/seller/VariantsEditor";
@@ -341,27 +342,17 @@ function CreateSellerForm({ userId }: { userId: string }) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const createStore = useServerFn(createMyStore);
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      const finalSlug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
-      const { data, error } = await supabase
-        .from("sellers")
-        .insert({ owner_id: userId, name, description, slug: finalSlug })
-        .select()
-        .single();
-      if (error) throw error;
-      // ensure seller role
-      await supabase.from("user_roles").insert({ user_id: userId, role: "seller" }).select();
-      return data;
-    },
+    mutationFn: async () => createStore({ data: { name, description } }),
     onSuccess: () => {
       toast.success("Loja criada!");
       qc.invalidateQueries({ queryKey: ["seller", userId] });
     },
     onError: (e: any) => toast.error(e.message),
   });
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
