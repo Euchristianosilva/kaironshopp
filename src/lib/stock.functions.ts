@@ -24,7 +24,7 @@ export const listStockMovements = createServerFn({ method: "POST" })
 
     const { data: products } = await context.supabase
       .from("products")
-      .select("id, title, stock_qty, min_stock, active")
+      .select("id, title, stock, min_stock, active")
       .eq("seller_id", seller.id)
       .order("title");
 
@@ -44,17 +44,17 @@ export const createStockMovement = createServerFn({ method: "POST" })
     const seller = await getSeller(context.supabase, context.userId);
     const { data: prod, error: pErr } = await context.supabase
       .from("products")
-      .select("id, stock_qty, seller_id")
+      .select("id, stock, seller_id")
       .eq("id", data.product_id)
       .maybeSingle();
     if (pErr || !prod || prod.seller_id !== seller.id) throw new Error("Produto inválido");
 
-    const current = Number(prod.stock_qty ?? 0);
+    const current = Number(prod.stock ?? 0);
     const next = data.kind === "in" ? current + data.quantity
       : data.kind === "out" ? Math.max(0, current - data.quantity)
       : data.quantity;
 
-    const { error: uErr } = await context.supabase.from("products").update({ stock_qty: next }).eq("id", data.product_id);
+    const { error: uErr } = await context.supabase.from("products").update({ stock: next }).eq("id", data.product_id);
     if (uErr) throw new Error(uErr.message);
 
     const { error: mErr } = await context.supabase.from("stock_movements").insert({
