@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, ShoppingBag, Package, Boxes, Truck, Users, MessageSquare,
-  TicketPercent, Sparkles, Star, BarChart3, Wallet, Store, Settings, CreditCard, LifeBuoy,
+  TicketPercent, Sparkles, Star, BarChart3, Wallet, Store, Settings, CreditCard, LifeBuoy, Rocket,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -25,6 +25,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
     items: [
       { to: "/seller/coupons", label: "Cupons", icon: TicketPercent },
       { to: "/seller/promotions", label: "Promoções", icon: Sparkles },
+      { to: "/seller/ads", label: "Anúncios", icon: Rocket },
       { to: "/seller/reviews", label: "Avaliações", icon: Star },
     ],
   },

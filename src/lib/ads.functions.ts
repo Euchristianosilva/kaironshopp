@@ -157,3 +157,102 @@ export const getAdPricing = createServerFn({ method: "GET" })
     if (error) throw error;
     return data ?? [];
   });
+
+/**
+ * Lista campanhas do vendedor logado com totais de métricas.
+ */
+export const listMyAdCampaigns = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: campaigns, error } = await supabase
+      .from("ad_campaigns")
+      .select("id, placement, status, starts_at, ends_at, amount_cents, currency, product_id, products(title, image_url)")
+      .eq("owner_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+
+    const ids = (campaigns ?? []).map((c: any) => c.id);
+    let metricsByCampaign: Record<string, { impressions: number; clicks: number }> = {};
+    if (ids.length) {
+      const { data: m } = await supabase
+        .from("ad_metrics")
+        .select("campaign_id, impressions, clicks")
+        .in("campaign_id", ids);
+      for (const row of m ?? []) {
+        const k = (row as any).campaign_id as string;
+        const cur = metricsByCampaign[k] ?? { impressions: 0, clicks: 0 };
+        cur.impressions += (row as any).impressions ?? 0;
+        cur.clicks += (row as any).clicks ?? 0;
+        metricsByCampaign[k] = cur;
+      }
+    }
+    return (campaigns ?? []).map((c: any) => ({
+      ...c,
+      metrics: metricsByCampaign[c.id] ?? { impressions: 0, clicks: 0 },
+    }));
+  });
+
+/**
+ * Admin: lista todas as campanhas com métricas.
+ */
+export const listAllAdCampaigns = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Acesso negado");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: campaigns, error } = await supabaseAdmin
+      .from("ad_campaigns")
+      .select("id, placement, status, starts_at, ends_at, amount_cents, currency, owner_id, product_id, products(title, image_url), sellers(name)")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw error;
+
+    const ids = (campaigns ?? []).map((c: any) => c.id);
+    let metricsByCampaign: Record<string, { impressions: number; clicks: number }> = {};
+    if (ids.length) {
+      const { data: m } = await supabaseAdmin
+        .from("ad_metrics")
+        .select("campaign_id, impressions, clicks")
+        .in("campaign_id", ids);
+      for (const row of m ?? []) {
+        const k = (row as any).campaign_id as string;
+        const cur = metricsByCampaign[k] ?? { impressions: 0, clicks: 0 };
+        cur.impressions += (row as any).impressions ?? 0;
+        cur.clicks += (row as any).clicks ?? 0;
+        metricsByCampaign[k] = cur;
+      }
+    }
+    return (campaigns ?? []).map((c: any) => ({
+      ...c,
+      metrics: metricsByCampaign[c.id] ?? { impressions: 0, clicks: 0 },
+    }));
+  });
+
+/**
+ * Admin: altera status de uma campanha (pausar/cancelar/encerrar).
+ */
+export const adminUpdateCampaignStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { campaignId: string; status: "scheduled" | "active" | "ended" | "canceled" | "rejected" }) => {
+    const allowed = ["scheduled", "active", "ended", "canceled", "rejected"];
+    if (!allowed.includes(input.status)) throw new Error("Status inválido");
+    if (!input.campaignId) throw new Error("campaignId obrigatório");
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Acesso negado");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("ad_campaigns")
+      .update({ status: data.status })
+      .eq("id", data.campaignId);
+    if (error) throw error;
+    return { ok: true };
+  });

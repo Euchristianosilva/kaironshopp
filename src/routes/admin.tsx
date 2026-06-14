@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
-import { Users, Store, ShoppingBag, DollarSign, Image as ImageIcon, Ticket, Edit, Trash2 } from "lucide-react";
+import { Users, Store, ShoppingBag, DollarSign, Image as ImageIcon, Ticket, Edit, Trash2, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MercaBrasil" }] }),
@@ -28,8 +28,15 @@ function Admin() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-black mb-1">Painel Administrativo</h1>
-        <p className="text-muted-foreground mb-6">Controle geral da plataforma</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-black mb-1">Painel Administrativo</h1>
+            <p className="text-muted-foreground">Controle geral da plataforma</p>
+          </div>
+          <Link to="/admin/ads" className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
+            <Rocket className="h-4 w-4" /> Anúncios patrocinados
+          </Link>
+        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((k) => (
