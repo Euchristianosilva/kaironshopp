@@ -138,6 +138,10 @@ function SellerDashboard({ userId }: { userId: string }) {
           </button>
         </div>
 
+        <ConnectCard seller={seller} />
+
+
+
         <div className="grid sm:grid-cols-3 gap-4">
           <StatCard label="Catálogo" value={String(products.length)} />
           <StatCard label="Ativos" value={String(active)} />
