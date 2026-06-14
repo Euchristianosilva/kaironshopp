@@ -27,6 +27,7 @@ import { Route as SellerReportsRouteImport } from './routes/seller.reports'
 import { Route as SellerPromotionsRouteImport } from './routes/seller.promotions'
 import { Route as SellerProfileRouteImport } from './routes/seller.profile'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
+import { Route as SellerHelpRouteImport } from './routes/seller.help'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
 import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as SellerCouponsRouteImport } from './routes/seller.coupons'
@@ -125,6 +126,11 @@ const SellerOrdersRoute = SellerOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerHelpRoute = SellerHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerFinanceRoute = SellerFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
     | '/seller/profile'
     | '/seller/promotions'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
     | '/seller/profile'
     | '/seller/promotions'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
     | '/seller/profile'
     | '/seller/promotions'
@@ -470,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerOrdersRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/help': {
+      id: '/seller/help'
+      path: '/help'
+      fullPath: '/seller/help'
+      preLoaderRoute: typeof SellerHelpRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/finance': {
       id: '/seller/finance'
       path: '/finance'
@@ -536,6 +555,7 @@ interface SellerRouteChildren {
   SellerCouponsRoute: typeof SellerCouponsRoute
   SellerCustomersRoute: typeof SellerCustomersRoute
   SellerFinanceRoute: typeof SellerFinanceRoute
+  SellerHelpRoute: typeof SellerHelpRoute
   SellerOrdersRoute: typeof SellerOrdersRoute
   SellerProfileRoute: typeof SellerProfileRoute
   SellerPromotionsRoute: typeof SellerPromotionsRoute
@@ -551,6 +571,7 @@ const SellerRouteChildren: SellerRouteChildren = {
   SellerCouponsRoute: SellerCouponsRoute,
   SellerCustomersRoute: SellerCustomersRoute,
   SellerFinanceRoute: SellerFinanceRoute,
+  SellerHelpRoute: SellerHelpRoute,
   SellerOrdersRoute: SellerOrdersRoute,
   SellerProfileRoute: SellerProfileRoute,
   SellerPromotionsRoute: SellerPromotionsRoute,
