@@ -6,7 +6,7 @@ import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
-import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Package, Users, TicketPercent, Sparkles, MessageSquare } from "lucide-react";
+import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Package, Users, TicketPercent, Sparkles, MessageSquare, Settings, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
@@ -318,6 +318,12 @@ function ConnectCard({ seller }: { seller: Seller }) {
               </Link>
               <Link to="/seller/reviews" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
                 <MessageSquare className="h-4 w-4 inline mr-1" /> Avaliações
+              </Link>
+              <Link to="/seller/reports" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <BarChart3 className="h-4 w-4 inline mr-1" /> Relatórios
+              </Link>
+              <Link to="/seller/settings" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <Settings className="h-4 w-4 inline mr-1" /> Configurações
               </Link>
               <Link to="/seller/finance" className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-sm grid place-items-center">
                 <Wallet className="h-4 w-4 inline mr-1" /> Financeiro
