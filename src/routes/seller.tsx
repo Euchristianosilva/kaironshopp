@@ -13,6 +13,8 @@ import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink 
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
 import { CategorySelect } from "@/components/seller/CategorySelect";
 import { VariantsEditor, type VariantDraft } from "@/components/seller/VariantsEditor";
+import { SellerStats } from "@/components/seller/SellerStats";
+import { ProductsTable } from "@/components/seller/ProductsTable";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
