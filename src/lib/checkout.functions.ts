@@ -95,7 +95,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .insert({
-        user_id: userId,
+        buyer_id: userId,
         seller_id: sellerId,
         gross_cents: grossCents,
         platform_fee_cents: platformFeeCents,
@@ -111,8 +111,9 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const itemsPayload = itemRows.map((r) => ({
       order_id: order.id,
       product_id: r.product_id,
-      quantity: r.quantity,
-      unit_price: r.unit_price_cents / 100,
+      title: r.title,
+      qty: r.qty,
+      unit_price: r.unit_price,
       seller_id: r.seller_id,
       stripe_account_id: r.stripe_account_id,
       gross_cents: r.gross_cents,
