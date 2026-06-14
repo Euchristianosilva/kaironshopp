@@ -377,6 +377,48 @@ export type Database = {
           },
         ]
       }
+      melhor_envio_config: {
+        Row: {
+          access_token: string | null
+          callback_url: string | null
+          client_id: string | null
+          client_secret: string | null
+          environment: string
+          id: boolean
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          updated_by: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          callback_url?: string | null
+          client_id?: string | null
+          client_secret?: string | null
+          environment?: string
+          id?: boolean
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          callback_url?: string | null
+          client_id?: string | null
+          client_secret?: string | null
+          environment?: string
+          id?: boolean
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
