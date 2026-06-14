@@ -54,10 +54,11 @@ function ProductPage() {
     setChatLoading(true);
     try {
       const { id: convId } = await startChat({ data: { seller_id: sellerId, product_id: id } });
-      await navigate({ to: "/messages", search: { c: convId } });
+      navigate({ to: "/messages", search: { c: convId } });
     } catch (e: any) {
       console.error("openChat failed", e);
       toast.error(e?.message ?? "Não foi possível abrir o chat");
+    } finally {
       setChatLoading(false);
     }
   };
