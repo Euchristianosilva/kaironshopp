@@ -5,7 +5,7 @@ import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL } from "@/lib/mock-data";
+
 import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
