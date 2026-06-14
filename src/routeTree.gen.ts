@@ -27,6 +27,7 @@ import { Route as SellerReviewsRouteImport } from './routes/seller.reviews'
 import { Route as SellerReportsRouteImport } from './routes/seller.reports'
 import { Route as SellerPromotionsRouteImport } from './routes/seller.promotions'
 import { Route as SellerProfileRouteImport } from './routes/seller.profile'
+import { Route as SellerProductsRouteImport } from './routes/seller.products'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
 import { Route as SellerHelpRouteImport } from './routes/seller.help'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
@@ -127,6 +128,11 @@ const SellerProfileRoute = SellerProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerProductsRoute = SellerProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerOrdersRoute = SellerOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/seller/finance'
     | '/seller/help'
     | '/seller/orders'
+    | '/seller/products'
     | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/seller/finance'
     | '/seller/help'
     | '/seller/orders'
+    | '/seller/products'
     | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/seller/finance'
     | '/seller/help'
     | '/seller/orders'
+    | '/seller/products'
     | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
@@ -492,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerProfileRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/products': {
+      id: '/seller/products'
+      path: '/products'
+      fullPath: '/seller/products'
+      preLoaderRoute: typeof SellerProductsRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/orders': {
       id: '/seller/orders'
       path: '/orders'
@@ -574,6 +593,7 @@ interface SellerRouteChildren {
   SellerFinanceRoute: typeof SellerFinanceRoute
   SellerHelpRoute: typeof SellerHelpRoute
   SellerOrdersRoute: typeof SellerOrdersRoute
+  SellerProductsRoute: typeof SellerProductsRoute
   SellerProfileRoute: typeof SellerProfileRoute
   SellerPromotionsRoute: typeof SellerPromotionsRoute
   SellerReportsRoute: typeof SellerReportsRoute
@@ -591,6 +611,7 @@ const SellerRouteChildren: SellerRouteChildren = {
   SellerFinanceRoute: SellerFinanceRoute,
   SellerHelpRoute: SellerHelpRoute,
   SellerOrdersRoute: SellerOrdersRoute,
+  SellerProductsRoute: SellerProductsRoute,
   SellerProfileRoute: SellerProfileRoute,
   SellerPromotionsRoute: SellerPromotionsRoute,
   SellerReportsRoute: SellerReportsRoute,

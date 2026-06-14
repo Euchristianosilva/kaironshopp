@@ -2,8 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { getStoreSettings, updateStoreSettings } from "@/lib/store-settings.functions";
 import { Store, ExternalLink } from "lucide-react";
@@ -33,16 +31,16 @@ function Page() {
   });
 
   if (loading || isLoading || !user || !form) return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header /><main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main><Footer />
+    <div className="min-h-0">
+      <main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main>
     </div>
   );
 
   const set = (k: string) => (e: any) => setForm({ ...form, [k]: e.target.value });
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-0">
+      
       <main className="flex-1 container mx-auto px-4 py-8 space-y-6 max-w-3xl">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-black flex items-center gap-2"><Store className="h-7 w-7 text-primary" /> Perfil da loja</h1>
@@ -102,7 +100,7 @@ function Page() {
           </button>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }

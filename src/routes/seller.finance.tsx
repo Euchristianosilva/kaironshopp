@@ -2,8 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { getSellerFinance } from "@/lib/finance.functions";
 import { formatBRL } from "@/lib/mock-data";
@@ -30,23 +28,23 @@ function SellerFinancePage() {
 
   if (loading || isLoading || !user) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
+      <div className="min-h-0">
+        
         <main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main>
-        <Footer />
+        
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <Header />
+      <div className="min-h-0">
+        
         <main className="flex-1 container mx-auto px-4 py-8">
           <p className="text-destructive">{(error as Error).message}</p>
           <Link to="/seller" className="text-primary hover:underline text-sm">← Voltar</Link>
         </main>
-        <Footer />
+        
       </div>
     );
   }
@@ -55,8 +53,8 @@ function SellerFinancePage() {
   const pending = data?.balance?.pending?.reduce((a: number, b: any) => a + b.amount, 0) ?? 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-0">
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6 gap-3">
           <h1 className="text-3xl font-black flex items-center gap-2"><Wallet className="h-7 w-7 text-primary" /> Financeiro</h1>
@@ -102,7 +100,7 @@ function SellerFinancePage() {
           )}
         </Section>
       </main>
-      <Footer />
+      
     </div>
   );
 }

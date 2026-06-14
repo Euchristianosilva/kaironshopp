@@ -1,7 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { LifeBuoy, ChevronDown, Mail, MessageSquare } from "lucide-react";
 
@@ -28,14 +26,14 @@ function Page() {
   const [open, setOpen] = useState<number | null>(0);
 
   if (loading || !user) return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header /><main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main><Footer />
+    <div className="min-h-0">
+      <main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-0">
+      
       <main className="flex-1 container mx-auto px-4 py-8 space-y-6 max-w-3xl">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-black flex items-center gap-2"><LifeBuoy className="h-7 w-7 text-primary" /> Central de Ajuda</h1>
@@ -67,7 +65,7 @@ function Page() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }

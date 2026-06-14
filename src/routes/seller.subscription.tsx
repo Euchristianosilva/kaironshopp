@@ -1,7 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { CreditCard, CheckCircle2 } from "lucide-react";
 
@@ -16,8 +14,8 @@ function Page() {
   useEffect(() => { if (!loading && !user) navigate({ to: "/auth" }); }, [loading, user, navigate]);
 
   if (loading || !user) return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header /><main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main><Footer />
+    <div className="min-h-0">
+      <main className="flex-1 grid place-items-center text-muted-foreground">Carregando...</main>
     </div>
   );
 
@@ -31,8 +29,8 @@ function Page() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-0">
+      
       <main className="flex-1 container mx-auto px-4 py-8 space-y-6 max-w-3xl">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-black flex items-center gap-2"><CreditCard className="h-7 w-7 text-primary" /> Minha Assinatura</h1>
@@ -71,7 +69,7 @@ function Page() {
           </p>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }

@@ -2,8 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { listSellerReviews, replyReview } from "@/lib/marketing.functions";
 import { Button } from "@/components/ui/button";
@@ -109,10 +107,10 @@ function Stars({ value }: { value: number }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+    <div className="min-h-0">
+      
       <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
-      <Footer />
+      
     </div>
   );
 }
