@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ProductsTable } from "@/components/seller/ProductsTable";
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
+import { TurbinarProductDialog } from "@/components/seller/TurbinarProductDialog";
 import { CategorySelect } from "@/components/seller/CategorySelect";
 import { VariantsEditor, type VariantDraft } from "@/components/seller/VariantsEditor";
 import { SellerPageHeader } from "@/components/seller/SellerPageHeader";
@@ -33,6 +34,7 @@ function ProductsPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductRow | "new" | null>(null);
+  const [boosting, setBoosting] = useState<ProductRow | null>(null);
 
   const { data: seller } = useQuery({
     queryKey: ["seller", user?.id],
@@ -110,6 +112,7 @@ function ProductsPage() {
           onDelete={(p) => deleteMut.mutate(p.id)}
           onToggleActive={(p) => toggleActiveMut.mutate(p as any)}
           onDuplicate={(p) => duplicateMut.mutate(p as any)}
+          onBoost={(p) => setBoosting(p as any)}
         />
       </div>
 
@@ -118,6 +121,18 @@ function ProductsPage() {
           sellerId={seller.id}
           product={editing === "new" ? null : editing}
           onClose={() => setEditing(null)}
+        />
+      )}
+
+      {boosting && (
+        <TurbinarProductDialog
+          product={{
+            id: boosting.id,
+            title: boosting.title,
+            price: boosting.price,
+            image_url: boosting.image_url,
+          }}
+          onClose={() => setBoosting(null)}
         />
       )}
     </div>
