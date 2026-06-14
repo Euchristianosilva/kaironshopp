@@ -160,15 +160,20 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { error: itemsErr } = await supabaseAdmin.from("order_items").insert(itemsPayload);
     if (itemsErr) throw new Error("Falha ao criar itens: " + itemsErr.message);
 
-    // Stripe Checkout with destination charge + application fee
+    // If seller is Connect-ready, split via destination charge + application fee.
+    // Otherwise, charge the platform directly (payout handled off-Stripe).
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      payment_intent_data: {
-        application_fee_amount: platformFeeCents,
-        transfer_data: { destination: seller.stripe_account_id },
-        metadata: { order_id: order.id, seller_id: sellerId },
-      },
+      payment_intent_data: sellerConnected
+        ? {
+            application_fee_amount: platformFeeCents,
+            transfer_data: { destination: seller.stripe_account_id as string },
+            metadata: { order_id: order.id, seller_id: sellerId },
+          }
+        : {
+            metadata: { order_id: order.id, seller_id: sellerId },
+          },
       metadata: { order_id: order.id, seller_id: sellerId, user_id: userId },
       success_url: `${data.origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${data.origin}/checkout?payment=canceled`,
