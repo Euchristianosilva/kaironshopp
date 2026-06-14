@@ -114,7 +114,7 @@ function CouponDialog({ open, onOpenChange, editing, onSave, saving }: any) {
           <div><Label>Código</Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="PROMO10" /></div>
           <div className="grid grid-cols-2 gap-3">
             <div><Label>Tipo</Label>
-              <Select value={form.discount_type} onValueChange={(v) => setForm({ ...form, discount_type: v })}>
+              <Select value={form.discount_type} onValueChange={(v: string) => setForm({ ...form, discount_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percent">Porcentagem</SelectItem>

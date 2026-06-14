@@ -123,7 +123,7 @@ function PromoDialog({ open, onOpenChange, editing, products, onSave, saving }: 
         <div className="space-y-3">
           <div><Label>Nome</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Black Friday" /></div>
           <div><Label>Produto</Label>
-            <Select value={form.product_id} onValueChange={(v) => setForm({ ...form, product_id: v })}>
+            <Select value={form.product_id} onValueChange={(v: string) => setForm({ ...form, product_id: v })}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>{products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
             </Select>
