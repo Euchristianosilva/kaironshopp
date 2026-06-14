@@ -165,7 +165,6 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     material: (product as any)?.material ?? "",
     warranty: (product as any)?.warranty ?? "",
     condition: (product as any)?.condition ?? "new",
-    origin_zip: (product as any)?.origin_zip ?? "",
     own_delivery: (product as any)?.own_delivery ?? false,
     carrier: (product as any)?.carrier ?? "",
   });
