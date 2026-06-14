@@ -10,7 +10,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (!key) throw new Error("STRIPE_SECRET_KEY não configurada");
     if (!data.items?.length) throw new Error("Carrinho vazio");
 
-    const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" as Stripe.LatestApiVersion });
+    const stripe = new Stripe(key);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
