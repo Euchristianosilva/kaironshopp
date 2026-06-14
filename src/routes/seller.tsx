@@ -5,14 +5,16 @@ import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { categories, formatBRL } from "@/lib/mock-data";
-import { Plus, Package, Pencil, Trash2, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet } from "lucide-react";
+
+import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
 import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
 import { CategorySelect } from "@/components/seller/CategorySelect";
 import { VariantsEditor, type VariantDraft } from "@/components/seller/VariantsEditor";
+import { SellerStats } from "@/components/seller/SellerStats";
+import { ProductsTable } from "@/components/seller/ProductsTable";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
@@ -110,6 +112,34 @@ function SellerDashboard({ userId }: { userId: string }) {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const toggleActiveMut = useMutation({
+    mutationFn: async (p: ProductRow) => {
+      const { error } = await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Status atualizado");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const duplicateMut = useMutation({
+    mutationFn: async (p: ProductRow) => {
+      const { data: full, error: e1 } = await supabase.from("products").select("*").eq("id", p.id).single();
+      if (e1) throw e1;
+      const { id, created_at, updated_at, views, sales_count, ...rest } = full as any;
+      const { error } = await supabase.from("products").insert({ ...rest, title: `${rest.title} (cópia)`, is_active: false });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Produto duplicado");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   if (sellerLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -122,8 +152,6 @@ function SellerDashboard({ userId }: { userId: string }) {
 
   if (!seller) return <CreateSellerForm userId={userId} />;
 
-  const revenue = products.reduce((a, p) => a + Number(p.price), 0);
-  const active = products.filter((p) => p.is_active).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -143,72 +171,17 @@ function SellerDashboard({ userId }: { userId: string }) {
 
         <ConnectCard seller={seller} />
 
+        <SellerStats sellerId={seller.id} products={products} />
 
+        <ProductsTable
+          products={products as any}
+          loading={prodLoading}
+          onEdit={(p) => setEditing(p as any)}
+          onDelete={(p) => deleteMut.mutate(p.id)}
+          onToggleActive={(p) => toggleActiveMut.mutate(p as any)}
+          onDuplicate={(p) => duplicateMut.mutate(p as any)}
+        />
 
-        <div className="grid sm:grid-cols-3 gap-4">
-          <StatCard label="Catálogo" value={String(products.length)} />
-          <StatCard label="Ativos" value={String(active)} />
-          <StatCard label="Valor de catálogo" value={formatBRL(revenue)} />
-        </div>
-
-        <div className="bg-card border border-border rounded-xl mt-6 overflow-hidden">
-          <div className="p-5 border-b border-border flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            <h2 className="font-bold text-lg">Meus produtos</h2>
-          </div>
-          {prodLoading ? (
-            <div className="p-10 text-center text-muted-foreground">Carregando...</div>
-          ) : products.length === 0 ? (
-            <div className="p-10 text-center text-muted-foreground">
-              Nenhum produto ainda. Clique em "Novo produto" para começar.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-secondary/40">
-                  <tr className="text-left">
-                    <th className="py-3 px-4 font-semibold">Produto</th>
-                    <th className="py-3 px-4 font-semibold">Categoria</th>
-                    <th className="py-3 px-4 font-semibold">Preço</th>
-                    <th className="py-3 px-4 font-semibold">Estoque</th>
-                    <th className="py-3 px-4 font-semibold">Status</th>
-                    <th className="py-3 px-4 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id} className="border-t border-border">
-                      <td className="py-3 px-4 flex items-center gap-3">
-                        <div className="h-10 w-10 bg-secondary/40 rounded overflow-hidden shrink-0">
-                          {p.image_url && <img src={p.image_url} alt="" className="w-full h-full object-cover" />}
-                        </div>
-                        <span className="font-medium line-clamp-1 max-w-[280px]">{p.title}</span>
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">{p.category_slug}</td>
-                      <td className="py-3 px-4 font-bold">{formatBRL(Number(p.price))}</td>
-                      <td className="py-3 px-4">{p.stock ?? 0}</td>
-                      <td className="py-3 px-4">
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${p.is_active ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                          {p.is_active ? "Ativo" : "Inativo"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="inline-flex gap-1">
-                          <button onClick={() => setEditing(p)} className="p-2 rounded hover:bg-secondary" title="Editar"><Pencil className="h-4 w-4" /></button>
-                          <button
-                            onClick={() => { if (confirm(`Excluir "${p.title}"?`)) deleteMut.mutate(p.id); }}
-                            className="p-2 rounded hover:bg-destructive/10 text-destructive"
-                            title="Excluir"
-                          ><Trash2 className="h-4 w-4" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
 
         <div className="mt-6 text-center">
           <Link to="/" className="text-sm text-primary hover:underline">← Voltar para a loja</Link>
@@ -342,14 +315,6 @@ function ConnectCard({ seller }: { seller: Seller }) {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-5">
-      <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-      <div className="text-2xl font-black mt-1">{value}</div>
-    </div>
-  );
-}
 
 function CreateSellerForm({ userId }: { userId: string }) {
   const qc = useQueryClient();
