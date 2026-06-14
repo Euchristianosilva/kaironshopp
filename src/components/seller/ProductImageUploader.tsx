@@ -51,30 +51,59 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
       const added: UploadedImage[] = [];
       try {
         for (const file of list) {
-          const compressed = await imageCompression(file, {
-            maxSizeMB: MAX_SIZE_MB,
-            maxWidthOrHeight: 1600,
-            useWebWorker: true,
-          });
+          if (file.size > 10 * 1024 * 1024) {
+            toast.error(`"${file.name}": arquivo muito grande (máx 10MB antes da compressão)`);
+            continue;
+          }
+          let compressed: File | Blob = file;
+          try {
+            compressed = await imageCompression(file, {
+              maxSizeMB: MAX_SIZE_MB,
+              maxWidthOrHeight: 1600,
+              useWebWorker: true,
+            });
+          } catch {
+            // se a compressão falhar, segue com o arquivo original
+          }
           const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
           const path = `${sellerId}/${crypto.randomUUID()}.${ext}`;
-          const { error } = await supabase.storage
+          const { error: upErr } = await supabase.storage
             .from("product-images")
-            .upload(path, compressed, { contentType: compressed.type, upsert: false });
-          if (error) throw error;
-          const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+            .upload(path, compressed, { contentType: file.type || "image/jpeg", upsert: true });
+          if (upErr) {
+            const msg = upErr.message?.toLowerCase() ?? "";
+            if (msg.includes("row-level security") || msg.includes("not authorized")) {
+              throw new Error("Permissão negada para enviar imagem. Verifique se a loja está ativa.");
+            }
+            if (msg.includes("bucket") && msg.includes("not found")) {
+              throw new Error('Bucket "product-images" não encontrado.');
+            }
+            if (msg.includes("payload too large") || msg.includes("exceeded")) {
+              throw new Error("Arquivo muito grande.");
+            }
+            throw new Error(upErr.message || "Erro ao enviar imagem.");
+          }
+          // Bucket é privado neste workspace — gera URL assinada de longa duração
+          const { data: signed, error: sErr } = await supabase.storage
+            .from("product-images")
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
+          if (sErr || !signed?.signedUrl) {
+            throw new Error("Imagem enviada, mas não foi possível gerar a URL: " + (sErr?.message ?? ""));
+          }
           added.push({
             id: crypto.randomUUID(),
-            url: data.publicUrl,
+            url: signed.signedUrl,
             storage_path: path,
             is_primary: false,
           });
         }
+        if (added.length === 0) return;
         const next = [...value, ...added];
         if (!next.some((i) => i.is_primary) && next[0]) next[0].is_primary = true;
         onChange(next);
         toast.success(`${added.length} imagem(ns) enviada(s)`);
       } catch (e: any) {
+        console.error("[ProductImageUploader] upload error:", e);
         toast.error(e?.message ?? "Falha no upload");
       } finally {
         setBusy(false);
@@ -82,6 +111,7 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
     },
     [sellerId, value, onChange],
   );
+
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
