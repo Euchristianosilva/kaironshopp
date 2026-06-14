@@ -150,14 +150,17 @@ function ProductPage() {
                 </div>
               </div>
               <button
-                onClick={() => addToCart(product, qty)}
+                onClick={() => { addToCart(product, qty); navigate({ to: "/checkout" }); }}
                 className="w-full h-11 rounded-lg bg-gradient-brand text-primary-foreground font-bold flex items-center justify-center gap-2 hover:opacity-95"
               >
                 <ShoppingCart className="h-4 w-4" /> Comprar agora
               </button>
-              <Link to="/cart" className="block text-center w-full h-11 rounded-lg border-2 border-primary text-primary font-bold leading-[2.5rem] hover:bg-primary/5">
+              <button
+                onClick={() => { addToCart(product, qty); toast.success("Adicionado ao carrinho"); }}
+                className="w-full h-11 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary/5"
+              >
                 Adicionar ao carrinho
-              </Link>
+              </button>
               <button onClick={() => toggleFav(product.id)} className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary">
                 <Heart className={`h-4 w-4 ${isFav ? "fill-primary text-primary" : ""}`} /> {isFav ? "Favoritado" : "Adicionar aos favoritos"}
               </button>
