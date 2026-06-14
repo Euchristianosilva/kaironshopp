@@ -1,64 +1,64 @@
-## Migração para Stripe Connect Express (Marketplace)
+# Painel do Vendedor Profissional — Plano em Fases
 
-Vou implementar em fases para manter o app funcional a cada passo. Antes de começar, preciso confirmar alguns pontos.
+O escopo é muito grande (19 áreas, várias tabelas novas, Storage, gráficos, relatórios, cupons, variações, frete, etc.). Não dá para fazer tudo bem feito em um único turno — vou dividir em **6 fases** que entregam valor incremental, cada uma testável de ponta a ponta. Confirme a fase para eu começar (ou ajuste a ordem).
 
-### Perguntas
+---
 
-1. **Comissão da plataforma**: qual % padrão? (ex: 10%) — vou guardar em uma tabela `platform_settings` configurável depois.
-2. **Webhook secret**: você vai precisar criar um endpoint webhook no painel do Stripe e me passar o `STRIPE_WEBHOOK_SECRET`. Posso te guiar quando chegarmos lá.
-3. **País dos vendedores**: Brasil apenas? (Connect Express no BR tem regras específicas — exige `transfers` capability).
-4. **Anúncios patrocinados**: já existem no app ou é só preparar a separação? (Não vi tabela `ads` — vou apenas garantir que o fluxo de Checkout para anúncios NÃO use `transfer_data`).
+## Fase 1 — Cadastro de produtos profissional (base do resto)
+**Foco:** acabar com URL de imagem e enriquecer o produto.
 
-### Plano de implementação
+- Bucket `product-images` no Storage (público para leitura, RLS de escrita por dono)
+- Componente `ProductImageUploader`: drag-and-drop, múltiplo (até 10), miniaturas, reordenar, escolher principal, remover, compressão client-side (`browser-image-compression`)
+- Tabela nova `product_images` (product_id, url, position, is_primary)
+- Novos campos em `products`: brand, model, sku, barcode, weight_g, height_cm, width_cm, length_cm, color, material, warranty, condition (`new|refurbished|used`), views, sales_count
+- Categorias com subcategorias: tabela `categories` (parent_id self-ref) + seed; seletor em 2 níveis
+- Modal de produto reformulado em abas: Básico · Mídias · Especificações · Estoque · Frete
 
-**Fase 1 — Banco de dados** (migration única)
-- `sellers`: adicionar `stripe_account_id`, `stripe_charges_enabled`, `stripe_payouts_enabled`, `stripe_onboarding_status` (`pending|restricted|active`).
-- `platform_settings`: tabela singleton com `commission_percent` (default 10).
-- `orders`: adicionar `stripe_session_id`, `stripe_payment_intent_id`, `status` (`pending|paid|failed|refunded`).
-- `order_items`: adicionar `seller_id`, `stripe_account_id`, `platform_fee_cents`, `seller_net_cents`, `gross_cents`, `stripe_transfer_id`.
-- `stripe_events`: log de eventos do webhook (idempotência por `event_id`).
-- `payouts`: espelho de `payout.paid` por vendedor.
-- RLS + GRANTs adequados; políticas: vendedor vê apenas seus dados, admin vê tudo via `has_role('admin')`.
+## Fase 2 — Variações + Estoque + Frete
+- Tabela `product_variants` (option1_name/value, option2_name/value, price, stock, sku)
+- UI de matriz de variações (cor × tamanho etc.)
+- Campos de frete no produto: origin_zip, own_delivery, free_shipping, carrier
+- Estoque: min_stock, alerta visual, tabela `stock_movements` com histórico
 
-**Fase 2 — Connect Onboarding** (server fns + UI)
-- `createConnectAccount` (server fn): cria conta Express, salva `stripe_account_id`.
-- `createConnectOnboardingLink`: retorna URL do Account Link.
-- `refreshConnectStatus`: lê conta no Stripe e atualiza status local.
-- UI: card no `/seller` mostrando status + botão "Configurar pagamentos" / "Continuar onboarding".
+## Fase 3 — Dashboard + tabela "Meus Produtos" profissional
+- Dashboard com cards (ativos, pausados, vendidos, pedidos por status, faturamento mês/total, ticket médio, avaliação)
+- Gráficos com `recharts`: vendas por mês, receita, top produtos, pedidos
+- Tabela de produtos com colunas completas, ordenação, busca, paginação
+- Ações: editar, duplicar, pausar/ativar, excluir, visualizar, skeleton loading
 
-**Fase 3 — Checkout com split** (refatorar `checkout.functions.ts`)
-- Agrupar itens do carrinho por `seller_id`.
-- **Restrição**: Stripe Checkout com `payment_intent_data.transfer_data` só aceita **um destino** por sessão. Duas opções:
-  - (A) Bloquear checkout multi-vendedor (mensagem "finalize uma loja por vez").
-  - (B) Criar **uma sessão por vendedor** sequencialmente — UX ruim.
-  - **Recomendo (A)** — padrão de marketplaces (iFood, MercadoLivre fazem o mesmo por loja).
-- Calcular `application_fee_amount` = `gross * commission%`.
-- Criar `order` + `order_items` com status `pending` antes de redirecionar.
-- Bloquear checkout se vendedor não tiver `charges_enabled`.
+## Fase 4 — Pedidos + Clientes
+- Página `/seller/orders` com filtros por status, detalhe do pedido (cliente, itens, endereço, pagamento, frete, rastreio)
+- Ações: marcar como enviado, adicionar código de rastreio, imprimir etiqueta (PDF simples)
+- Página `/seller/customers` agregando pedidos por buyer_id (qtd, total gasto, última compra)
 
-**Fase 4 — Webhooks** (`/api/public/stripe-webhook`)
-- Verificar assinatura com `STRIPE_WEBHOOK_SECRET`.
-- Idempotência via `stripe_events`.
-- Handlers: `checkout.session.completed` → marca order `paid`; `payment_intent.succeeded/failed` → atualiza status; `account.updated` → sincroniza status do vendedor; `transfer.created` → registra `stripe_transfer_id`; `payout.paid` → grava em `payouts`.
+## Fase 5 — Financeiro + Cupons + Promoções + Avaliações
+- Financeiro: aproveita `seller.finance.tsx` existente e expande (extrato, comissões, taxas, solicitar saque via Stripe Connect)
+- Tabela `coupons` (code, type percent/fixed, value, valid_from/to, max_uses, used_count, seller_id)
+- Tabela `promotions` (product_id, promo_price, starts_at, ends_at) + contador regressivo na vitrine
+- Tabela `reviews` (já pode existir) com resposta do vendedor e denúncia
 
-**Fase 5 — Painel financeiro do vendedor** (`/seller/finance`)
-- Saldo disponível/pendente: `stripe.balance.retrieve({ stripeAccount })`.
-- Vendas: query em `order_items` do vendedor.
-- Transferências e payouts: `stripe.transfers.list` + tabela `payouts`.
+## Fase 6 — Relatórios + Configurações da loja + Notificações
+- Relatórios com exportação CSV/Excel (via `xlsx`) e PDF (`jspdf`)
+- Configurações: logo/banner (Storage), redes sociais, políticas, horário (campos novos em `sellers`)
+- Tabela `notifications` (user_id, type, payload, read_at) + sino no header com realtime
 
-**Fase 6 — Painel master** (`/admin/finance`)
-- Comissão total (soma `platform_fee_cents`), vendas totais, repasses, histórico.
-- Editor do `commission_percent`.
+---
 
-**Fase 7 — Anúncios patrocinados**
-- Documentar/garantir que `createAdsCheckout` (quando existir) NÃO use `transfer_data` nem `application_fee_amount` — fica como checkout direto na conta da plataforma.
+## Detalhes técnicos transversais
 
-### Detalhes técnicos
+- **Storage:** buckets `product-images` e `store-assets`, ambos públicos para leitura; RLS de escrita exige `owner_id = auth.uid()` via path prefix `{seller_id}/...`
+- **RLS:** todas as novas tabelas com policies `seller_id IN (select id from sellers where owner_id = auth.uid())`; grants para `authenticated` e `service_role`
+- **Tipos:** após cada migration o `src/integrations/supabase/types.ts` é regenerado — só então mexo no código que consome o schema
+- **Compatibilidade:** mantém o checkout/Stripe Connect já implementado; variações entram como linha extra em `order_items.variant_id`
+- **Não-mock:** zero dados fake; tudo persistido
 
-- Stripe SDK já instalado.
-- Server fns em `src/lib/*.functions.ts` (connect, checkout, finance).
-- Webhook em `src/routes/api/public/stripe-webhook.ts` com `request.text()` para preservar o raw body.
-- Todos os valores monetários em **centavos** (`integer`) no banco para evitar erro de float.
-- `process.env.STRIPE_SECRET_KEY` (já configurado) + novo `STRIPE_WEBHOOK_SECRET`.
+---
 
-Confirma as 4 perguntas acima (especialmente comissão % e a decisão A/B do checkout multi-vendedor) e eu começo pela Fase 1?
+## Como prosseguir
+
+Responda com **uma** das opções:
+
+1. **"fase 1"** — começo agora pelo cadastro com upload de imagens (recomendado, destrava o resto)
+2. **"tudo em ordem"** — executo fase 1 agora e sigo automaticamente para as próximas conforme você aprova
+3. **Ordem customizada** — ex: "comece por pedidos e dashboard"
+4. **Ajustes no plano** — diga o que mudar

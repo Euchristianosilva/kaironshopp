@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_id: string | null
+          position: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_id?: string | null
+          position?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_id?: string | null
+          position?: number
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -205,63 +246,146 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          position: number
+          product_id: string
+          storage_path: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          position?: number
+          product_id: string
+          storage_path?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          position?: number
+          product_id?: string
+          storage_path?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
+          barcode: string | null
+          brand: string | null
+          category_id: string | null
           category_slug: string
+          color: string | null
+          condition: Database["public"]["Enums"]["product_condition"]
           created_at: string
           description: string | null
           free_shipping: boolean | null
+          height_cm: number | null
           id: string
           image_url: string | null
           images: Json | null
           is_active: boolean | null
           is_featured: boolean | null
+          length_cm: number | null
+          material: string | null
+          model: string | null
           original_price: number | null
           price: number
           rating: number | null
           reviews_count: number | null
+          sales_count: number
           seller_id: string | null
+          sku: string | null
           stock: number | null
           title: string
           updated_at: string
+          views: number
+          warranty: string | null
+          weight_g: number | null
+          width_cm: number | null
         }
         Insert: {
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
           category_slug: string
+          color?: string | null
+          condition?: Database["public"]["Enums"]["product_condition"]
           created_at?: string
           description?: string | null
           free_shipping?: boolean | null
+          height_cm?: number | null
           id?: string
           image_url?: string | null
           images?: Json | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          length_cm?: number | null
+          material?: string | null
+          model?: string | null
           original_price?: number | null
           price: number
           rating?: number | null
           reviews_count?: number | null
+          sales_count?: number
           seller_id?: string | null
+          sku?: string | null
           stock?: number | null
           title: string
           updated_at?: string
+          views?: number
+          warranty?: string | null
+          weight_g?: number | null
+          width_cm?: number | null
         }
         Update: {
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
           category_slug?: string
+          color?: string | null
+          condition?: Database["public"]["Enums"]["product_condition"]
           created_at?: string
           description?: string | null
           free_shipping?: boolean | null
+          height_cm?: number | null
           id?: string
           image_url?: string | null
           images?: Json | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          length_cm?: number | null
+          material?: string | null
+          model?: string | null
           original_price?: number | null
           price?: number
           rating?: number | null
           reviews_count?: number | null
+          sales_count?: number
           seller_id?: string | null
+          sku?: string | null
           stock?: number | null
           title?: string
           updated_at?: string
+          views?: number
+          warranty?: string | null
+          weight_g?: number | null
+          width_cm?: number | null
         }
         Relationships: [
           {
@@ -402,6 +526,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "seller" | "user"
+      product_condition: "new" | "refurbished" | "used"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -530,6 +655,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "seller", "user"],
+      product_condition: ["new", "refurbished", "used"],
     },
   },
 } as const

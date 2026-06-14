@@ -10,6 +10,8 @@ import { Plus, Package, Pencil, Trash2, Store, X, CreditCard, CheckCircle2, Aler
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
+import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
+import { CategorySelect } from "@/components/seller/CategorySelect";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
@@ -403,38 +405,107 @@ function CreateSellerForm({ userId }: { userId: string }) {
 
 function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; product: ProductRow | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({
+  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "shipping">("basic");
+  const [form, setForm] = useState<any>({
     title: product?.title ?? "",
     description: product?.description ?? "",
     price: product?.price ? String(product.price) : "",
     original_price: product?.original_price ? String(product.original_price) : "",
-    category_slug: product?.category_slug ?? categories[0].slug,
-    image_url: product?.image_url ?? "",
+    category_id: (product as any)?.category_id ?? null,
+    category_slug: product?.category_slug ?? "eletronicos",
     stock: product?.stock ?? 10,
     free_shipping: product?.free_shipping ?? false,
     is_active: product?.is_active ?? true,
+    brand: (product as any)?.brand ?? "",
+    model: (product as any)?.model ?? "",
+    sku: (product as any)?.sku ?? "",
+    barcode: (product as any)?.barcode ?? "",
+    weight_g: (product as any)?.weight_g ?? "",
+    height_cm: (product as any)?.height_cm ?? "",
+    width_cm: (product as any)?.width_cm ?? "",
+    length_cm: (product as any)?.length_cm ?? "",
+    color: (product as any)?.color ?? "",
+    material: (product as any)?.material ?? "",
+    warranty: (product as any)?.warranty ?? "",
+    condition: (product as any)?.condition ?? "new",
   });
+
+  // load existing images when editing
+  const { data: existingImages = [] } = useQuery({
+    queryKey: ["product-images", product?.id],
+    enabled: !!product?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_images")
+        .select("id,url,storage_path,is_primary")
+        .eq("product_id", product!.id)
+        .order("position");
+      if (error) throw error;
+      return (data ?? []).map((d: any) => ({
+        id: d.id,
+        url: d.url,
+        storage_path: d.storage_path ?? "",
+        is_primary: !!d.is_primary,
+      }));
+    },
+  });
+
+  const [images, setImages] = useState<any[]>([]);
+  useEffect(() => { setImages(existingImages); }, [existingImages]);
 
   const saveMut = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const primary = images.find((i) => i.is_primary) ?? images[0];
+      const payload: any = {
         seller_id: sellerId,
         title: form.title,
         description: form.description || null,
         price: Number(form.price),
         original_price: form.original_price ? Number(form.original_price) : null,
         category_slug: form.category_slug,
-        image_url: form.image_url || null,
+        category_id: form.category_id,
+        image_url: primary?.url ?? null,
         stock: Number(form.stock),
         free_shipping: form.free_shipping,
         is_active: form.is_active,
+        brand: form.brand || null,
+        model: form.model || null,
+        sku: form.sku || null,
+        barcode: form.barcode || null,
+        weight_g: form.weight_g ? Number(form.weight_g) : null,
+        height_cm: form.height_cm ? Number(form.height_cm) : null,
+        width_cm: form.width_cm ? Number(form.width_cm) : null,
+        length_cm: form.length_cm ? Number(form.length_cm) : null,
+        color: form.color || null,
+        material: form.material || null,
+        warranty: form.warranty || null,
+        condition: form.condition,
       };
+
+      let productId = product?.id;
       if (product) {
         const { error } = await supabase.from("products").update(payload).eq("id", product.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("products").insert(payload);
+        const { data, error } = await supabase.from("products").insert(payload).select("id").single();
         if (error) throw error;
+        productId = data!.id;
+      }
+
+      // sync images: delete existing rows for this product (storage files stay until removed via UI), then insert current
+      if (productId) {
+        await supabase.from("product_images").delete().eq("product_id", productId);
+        if (images.length) {
+          const rows = images.map((img, idx) => ({
+            product_id: productId!,
+            url: img.url,
+            storage_path: img.storage_path,
+            position: idx,
+            is_primary: img.is_primary,
+          }));
+          const { error } = await supabase.from("product_images").insert(rows);
+          if (error) throw error;
+        }
       }
     },
     onSuccess: () => {
@@ -446,53 +517,118 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     onError: (e: any) => toast.error(e.message),
   });
 
+  const tabs: { id: typeof tab; label: string }[] = [
+    { id: "basic", label: "Básico" },
+    { id: "media", label: "Mídias" },
+    { id: "specs", label: "Especificações" },
+    { id: "stock", label: "Estoque" },
+    { id: "shipping", label: "Frete" },
+  ];
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 grid place-items-center p-4 overflow-y-auto" onClick={onClose}>
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }}
-        className="bg-card border border-border rounded-2xl w-full max-w-2xl p-6 shadow-brand my-8"
+        className="bg-card border border-border rounded-2xl w-full max-w-3xl p-6 shadow-brand my-8"
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-black">{product ? "Editar produto" : "Novo produto"}</h2>
           <button type="button" onClick={onClose} className="p-2 rounded hover:bg-secondary"><X className="h-4 w-4" /></button>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field label="Título" className="sm:col-span-2">
-            <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" />
-          </Field>
-          <Field label="Categoria">
-            <select value={form.category_slug} onChange={(e) => setForm({ ...form, category_slug: e.target.value })} className="input">
-              {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-            </select>
-          </Field>
-          <Field label="URL da imagem">
-            <input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="input" />
-          </Field>
-          <Field label="Preço (R$)">
-            <input required type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="input" />
-          </Field>
-          <Field label="Preço original (riscado)">
-            <input type="number" min="0" step="0.01" value={form.original_price} onChange={(e) => setForm({ ...form, original_price: e.target.value })} className="input" />
-          </Field>
-          <Field label="Estoque">
-            <input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="input" />
-          </Field>
-          <Field label="Descrição" className="sm:col-span-2">
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} className="input" />
-          </Field>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.free_shipping} onChange={(e) => setForm({ ...form, free_shipping: e.target.checked })} />
-            Frete grátis
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-            Ativo (visível na loja)
-          </label>
+        <div className="flex gap-1 border-b border-border mb-4 overflow-x-auto">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`px-4 h-10 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px ${
+                tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
+        {tab === "basic" && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Título" className="sm:col-span-2">
+              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" />
+            </Field>
+            <Field label="Categoria" className="sm:col-span-2">
+              <CategorySelect
+                value={{ categoryId: form.category_id, categorySlug: form.category_slug }}
+                onChange={(v) => setForm({ ...form, category_id: v.categoryId, category_slug: v.categorySlug })}
+              />
+            </Field>
+            <Field label="Preço (R$)">
+              <input required type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="input" />
+            </Field>
+            <Field label="Preço original (riscado)">
+              <input type="number" min="0" step="0.01" value={form.original_price} onChange={(e) => setForm({ ...form, original_price: e.target.value })} className="input" />
+            </Field>
+            <Field label="Condição">
+              <select value={form.condition} onChange={(e) => setForm({ ...form, condition: e.target.value })} className="input">
+                <option value="new">Novo</option>
+                <option value="refurbished">Seminovo</option>
+                <option value="used">Usado</option>
+              </select>
+            </Field>
+            <Field label="Garantia">
+              <input value={form.warranty} onChange={(e) => setForm({ ...form, warranty: e.target.value })} placeholder="ex: 12 meses" className="input" />
+            </Field>
+            <Field label="Descrição" className="sm:col-span-2">
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} className="input" />
+            </Field>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+              Ativo (visível na loja)
+            </label>
+          </div>
+        )}
+
+        {tab === "media" && (
+          <ProductImageUploader sellerId={sellerId} value={images} onChange={setImages} />
+        )}
+
+        {tab === "specs" && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Marca"><input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="input" /></Field>
+            <Field label="Modelo"><input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="input" /></Field>
+            <Field label="SKU"><input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="input" /></Field>
+            <Field label="Código de barras"><input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} className="input" /></Field>
+            <Field label="Cor"><input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="input" /></Field>
+            <Field label="Material"><input value={form.material} onChange={(e) => setForm({ ...form, material: e.target.value })} className="input" /></Field>
+          </div>
+        )}
+
+        {tab === "stock" && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Estoque atual">
+              <input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="input" />
+            </Field>
+            <p className="sm:col-span-2 text-xs text-muted-foreground">
+              Variações de produto, estoque mínimo e histórico de movimentação chegam na próxima fase.
+            </p>
+          </div>
+        )}
+
+        {tab === "shipping" && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Peso (g)"><input type="number" min="0" value={form.weight_g} onChange={(e) => setForm({ ...form, weight_g: e.target.value })} className="input" /></Field>
+            <Field label="Altura (cm)"><input type="number" min="0" step="0.1" value={form.height_cm} onChange={(e) => setForm({ ...form, height_cm: e.target.value })} className="input" /></Field>
+            <Field label="Largura (cm)"><input type="number" min="0" step="0.1" value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} className="input" /></Field>
+            <Field label="Comprimento (cm)"><input type="number" min="0" step="0.1" value={form.length_cm} onChange={(e) => setForm({ ...form, length_cm: e.target.value })} className="input" /></Field>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={form.free_shipping} onChange={(e) => setForm({ ...form, free_shipping: e.target.checked })} />
+              Frete grátis
+            </label>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">
           <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg border border-border font-semibold hover:bg-secondary">Cancelar</button>
           <button disabled={saveMut.isPending} className="h-10 px-6 rounded-lg bg-gradient-brand text-primary-foreground font-bold hover:opacity-95 disabled:opacity-60">
             {saveMut.isPending ? "Salvando..." : "Salvar"}
