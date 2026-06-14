@@ -4,6 +4,43 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type CartItem = { productId: string; qty: number };
 
+export const verifyStripeCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { session_id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error("STRIPE_SECRET_KEY não configurada");
+    const stripe = new Stripe(key);
+    const session = await stripe.checkout.sessions.retrieve(data.session_id);
+    const orderId = (session.metadata as any)?.order_id as string | undefined;
+    if (!orderId) throw new Error("Pedido não encontrado nesta sessão");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("id, buyer_id, payment_status, status, total")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (!order || order.buyer_id !== context.userId) throw new Error("Pedido não encontrado");
+
+    if (session.payment_status === "paid" && order.payment_status !== "paid") {
+      await supabaseAdmin
+        .from("orders")
+        .update({
+          payment_status: "paid",
+          status: "paid",
+          stripe_payment_intent_id: typeof session.payment_intent === "string" ? session.payment_intent : null,
+        })
+        .eq("id", orderId);
+    }
+    return {
+      orderId,
+      total: order.total,
+      paid: session.payment_status === "paid" || order.payment_status === "paid",
+    };
+  });
+
+
 export const createStripeCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { items: CartItem[]; origin: string }) => input)
@@ -134,7 +171,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         metadata: { order_id: order.id, seller_id: sellerId },
       },
       metadata: { order_id: order.id, seller_id: sellerId, user_id: userId },
-      success_url: `${data.origin}/account?payment=success&order=${order.id}`,
+      success_url: `${data.origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${data.origin}/checkout?payment=canceled`,
     });
 
