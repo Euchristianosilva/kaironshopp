@@ -17,8 +17,32 @@ export const Route = createFileRoute("/checkout")({
 function Checkout() {
   const cart = useStore((s) => s.cart);
   const clear = useStore((s) => s.clearCart);
-  const [method, setMethod] = useState<"pix" | "credit" | "boleto">("pix");
+  const [method, setMethod] = useState<"pix" | "credit" | "boleto">("credit");
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const checkout = useServerFn(createStripeCheckout);
+
+  const handlePay = async () => {
+    if (cart.length === 0) return;
+    if (method !== "credit") {
+      clear();
+      setDone(true);
+      return;
+    }
+    try {
+      setLoading(true);
+      const { url } = await checkout({
+        data: {
+          origin: window.location.origin,
+          items: cart.map((i) => ({ name: i.product.name, image: i.product.image, price: i.product.price, qty: i.qty })),
+        },
+      });
+      if (url) window.location.href = url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao iniciar pagamento");
+      setLoading(false);
+    }
+  };
 
   const subtotal = cart.reduce((a, i) => a + i.product.price * i.qty, 0);
   const shipping = subtotal > 199 ? 0 : 24.9;
