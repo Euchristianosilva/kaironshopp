@@ -216,7 +216,7 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         width_cm: form.width_cm ? Number(form.width_cm) : null,
         length_cm: form.length_cm ? Number(form.length_cm) : null,
         color: form.color || null, material: form.material || null, warranty: form.warranty || null,
-        condition: form.condition, origin_zip: form.origin_zip || null,
+        condition: form.condition,
         own_delivery: form.own_delivery, carrier: form.carrier || null,
         has_variants: variants.length > 0,
       };
