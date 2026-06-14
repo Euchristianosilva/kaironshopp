@@ -75,16 +75,6 @@ const SellerFinanceRoute = SellerFinanceRouteImport.update({
   path: '/finance',
   getParentRoute: () => SellerRoute,
 } as any)
-const SellerOrdersRoute = SellerOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => SellerRoute,
-} as any)
-const SellerCustomersRoute = SellerCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => SellerRoute,
-} as any)
 const SellerCustomersRoute = SellerCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
