@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/use-auth";
 import { getStoreSettings, updateStoreSettings } from "@/lib/store-settings.functions";
 import { Store, ExternalLink } from "lucide-react";
+import { SingleImageUpload } from "@/components/seller/SingleImageUpload";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/profile")({
@@ -64,14 +65,23 @@ function Page() {
               <label className="text-sm font-semibold">Nome da loja</label>
               <input value={form.name ?? ""} onChange={set("name")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
             </div>
-            <div>
-              <label className="text-sm font-semibold">Logo (URL)</label>
-              <input value={form.logo_url ?? ""} onChange={set("logo_url")} placeholder="https://..." className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
-            </div>
-            <div>
-              <label className="text-sm font-semibold">Banner (URL)</label>
-              <input value={form.banner_url ?? ""} onChange={set("banner_url")} placeholder="https://..." className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
-            </div>
+            <div />
+            <SingleImageUpload
+              sellerId={form.id}
+              folder="branding/logo"
+              label="Logo da loja"
+              aspect="square"
+              value={form.logo_url}
+              onChange={(url) => setForm({ ...form, logo_url: url })}
+            />
+            <SingleImageUpload
+              sellerId={form.id}
+              folder="branding/banner"
+              label="Banner da loja"
+              aspect="banner"
+              value={form.banner_url}
+              onChange={(url) => setForm({ ...form, banner_url: url })}
+            />
             <div>
               <label className="text-sm font-semibold">E-mail de contato</label>
               <input type="email" value={form.email ?? ""} onChange={set("email")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />

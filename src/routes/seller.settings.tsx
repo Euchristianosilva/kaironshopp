@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Save } from "lucide-react";
+import { SingleImageUpload } from "@/components/seller/SingleImageUpload";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/settings")({
