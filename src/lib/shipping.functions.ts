@@ -137,12 +137,26 @@ export const calculateShipping = createServerFn({ method: "POST" })
           });
           if (!res.ok) {
             const txt = await res.text();
+            console.error("[melhor-envio] calculate failed", {
+              status: res.status,
+              env: (process.env.MELHOR_ENVIO_ENV ?? "sandbox").toLowerCase(),
+              body: txt.slice(0, 500),
+            });
+            let friendly: string;
+            if (res.status === 401 || res.status === 403) {
+              friendly =
+                "Não foi possível calcular o frete agora. Tente novamente em instantes.";
+            } else if (res.status === 422) {
+              friendly = "Não foi possível calcular o frete para este endereço.";
+            } else {
+              friendly = "Frete temporariamente indisponível. Tente novamente.";
+            }
             quotes.push({
               seller_id: sellerId,
               seller_name: seller?.name ?? "Loja",
               origin_zip: fromZip,
               options: [],
-              error: `Falha Melhor Envio (${res.status}): ${txt.slice(0, 200)}`,
+              error: friendly,
             });
             continue;
           }
