@@ -19,8 +19,6 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
-import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
-import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
@@ -75,6 +73,16 @@ const SellerOrdersRoute = SellerOrdersRouteImport.update({
 const SellerFinanceRoute = SellerFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerOrdersRoute = SellerOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerCustomersRoute = SellerCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => SellerRoute,
 } as any)
 const SellerCustomersRoute = SellerCustomersRouteImport.update({
