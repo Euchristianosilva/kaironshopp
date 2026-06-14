@@ -1,12 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { formatBRL } from "@/lib/mock-data";
 import { fetchProductById, fetchProducts } from "@/lib/products";
 import { useStore } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
+import { getOrCreateConversation } from "@/lib/chat.functions";
+import { toast } from "sonner";
 import { Star, Heart, ShoppingCart, Truck, ShieldCheck, RotateCcw, Store, MessageCircle, Minus, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/product/$id")({
@@ -22,6 +26,20 @@ function ProductPage() {
   const addToCart = useStore((s) => s.addToCart);
   const toggleFav = useStore((s) => s.toggleFavorite);
   const isFav = useStore((s) => s.favorites.includes(id));
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const startChat = useServerFn(getOrCreateConversation);
+  const [chatLoading, setChatLoading] = useState(false);
+  const openChat = async (sellerId: string | null | undefined) => {
+    if (!user) { navigate({ to: "/auth" }); return; }
+    if (!sellerId) { toast.error("Vendedor indisponível"); return; }
+    setChatLoading(true);
+    try {
+      const { id: convId } = await startChat({ data: { seller_id: sellerId, product_id: id } });
+      navigate({ to: "/messages", search: { c: convId } });
+    } catch (e: any) { toast.error(e.message); }
+    finally { setChatLoading(false); }
+  };
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
@@ -143,8 +161,12 @@ function ProductPage() {
               <button onClick={() => toggleFav(product.id)} className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary">
                 <Heart className={`h-4 w-4 ${isFav ? "fill-primary text-primary" : ""}`} /> {isFav ? "Favoritado" : "Adicionar aos favoritos"}
               </button>
-              <button className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary border border-border">
-                <MessageCircle className="h-4 w-4" /> Falar com vendedor
+              <button
+                onClick={() => openChat(product.sellerId)}
+                disabled={chatLoading}
+                className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary border border-border disabled:opacity-50"
+              >
+                <MessageCircle className="h-4 w-4" /> {chatLoading ? "Abrindo..." : "Falar com vendedor"}
               </button>
             </div>
           </aside>
