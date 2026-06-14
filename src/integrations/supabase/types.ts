@@ -111,6 +111,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -899,6 +935,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "seller" | "user"
+      notification_type:
+        | "new_order"
+        | "payment_paid"
+        | "payment_failed"
+        | "order_shipped"
+        | "order_delivered"
+        | "new_review"
+        | "low_stock"
+        | "payout_paid"
+        | "generic"
       product_condition: "new" | "refurbished" | "used"
     }
     CompositeTypes: {
@@ -1028,6 +1074,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "seller", "user"],
+      notification_type: [
+        "new_order",
+        "payment_paid",
+        "payment_failed",
+        "order_shipped",
+        "order_delivered",
+        "new_review",
+        "low_stock",
+        "payout_paid",
+        "generic",
+      ],
       product_condition: ["new", "refurbished", "used"],
     },
   },
