@@ -55,6 +55,62 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          id: string
+          max_uses: number | null
+          min_purchase_cents: number
+          seller_id: string
+          updated_at: string
+          uses_count: number
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type: string
+          discount_value: number
+          id?: string
+          max_uses?: number | null
+          min_purchase_cents?: number
+          seller_id: string
+          updated_at?: string
+          uses_count?: number
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          max_uses?: number | null
+          min_purchase_cents?: number
+          seller_id?: string
+          updated_at?: string
+          uses_count?: number
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -538,6 +594,114 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          created_at: string
+          discount_percent: number
+          ends_at: string
+          id: string
+          name: string
+          product_id: string
+          seller_id: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          discount_percent: number
+          ends_at: string
+          id?: string
+          name: string
+          product_id: string
+          seller_id: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          discount_percent?: number
+          ends_at?: string
+          id?: string
+          name?: string
+          product_id?: string
+          seller_id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          buyer_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          seller_id: string
+          seller_replied_at: string | null
+          seller_reply: string | null
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          seller_id: string
+          seller_replied_at?: string | null
+          seller_reply?: string | null
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          seller_id?: string
+          seller_replied_at?: string | null
+          seller_reply?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sellers: {
         Row: {
