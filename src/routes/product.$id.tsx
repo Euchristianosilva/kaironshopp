@@ -31,14 +31,18 @@ function ProductPage() {
   const startChat = useServerFn(getOrCreateConversation);
   const [chatLoading, setChatLoading] = useState(false);
   const openChat = async (sellerId: string | null | undefined) => {
+    if (chatLoading) return;
     if (!user) { navigate({ to: "/auth" }); return; }
     if (!sellerId) { toast.error("Vendedor indisponível"); return; }
     setChatLoading(true);
     try {
       const { id: convId } = await startChat({ data: { seller_id: sellerId, product_id: id } });
-      navigate({ to: "/messages", search: { c: convId } });
-    } catch (e: any) { toast.error(e.message); }
-    finally { setChatLoading(false); }
+      await navigate({ to: "/messages", search: { c: convId } });
+    } catch (e: any) {
+      console.error("openChat failed", e);
+      toast.error(e?.message ?? "Não foi possível abrir o chat");
+      setChatLoading(false);
+    }
   };
 
   const { data: product, isLoading } = useQuery({
