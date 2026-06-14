@@ -66,46 +66,58 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
       });
       if (list.length === 0) return;
 
-      // criar previews locais imediatos
-      const previews: PendingImage[] = list.map((f) => ({
-        id: crypto.randomUUID(),
-        previewUrl: URL.createObjectURL(f),
-        fileName: f.name,
-      }));
-      setPending((p) => [...p, ...previews]);
+      const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
+        Promise.race([
+          p,
+          new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`timeout: ${label}`)), ms)),
+        ]);
 
       const added: UploadedImage[] = [];
-      try {
-        for (let i = 0; i < list.length; i++) {
-          const file = list[i];
-          const pendingItem = previews[i];
+
+      for (const file of list) {
+        const pendingItem: PendingImage = {
+          id: crypto.randomUUID(),
+          previewUrl: URL.createObjectURL(file),
+          fileName: file.name,
+        };
+        setPending((p) => [...p, pendingItem]);
+
+        try {
           if (file.size > MAX_SIZE_MB * 1024 * 1024) {
             toast.error(`"${file.name}": máximo ${MAX_SIZE_MB}MB`);
-            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
-            URL.revokeObjectURL(pendingItem.previewUrl);
             continue;
           }
 
           let toUpload: File | Blob = file;
           let contentType = file.type || "image/jpeg";
+          // Compressão best-effort com timeout; sem web worker (evita travamentos em dev/preview)
           try {
-            const compressed = await imageCompression(file, {
-              maxSizeMB: 1.5,
-              maxWidthOrHeight: 1920,
-              useWebWorker: true,
-              fileType: file.type,
-            });
+            const compressed = await withTimeout(
+              imageCompression(file, {
+                maxSizeMB: 1.5,
+                maxWidthOrHeight: 1920,
+                useWebWorker: false,
+                fileType: file.type,
+              }),
+              15000,
+              "compressão",
+            );
             toUpload = compressed;
             contentType = compressed.type || contentType;
           } catch (err) {
-            console.warn("[ProductImageUploader] compression failed, uploading original:", err);
+            console.warn("[ProductImageUploader] compressão ignorada:", err);
           }
 
           const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
           const path = `${sellerId}/${crypto.randomUUID()}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from("product-images")
-            .upload(path, toUpload, { contentType, upsert: true, cacheControl: "31536000" });
+
+          const { error: upErr } = await withTimeout(
+            supabase.storage
+              .from("product-images")
+              .upload(path, toUpload, { contentType, upsert: true, cacheControl: "31536000" }),
+            60000,
+            "upload",
+          );
 
           if (upErr) {
             console.error("[ProductImageUploader] upload error:", upErr);
@@ -119,20 +131,18 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
             } else {
               toast.error(`"${file.name}": ${upErr.message || "falha no upload"}`);
             }
-            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
-            URL.revokeObjectURL(pendingItem.previewUrl);
             continue;
           }
 
-          const { data: signed, error: sErr } = await supabase.storage
-            .from("product-images")
-            .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+          const { data: signed, error: sErr } = await withTimeout(
+            supabase.storage.from("product-images").createSignedUrl(path, 60 * 60 * 24 * 365 * 10),
+            15000,
+            "signed url",
+          );
 
           if (sErr || !signed?.signedUrl) {
             console.error("[ProductImageUploader] signed URL error:", sErr);
             toast.error(`"${file.name}": imagem enviada mas URL não gerada`);
-            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
-            URL.revokeObjectURL(pendingItem.previewUrl);
             continue;
           }
 
@@ -142,26 +152,21 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
             storage_path: path,
             is_primary: false,
           });
+        } catch (e: any) {
+          console.error("[ProductImageUploader] falha:", e);
+          toast.error(`"${file.name}": ${e?.message ?? "falha no upload"}`);
+        } finally {
+          // Sempre limpa o preview pendente (sucesso, erro ou timeout)
           setPending((p) => p.filter((x) => x.id !== pendingItem.id));
           URL.revokeObjectURL(pendingItem.previewUrl);
         }
+      }
 
-        if (added.length > 0) {
-          const next = [...value, ...added];
-          if (!next.some((i) => i.is_primary) && next[0]) next[0].is_primary = true;
-          onChange(next);
-          toast.success(`${added.length} imagem(ns) enviada(s)`);
-        }
-      } catch (e: any) {
-        console.error("[ProductImageUploader] unexpected:", e);
-        toast.error(e?.message ?? "Falha no upload");
-        // limpar previews restantes
-        setPending((p) => {
-          const ids = previews.map((x) => x.id);
-          const remaining = p.filter((x) => !ids.includes(x.id));
-          previews.forEach((x) => URL.revokeObjectURL(x.previewUrl));
-          return remaining;
-        });
+      if (added.length > 0) {
+        const next = [...value, ...added];
+        if (!next.some((i) => i.is_primary) && next[0]) next[0].is_primary = true;
+        onChange(next);
+        toast.success(`${added.length} imagem(ns) enviada(s)`);
       }
     },
     [sellerId, value, pending.length, onChange],
