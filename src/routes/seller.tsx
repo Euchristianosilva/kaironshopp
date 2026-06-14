@@ -6,7 +6,7 @@ import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
-import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet } from "lucide-react";
+import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Package, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
