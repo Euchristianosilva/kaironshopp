@@ -1,72 +1,66 @@
-## Visão geral
+## Contexto
 
-Uma única conta Melhor Envio (configurada pelo admin) atende todos os vendedores. Cada vendedor informa apenas o endereço de coleta; cada produto já tem peso/dimensões. O sistema chama a API do Melhor Envio para calcular o frete em tempo real no carrinho/checkout, agrupado por vendedor.
+A mensagem "Não foi possível calcular o frete agora" aparece quando a API do Melhor Envio responde **401/403**. O código da integração em `src/lib/shipping.functions.ts` já está correto:
 
-## Fase 1 — Banco de dados
+- Endpoint certo: `POST /api/v2/me/shipment/calculate`
+- Header `Authorization: Bearer <token>` + `User-Agent` (obrigatório pela ME)
+- `from.postal_code`, `to.postal_code`, dimensões e peso em kg
+- Cache, agrupamento por vendedor, validação de CEP de origem e dimensões
 
-Adicionar à tabela `sellers`:
-- `origin_zip` (text), `origin_city` (text), `origin_state` (char(2)), `origin_address` (text), `origin_number` (text), `origin_complement` (text), `origin_district` (text)
+**Causa real do erro 401/403:** o token em `MELHOR_ENVIO_TOKEN` está inválido, expirado, sem os escopos certos, ou em ambiente diferente do configurado em `MELHOR_ENVIO_ENV`. Não é problema de OAuth nem de Client ID/Secret.
 
-Tabela `products` já tem `weight_g`, `height_cm`, `width_cm`, `length_cm` — apenas tornar visível no formulário e validar como obrigatórios para venda.
+## Por que NÃO implementar OAuth completo agora
 
-Tabela nova `shipping_quotes_cache` (opcional, p/ economizar chamadas):
-- `cache_key` (hash de origem+destino+itens), `payload` (jsonb), `expires_at` (timestamptz)
+OAuth (Client ID + Secret + Refresh Token + Callback) só faz sentido quando **cada vendedor conecta a própria conta Melhor Envio**. Hoje a plataforma usa **um único token de plataforma** (modelo correto para marketplace que cobra/envia em nome próprio). Trocar para OAuth multi-conta é um projeto de dias e não resolve o erro atual — é apenas um caminho diferente para obter o mesmo `access_token`.
 
-## Fase 2 — Secrets e configuração
+Mantemos o **Personal Access Token** (modelo single-tenant) e vamos:
+1. Dar ao admin uma tela para ver o status e disparar diagnóstico
+2. Logar erros com detalhes (status, endpoint, payload, resposta)
+3. Validar dimensões/peso/CEP antes de enviar
 
-- Pedir ao admin: `MELHOR_ENVIO_TOKEN` (token de API), `MELHOR_ENVIO_ENV` (`sandbox` ou `production`).
-- Base URL: `https://sandbox.melhorenvio.com.br` ou `https://www.melhorenvio.com.br`.
-- Endpoint usado: `POST /api/v2/me/shipment/calculate`.
+## O que vou construir
 
-## Fase 3 — Server function de cálculo
+### 1. Server fns de diagnóstico (`src/lib/shipping-diag.functions.ts`)
+- `pingMelhorEnvio()` — chama `GET /api/v2/me` (endpoint leve que valida o token). Retorna `{ ok, status, env, user?, error? }`.
+- `getShippingDiagnostics()` — retorna último erro armazenado, última cotação, ambiente atual, presença do token (sem expor valor).
+- Ambas com `requireSupabaseAuth` + verificação `has_role(_, 'admin')`.
 
-`src/lib/shipping.functions.ts` → `calculateShipping({ destinationZip, items })`:
-1. Agrupa itens por `seller_id`.
-2. Para cada vendedor: valida origem cadastrada e que todos os produtos têm peso+dimensões. Monta payload Melhor Envio (from.postal_code, to.postal_code, products[]).
-3. Chama API com `Authorization: Bearer ${MELHOR_ENVIO_TOKEN}`.
-4. Retorna por vendedor: lista de `{ service_id, name, company, price, delivery_time, error? }`, filtrando opções com erro.
-5. Cache em memória/DB curto (5–10min) por `(zip-origem, zip-destino, hash itens)`.
+### 2. Persistência de diagnóstico (migration)
+Tabela `shipping_diagnostics` com 1 linha (singleton):
+- `last_success_at`, `last_error_at`, `last_error_status`, `last_error_endpoint`, `last_error_body`, `last_request_payload`, `last_env`
+- RLS: apenas admin lê; `service_role` grava
+- `shipping.functions.ts` passa a gravar erro/sucesso aqui
 
-## Fase 4 — UI vendedor
+### 3. Logs detalhados em `shipping.functions.ts`
+Já loga `status/env/body`. Vou adicionar: endpoint usado, payload enviado (sem dados sensíveis), e gravar no `shipping_diagnostics`.
 
-- `seller.profile.tsx` / nova seção "Endereço de coleta": CEP (máscara), busca ViaCEP para autocompletar cidade/estado/logradouro/bairro, número, complemento. Salva em `sellers`.
-- Formulário de produto (`seller.products.tsx`): tornar campos peso/dimensões obrigatórios e visíveis, com validação Zod.
-- Banner de alerta no painel se origem ou medidas estiverem faltando.
+### 4. Tela admin `/admin/shipping`
+- Cartão "Status da Integração": ambiente, token presente, último sucesso, último erro
+- Botão **Testar Conexão** → chama `pingMelhorEnvio()`
+- Tabela com último payload enviado + resposta da API
+- Instruções de como gerar/renovar o token (link para painel ME, escopos necessários)
+- Campo informativo do Webhook URL: `https://kaironshopp.lovable.app/api/public/melhor-envio/webhook` (somente leitura, com botão copiar)
 
-## Fase 5 — UI carrinho/checkout
+Os valores `MELHOR_ENVIO_TOKEN` e `MELHOR_ENVIO_ENV` continuam em **Secrets** (não em formulário do app) — é a forma segura no Lovable Cloud. A tela admin mostra status e instrui como atualizar.
 
-- `cart.tsx`: input de CEP de destino + botão "Calcular frete"; ao calcular, agrupa por vendedor e mostra opções (radio) com transportadora, prazo e valor. Persiste seleção em store.
-- `checkout.tsx`: reaproveita seleção, exibe resumo do frete por vendedor, soma ao total. Bloqueia finalizar se algum vendedor não tiver opção escolhida.
-- Salva opção escolhida em `orders.shipping_address` + novo `orders.shipping_quote` (jsonb com `{seller_id, service_id, name, company, price}`).
+### 5. Mensagens de erro mais úteis no carrinho
+Em vez de "Tente novamente em instantes", quando o status for 401/403 mostrar: "Cálculo de frete temporariamente indisponível. Nossa equipe foi notificada." e logar o problema real no diagnóstico.
 
-## Fase 6 — Painel admin
+## Arquivos
 
-- `/admin/shipping`: formulário para o token, ambiente, status da conexão (teste via endpoint `/api/v2/me`), e lista de envios recentes (futuro).
-
-## Detalhes técnicos
-
-- Server fn calls a Melhor Envio só do servidor (token é secreto).
-- ViaCEP é cliente (`https://viacep.com.br/ws/{cep}/json/`).
-- Validação Zod em todos os endpoints (CEP regex `\d{8}`, peso > 0, dimensões > 0).
-- Erros do upstream tratados por vendedor — não quebra checkout dos demais.
-
-```text
-[Cart] --CEP destino--> calculateShipping (server fn)
-                          │
-                          ├── agrupa por seller
-                          ├── busca origem em sellers
-                          ├── POST /shipment/calculate (Melhor Envio)
-                          └── retorna opções por seller
-[Checkout] --opção escolhida--> orders.shipping_quote --> Stripe Checkout
+```
++ supabase migration: shipping_diagnostics table
++ src/lib/shipping-diag.functions.ts
++ src/routes/admin.shipping.tsx
+~ src/lib/shipping.functions.ts  (gravar diagnóstico + log de endpoint/payload)
+~ src/routes/admin.tsx  (link "Frete / Melhor Envio" no menu)
 ```
 
-## Ordem de execução
+## Próximo passo seu (independe de código)
 
-1. Migration (campos de origem + cache opcional).
-2. Pedir secret `MELHOR_ENVIO_TOKEN` + `MELHOR_ENVIO_ENV`.
-3. Server fn `calculateShipping` + ping do admin.
-4. Formulários do vendedor (origem + dimensões obrigatórias).
-5. Carrinho + checkout consumindo a server fn.
-6. Painel admin para gerir o token.
+Depois de eu publicar a tela admin, abra `/admin/shipping`, clique **Testar Conexão**. Se retornar 401:
+1. Vá ao painel Melhor Envio (sandbox ou produção, conforme `MELHOR_ENVIO_ENV`)
+2. Minha Conta → Tokens → gere novo token com escopos `shipping-calculate shipping-tracking cart-read cart-write`
+3. Atualize o secret `MELHOR_ENVIO_TOKEN` (eu peço com a ferramenta de secrets)
 
-Pronto para começar pela Fase 1 (migration) e em seguida pedir o token do Melhor Envio.
+Posso prosseguir?

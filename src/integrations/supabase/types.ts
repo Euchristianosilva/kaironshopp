@@ -1142,6 +1142,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shipping_diagnostics: {
+        Row: {
+          id: boolean
+          last_env: string | null
+          last_error_at: string | null
+          last_error_body: string | null
+          last_error_endpoint: string | null
+          last_error_status: number | null
+          last_request_payload: Json | null
+          last_success_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          last_env?: string | null
+          last_error_at?: string | null
+          last_error_body?: string | null
+          last_error_endpoint?: string | null
+          last_error_status?: number | null
+          last_request_payload?: Json | null
+          last_success_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          last_env?: string | null
+          last_error_at?: string | null
+          last_error_body?: string | null
+          last_error_endpoint?: string | null
+          last_error_status?: number | null
+          last_request_payload?: Json | null
+          last_success_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shipping_quotes_cache: {
         Row: {
           cache_key: string
