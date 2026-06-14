@@ -68,7 +68,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
       const sellerProducts = items
         .map((it) => ({ it, p: products.find((x) => x.id === it.product_id)! }))
         .filter((x) => x.p);
-      const fromZip = (seller?.origin_zip ?? sellerProducts[0]?.p.origin_zip ?? "").replace(/\D/g, "");
+      const fromZip = (seller?.origin_zip ?? "").replace(/\D/g, "");
 
       if (!fromZip || fromZip.length !== 8) {
         quotes.push({
@@ -76,7 +76,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
           seller_name: seller?.name ?? "Loja",
           origin_zip: null,
           options: [],
-          error: "Vendedor sem CEP de origem cadastrado.",
+          error: "Esta loja ainda não cadastrou o CEP de origem em Configurações de Envio.",
         });
         continue;
       }
