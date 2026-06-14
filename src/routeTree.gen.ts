@@ -18,11 +18,16 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SellerSubscriptionRouteImport } from './routes/seller.subscription'
+import { Route as SellerStockRouteImport } from './routes/seller.stock'
+import { Route as SellerShippingRouteImport } from './routes/seller.shipping'
 import { Route as SellerSettingsRouteImport } from './routes/seller.settings'
 import { Route as SellerReviewsRouteImport } from './routes/seller.reviews'
 import { Route as SellerReportsRouteImport } from './routes/seller.reports'
 import { Route as SellerPromotionsRouteImport } from './routes/seller.promotions'
+import { Route as SellerProfileRouteImport } from './routes/seller.profile'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
+import { Route as SellerHelpRouteImport } from './routes/seller.help'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
 import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as SellerCouponsRouteImport } from './routes/seller.coupons'
@@ -76,6 +81,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellerSubscriptionRoute = SellerSubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerStockRoute = SellerStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerShippingRoute = SellerShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerSettingsRoute = SellerSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -96,9 +116,19 @@ const SellerPromotionsRoute = SellerPromotionsRouteImport.update({
   path: '/promotions',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerProfileRoute = SellerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerOrdersRoute = SellerOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerHelpRoute = SellerHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => SellerRoute,
 } as any)
 const SellerFinanceRoute = SellerFinanceRouteImport.update({
@@ -153,11 +183,16 @@ export interface FileRoutesByFullPath {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
   '/seller/reviews': typeof SellerReviewsRoute
   '/seller/settings': typeof SellerSettingsRoute
+  '/seller/shipping': typeof SellerShippingRoute
+  '/seller/stock': typeof SellerStockRoute
+  '/seller/subscription': typeof SellerSubscriptionRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -176,11 +211,16 @@ export interface FileRoutesByTo {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
   '/seller/reviews': typeof SellerReviewsRoute
   '/seller/settings': typeof SellerSettingsRoute
+  '/seller/shipping': typeof SellerShippingRoute
+  '/seller/stock': typeof SellerStockRoute
+  '/seller/subscription': typeof SellerSubscriptionRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesById {
@@ -200,11 +240,16 @@ export interface FileRoutesById {
   '/seller/coupons': typeof SellerCouponsRoute
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
+  '/seller/help': typeof SellerHelpRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/profile': typeof SellerProfileRoute
   '/seller/promotions': typeof SellerPromotionsRoute
   '/seller/reports': typeof SellerReportsRoute
   '/seller/reviews': typeof SellerReviewsRoute
   '/seller/settings': typeof SellerSettingsRoute
+  '/seller/shipping': typeof SellerShippingRoute
+  '/seller/stock': typeof SellerStockRoute
+  '/seller/subscription': typeof SellerSubscriptionRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRouteTypes {
@@ -225,11 +270,16 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
+    | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
     | '/seller/reviews'
     | '/seller/settings'
+    | '/seller/shipping'
+    | '/seller/stock'
+    | '/seller/subscription'
     | '/api/public/stripe-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -248,11 +298,16 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
+    | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
     | '/seller/reviews'
     | '/seller/settings'
+    | '/seller/shipping'
+    | '/seller/stock'
+    | '/seller/subscription'
     | '/api/public/stripe-webhook'
   id:
     | '__root__'
@@ -271,11 +326,16 @@ export interface FileRouteTypes {
     | '/seller/coupons'
     | '/seller/customers'
     | '/seller/finance'
+    | '/seller/help'
     | '/seller/orders'
+    | '/seller/profile'
     | '/seller/promotions'
     | '/seller/reports'
     | '/seller/reviews'
     | '/seller/settings'
+    | '/seller/shipping'
+    | '/seller/stock'
+    | '/seller/subscription'
     | '/api/public/stripe-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -359,6 +419,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/subscription': {
+      id: '/seller/subscription'
+      path: '/subscription'
+      fullPath: '/seller/subscription'
+      preLoaderRoute: typeof SellerSubscriptionRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/stock': {
+      id: '/seller/stock'
+      path: '/stock'
+      fullPath: '/seller/stock'
+      preLoaderRoute: typeof SellerStockRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/shipping': {
+      id: '/seller/shipping'
+      path: '/shipping'
+      fullPath: '/seller/shipping'
+      preLoaderRoute: typeof SellerShippingRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/settings': {
       id: '/seller/settings'
       path: '/settings'
@@ -387,11 +468,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerPromotionsRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/profile': {
+      id: '/seller/profile'
+      path: '/profile'
+      fullPath: '/seller/profile'
+      preLoaderRoute: typeof SellerProfileRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/orders': {
       id: '/seller/orders'
       path: '/orders'
       fullPath: '/seller/orders'
       preLoaderRoute: typeof SellerOrdersRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/help': {
+      id: '/seller/help'
+      path: '/help'
+      fullPath: '/seller/help'
+      preLoaderRoute: typeof SellerHelpRouteImport
       parentRoute: typeof SellerRoute
     }
     '/seller/finance': {
@@ -460,22 +555,32 @@ interface SellerRouteChildren {
   SellerCouponsRoute: typeof SellerCouponsRoute
   SellerCustomersRoute: typeof SellerCustomersRoute
   SellerFinanceRoute: typeof SellerFinanceRoute
+  SellerHelpRoute: typeof SellerHelpRoute
   SellerOrdersRoute: typeof SellerOrdersRoute
+  SellerProfileRoute: typeof SellerProfileRoute
   SellerPromotionsRoute: typeof SellerPromotionsRoute
   SellerReportsRoute: typeof SellerReportsRoute
   SellerReviewsRoute: typeof SellerReviewsRoute
   SellerSettingsRoute: typeof SellerSettingsRoute
+  SellerShippingRoute: typeof SellerShippingRoute
+  SellerStockRoute: typeof SellerStockRoute
+  SellerSubscriptionRoute: typeof SellerSubscriptionRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
   SellerCouponsRoute: SellerCouponsRoute,
   SellerCustomersRoute: SellerCustomersRoute,
   SellerFinanceRoute: SellerFinanceRoute,
+  SellerHelpRoute: SellerHelpRoute,
   SellerOrdersRoute: SellerOrdersRoute,
+  SellerProfileRoute: SellerProfileRoute,
   SellerPromotionsRoute: SellerPromotionsRoute,
   SellerReportsRoute: SellerReportsRoute,
   SellerReviewsRoute: SellerReviewsRoute,
   SellerSettingsRoute: SellerSettingsRoute,
+  SellerShippingRoute: SellerShippingRoute,
+  SellerStockRoute: SellerStockRoute,
+  SellerSubscriptionRoute: SellerSubscriptionRoute,
 }
 
 const SellerRouteWithChildren =

@@ -6,7 +6,7 @@ import { Footer } from "@/components/marketplace/Footer";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
-import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Package, Users, TicketPercent, Sparkles, MessageSquare, Settings, BarChart3 } from "lucide-react";
+import { Plus, Store, X, CreditCard, CheckCircle2, AlertTriangle, Wallet, Package, Users, TicketPercent, Sparkles, MessageSquare, Settings, BarChart3, Boxes, Truck, LifeBuoy } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
@@ -308,6 +308,12 @@ function ConnectCard({ seller }: { seller: Seller }) {
               <Link to="/seller/orders" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
                 <Package className="h-4 w-4 inline mr-1" /> Pedidos
               </Link>
+              <Link to="/seller/stock" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <Boxes className="h-4 w-4 inline mr-1" /> Estoque
+              </Link>
+              <Link to="/seller/shipping" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <Truck className="h-4 w-4 inline mr-1" /> Fretes
+              </Link>
               <Link to="/seller/customers" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
                 <Users className="h-4 w-4 inline mr-1" /> Clientes
               </Link>
@@ -323,8 +329,17 @@ function ConnectCard({ seller }: { seller: Seller }) {
               <Link to="/seller/reports" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
                 <BarChart3 className="h-4 w-4 inline mr-1" /> Relatórios
               </Link>
+              <Link to="/seller/profile" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <Store className="h-4 w-4 inline mr-1" /> Perfil
+              </Link>
               <Link to="/seller/settings" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
                 <Settings className="h-4 w-4 inline mr-1" /> Configurações
+              </Link>
+              <Link to="/seller/subscription" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <CreditCard className="h-4 w-4 inline mr-1" /> Assinatura
+              </Link>
+              <Link to="/seller/help" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+                <LifeBuoy className="h-4 w-4 inline mr-1" /> Ajuda
               </Link>
               <Link to="/seller/finance" className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-sm grid place-items-center">
                 <Wallet className="h-4 w-4 inline mr-1" /> Financeiro
