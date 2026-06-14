@@ -166,7 +166,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
           await supabaseAdmin.from("shipping_quotes_cache").upsert(
             {
               cache_key: cacheKey,
-              payload: options as unknown as Record<string, unknown>,
+              payload: options as never,
               expires_at: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
             },
             { onConflict: "cache_key" },
