@@ -144,7 +144,7 @@ function OrderDetailDialog({ orderId, onClose }: { orderId: string; onClose: () 
   });
 
   const printLabel = () => {
-    const addr = data?.order?.shipping_address ?? {};
+    const addr = (data?.order?.shipping_address ?? {}) as any;
     const html = `<html><head><title>Etiqueta #${orderId.slice(0,8)}</title><style>body{font-family:sans-serif;padding:24px}h1{font-size:20px}.box{border:2px solid #000;padding:16px;max-width:400px}</style></head><body><div class="box"><h1>Etiqueta de envio</h1><p><b>Pedido:</b> #${orderId.slice(0,8)}</p><p><b>Destinatário:</b> ${data?.buyer?.full_name ?? ""}</p><p><b>Endereço:</b><br/>${addr.line1 ?? ""} ${addr.number ?? ""}<br/>${addr.neighborhood ?? ""}<br/>${addr.city ?? ""} - ${addr.state ?? ""}<br/>CEP: ${addr.zip ?? ""}</p><p><b>Transportadora:</b> ${carrier || "—"}</p><p><b>Rastreio:</b> ${tracking || "—"}</p></div><script>window.print()</script></body></html>`;
     const w = window.open("", "_blank");
     w?.document.write(html);
@@ -184,7 +184,7 @@ function OrderDetailDialog({ orderId, onClose }: { orderId: string; onClose: () 
               <section>
                 <h3 className="font-bold text-sm mb-2">Endereço de entrega</h3>
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
-                  {[data.order.shipping_address.line1, data.order.shipping_address.number, data.order.shipping_address.neighborhood, `${data.order.shipping_address.city ?? ""} - ${data.order.shipping_address.state ?? ""}`, `CEP: ${data.order.shipping_address.zip ?? ""}`].filter(Boolean).join("\n")}
+                  {[(data.order.shipping_address as any).line1, (data.order.shipping_address as any).number, (data.order.shipping_address as any).neighborhood, `${(data.order.shipping_address as any).city ?? ""} - ${(data.order.shipping_address as any).state ?? ""}`, `CEP: ${(data.order.shipping_address as any).zip ?? ""}`].filter(Boolean).join("\n")}
                 </p>
               </section>
             )}
