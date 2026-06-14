@@ -3,13 +3,20 @@ import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
 import { useStore } from "@/lib/store";
 import { formatBRL } from "@/lib/mock-data";
-import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, Tag, Truck, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { calculateShipping } from "@/lib/shipping.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Carrinho — MercaBrasil" }] }),
   component: CartPage,
 });
+
+type QuoteOption = { id: number | string; name: string; company: string; price: number; delivery_time: number };
+type SellerQuote = { seller_id: string; seller_name: string; options: QuoteOption[]; error?: string };
 
 function CartPage() {
   const cart = useStore((s) => s.cart);
@@ -17,9 +24,34 @@ function CartPage() {
   const remove = useStore((s) => s.removeFromCart);
   const [coupon, setCoupon] = useState("");
   const [cep, setCep] = useState("");
+  const [quotes, setQuotes] = useState<SellerQuote[]>([]);
+  const [picked, setPicked] = useState<Record<string, string>>({}); // seller_id -> option id
+
+  const calc = useServerFn(calculateShipping);
+  const mut = useMutation({
+    mutationFn: () => calc({
+      data: {
+        to_zip: cep,
+        items: cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
+      },
+    }),
+    onSuccess: (r) => {
+      setQuotes(r.quotes);
+      const defaults: Record<string, string> = {};
+      r.quotes.forEach((q) => {
+        if (q.options.length) defaults[q.seller_id] = String(q.options[0].id);
+      });
+      setPicked(defaults);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const subtotal = cart.reduce((a, i) => a + i.product.price * i.qty, 0);
-  const shipping = subtotal > 199 || cart.length === 0 ? 0 : 24.9;
+  const shipping = quotes.reduce((acc, q) => {
+    const pickedId = picked[q.seller_id];
+    const opt = q.options.find((o) => String(o.id) === pickedId);
+    return acc + (opt?.price ?? 0);
+  }, 0);
   const discount = coupon.toUpperCase() === "MERCA10" ? subtotal * 0.1 : 0;
   const total = subtotal + shipping - discount;
 
@@ -72,8 +104,47 @@ function CartPage() {
                 <h3 className="font-bold mb-3 flex items-center gap-2"><Truck className="h-4 w-4" /> Calcular frete</h3>
                 <div className="flex gap-2">
                   <input value={cep} onChange={(e) => setCep(e.target.value)} placeholder="00000-000" className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm" />
-                  <button className="px-4 h-10 rounded-md bg-secondary font-semibold text-sm hover:bg-secondary/80">OK</button>
+                  <button
+                    onClick={() => mut.mutate()}
+                    disabled={mut.isPending || !cep}
+                    className="px-4 h-10 rounded-md bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+                  >
+                    {mut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Calcular"}
+                  </button>
                 </div>
+
+                {quotes.length > 0 && (
+                  <div className="mt-4 space-y-4">
+                    {quotes.map((q) => (
+                      <div key={q.seller_id} className="border border-border rounded-lg p-3">
+                        <div className="text-xs font-bold text-muted-foreground mb-2">{q.seller_name}</div>
+                        {q.error && <div className="text-xs text-destructive">{q.error}</div>}
+                        {!q.error && q.options.length === 0 && (
+                          <div className="text-xs text-muted-foreground">Sem opções disponíveis.</div>
+                        )}
+                        {q.options.map((o) => {
+                          const id = String(o.id);
+                          const checked = picked[q.seller_id] === id;
+                          return (
+                            <label key={id} className={`flex items-center justify-between gap-2 py-1.5 px-2 rounded cursor-pointer text-sm ${checked ? "bg-primary/10" : "hover:bg-secondary/50"}`}>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`s-${q.seller_id}`}
+                                  checked={checked}
+                                  onChange={() => setPicked({ ...picked, [q.seller_id]: id })}
+                                />
+                                <span className="font-semibold">{o.company} {o.name}</span>
+                                <span className="text-xs text-muted-foreground">· {o.delivery_time}d</span>
+                              </div>
+                              <span className="font-bold">{formatBRL(o.price)}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="bg-card border border-border rounded-xl p-5">
                 <h3 className="font-bold mb-3 flex items-center gap-2"><Tag className="h-4 w-4" /> Cupom de desconto</h3>

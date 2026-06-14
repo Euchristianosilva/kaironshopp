@@ -21,6 +21,9 @@ export const updateStoreSettings = createServerFn({ method: "POST" })
     seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null;
     shipping_policy?: string | null; return_policy?: string | null; terms?: string | null;
     vacation_mode?: boolean;
+    origin_zip?: string | null; origin_state?: string | null; origin_city?: string | null;
+    origin_district?: string | null; origin_address?: string | null;
+    origin_number?: string | null; origin_complement?: string | null;
   }) => i)
   .handler(async ({ data, context }) => {
     const seller = await getSellerForOwner(context.supabase, context.userId);
