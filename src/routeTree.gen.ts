@@ -19,6 +19,8 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
+import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
+import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
@@ -372,13 +374,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
