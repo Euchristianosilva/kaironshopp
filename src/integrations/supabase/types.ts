@@ -705,49 +705,82 @@ export type Database = {
       }
       sellers: {
         Row: {
+          banner_url: string | null
           created_at: string
           description: string | null
+          email: string | null
           id: string
           logo_url: string | null
           name: string
           owner_id: string
+          phone: string | null
           rating: number | null
+          return_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          shipping_policy: string | null
           slug: string
           stripe_account_id: string | null
           stripe_charges_enabled: boolean
           stripe_onboarding_status: string
           stripe_payouts_enabled: boolean
+          terms: string | null
           updated_at: string
+          vacation_mode: boolean
+          whatsapp: string | null
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
           logo_url?: string | null
           name: string
           owner_id: string
+          phone?: string | null
           rating?: number | null
+          return_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          shipping_policy?: string | null
           slug: string
           stripe_account_id?: string | null
           stripe_charges_enabled?: boolean
           stripe_onboarding_status?: string
           stripe_payouts_enabled?: boolean
+          terms?: string | null
           updated_at?: string
+          vacation_mode?: boolean
+          whatsapp?: string | null
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
           description?: string | null
+          email?: string | null
           id?: string
           logo_url?: string | null
           name?: string
           owner_id?: string
+          phone?: string | null
           rating?: number | null
+          return_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          shipping_policy?: string | null
           slug?: string
           stripe_account_id?: string | null
           stripe_charges_enabled?: boolean
           stripe_onboarding_status?: string
           stripe_payouts_enabled?: boolean
+          terms?: string | null
           updated_at?: string
+          vacation_mode?: boolean
+          whatsapp?: string | null
         }
         Relationships: []
       }
