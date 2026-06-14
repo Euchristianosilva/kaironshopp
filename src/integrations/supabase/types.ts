@@ -17,31 +17,46 @@ export type Database = {
       order_items: {
         Row: {
           created_at: string
+          gross_cents: number
           id: string
           order_id: string
+          platform_fee_cents: number
           product_id: string | null
           qty: number
           seller_id: string | null
+          seller_net_cents: number
+          stripe_account_id: string | null
+          stripe_transfer_id: string | null
           title: string
           unit_price: number
         }
         Insert: {
           created_at?: string
+          gross_cents?: number
           id?: string
           order_id: string
+          platform_fee_cents?: number
           product_id?: string | null
           qty: number
           seller_id?: string | null
+          seller_net_cents?: number
+          stripe_account_id?: string | null
+          stripe_transfer_id?: string | null
           title: string
           unit_price: number
         }
         Update: {
           created_at?: string
+          gross_cents?: number
           id?: string
           order_id?: string
+          platform_fee_cents?: number
           product_id?: string | null
           qty?: number
           seller_id?: string | null
+          seller_net_cents?: number
+          stripe_account_id?: string | null
+          stripe_transfer_id?: string | null
           title?: string
           unit_price?: number
         }
@@ -73,10 +88,15 @@ export type Database = {
         Row: {
           buyer_id: string
           created_at: string
+          gross_cents: number
           id: string
           payment_method: string | null
+          payment_status: string
+          platform_fee_cents: number
+          seller_id: string | null
           shipping_address: Json | null
           status: string
+          stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           total: number
           updated_at: string
@@ -84,10 +104,15 @@ export type Database = {
         Insert: {
           buyer_id: string
           created_at?: string
+          gross_cents?: number
           id?: string
           payment_method?: string | null
+          payment_status?: string
+          platform_fee_cents?: number
+          seller_id?: string | null
           shipping_address?: Json | null
           status?: string
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           total: number
           updated_at?: string
@@ -95,12 +120,87 @@ export type Database = {
         Update: {
           buyer_id?: string
           created_at?: string
+          gross_cents?: number
           id?: string
           payment_method?: string | null
+          payment_status?: string
+          platform_fee_cents?: number
+          seller_id?: string | null
           shipping_address?: Json | null
           status?: string
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount_cents: number
+          arrival_date: string | null
+          created_at: string
+          currency: string
+          id: string
+          seller_id: string
+          status: string
+          stripe_account_id: string
+          stripe_payout_id: string
+        }
+        Insert: {
+          amount_cents: number
+          arrival_date?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          seller_id: string
+          status?: string
+          stripe_account_id: string
+          stripe_payout_id: string
+        }
+        Update: {
+          amount_cents?: number
+          arrival_date?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          seller_id?: string
+          status?: string
+          stripe_account_id?: string
+          stripe_payout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          commission_percent: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          commission_percent?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          commission_percent?: number
+          id?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -207,6 +307,10 @@ export type Database = {
           owner_id: string
           rating: number | null
           slug: string
+          stripe_account_id: string | null
+          stripe_charges_enabled: boolean
+          stripe_onboarding_status: string
+          stripe_payouts_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -218,6 +322,10 @@ export type Database = {
           owner_id: string
           rating?: number | null
           slug: string
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean
+          stripe_onboarding_status?: string
+          stripe_payouts_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -229,7 +337,32 @@ export type Database = {
           owner_id?: string
           rating?: number | null
           slug?: string
+          stripe_account_id?: string | null
+          stripe_charges_enabled?: boolean
+          stripe_onboarding_status?: string
+          stripe_payouts_enabled?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      stripe_events: {
+        Row: {
+          event_id: string
+          payload: Json
+          processed_at: string
+          type: string
+        }
+        Insert: {
+          event_id: string
+          payload: Json
+          processed_at?: string
+          type: string
+        }
+        Update: {
+          event_id?: string
+          payload?: Json
+          processed_at?: string
+          type?: string
         }
         Relationships: []
       }
