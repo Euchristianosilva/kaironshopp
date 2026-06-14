@@ -10,6 +10,7 @@ import { fetchProductById, fetchProducts } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
 import { getOrCreateConversation } from "@/lib/chat.functions";
+import { createStripeCheckout } from "@/lib/checkout.functions";
 import { toast } from "sonner";
 import { Star, Heart, ShoppingCart, Truck, ShieldCheck, RotateCcw, Store, MessageCircle, Minus, Plus } from "lucide-react";
 
@@ -29,7 +30,23 @@ function ProductPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const startChat = useServerFn(getOrCreateConversation);
+  const checkoutFn = useServerFn(createStripeCheckout);
   const [chatLoading, setChatLoading] = useState(false);
+  const [buying, setBuying] = useState(false);
+  const buyNow = async () => {
+    if (buying) return;
+    if (!user) { navigate({ to: "/auth" }); return; }
+    setBuying(true);
+    try {
+      const { url } = await checkoutFn({ data: { items: [{ productId: id, qty }], origin: window.location.origin } });
+      if (!url) throw new Error("URL do Stripe não retornada");
+      window.location.href = url;
+    } catch (e: any) {
+      console.error("buyNow failed", e);
+      toast.error(e?.message ?? "Falha ao iniciar pagamento");
+      setBuying(false);
+    }
+  };
   const openChat = async (sellerId: string | null | undefined) => {
     if (chatLoading) return;
     if (!user) { navigate({ to: "/auth" }); return; }
