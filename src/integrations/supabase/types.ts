@@ -1233,6 +1233,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_ad_metric: {
+        Args: {
+          _campaign_id: string
+          _clicks?: number
+          _date: string
+          _impressions?: number
+        }
+        Returns: undefined
+      }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
