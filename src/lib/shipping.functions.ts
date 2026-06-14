@@ -120,8 +120,15 @@ export const calculateShipping = createServerFn({ method: "POST" })
       if (cached && new Date(cached.expires_at) > new Date()) {
         options = cached.payload as Quote["options"];
       } else {
+        const env = (process.env.MELHOR_ENVIO_ENV ?? "sandbox").toLowerCase();
+        const endpoint = `${meBase()}/me/shipment/calculate`;
+        const payload = {
+          from: { postal_code: fromZip },
+          to: { postal_code: toZip },
+          products: meProducts,
+        };
         try {
-          const res = await fetch(`${meBase()}/me/shipment/calculate`, {
+          const res = await fetch(endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -129,23 +136,30 @@ export const calculateShipping = createServerFn({ method: "POST" })
               Authorization: `Bearer ${token}`,
               "User-Agent": "Kairon Shopp (suporte@kaironshopp.com.br)",
             },
-            body: JSON.stringify({
-              from: { postal_code: fromZip },
-              to: { postal_code: toZip },
-              products: meProducts,
-            }),
+            body: JSON.stringify(payload),
           });
           if (!res.ok) {
             const txt = await res.text();
             console.error("[melhor-envio] calculate failed", {
               status: res.status,
-              env: (process.env.MELHOR_ENVIO_ENV ?? "sandbox").toLowerCase(),
+              env,
+              endpoint,
+              payload,
               body: txt.slice(0, 500),
+            });
+            await supabaseAdmin.from("shipping_diagnostics").upsert({
+              id: true,
+              last_error_at: new Date().toISOString(),
+              last_error_status: res.status,
+              last_error_endpoint: endpoint,
+              last_error_body: txt.slice(0, 1000),
+              last_request_payload: payload as never,
+              last_env: env,
+              updated_at: new Date().toISOString(),
             });
             let friendly: string;
             if (res.status === 401 || res.status === 403) {
-              friendly =
-                "Não foi possível calcular o frete agora. Tente novamente em instantes.";
+              friendly = "Cálculo de frete temporariamente indisponível. Nossa equipe foi notificada.";
             } else if (res.status === 422) {
               friendly = "Não foi possível calcular o frete para este endereço.";
             } else {
@@ -185,13 +199,30 @@ export const calculateShipping = createServerFn({ method: "POST" })
             },
             { onConflict: "cache_key" },
           );
+          await supabaseAdmin.from("shipping_diagnostics").upsert({
+            id: true,
+            last_success_at: new Date().toISOString(),
+            last_env: env,
+            updated_at: new Date().toISOString(),
+          });
         } catch (e) {
+          console.error("[melhor-envio] calculate threw", { endpoint, env, error: e });
+          await supabaseAdmin.from("shipping_diagnostics").upsert({
+            id: true,
+            last_error_at: new Date().toISOString(),
+            last_error_status: 0,
+            last_error_endpoint: endpoint,
+            last_error_body: e instanceof Error ? e.message : String(e),
+            last_request_payload: payload as never,
+            last_env: env,
+            updated_at: new Date().toISOString(),
+          });
           quotes.push({
             seller_id: sellerId,
             seller_name: seller?.name ?? "Loja",
             origin_zip: fromZip,
             options: [],
-            error: e instanceof Error ? e.message : "Erro ao calcular frete",
+            error: "Frete temporariamente indisponível. Tente novamente.",
           });
           continue;
         }

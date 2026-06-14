@@ -37,6 +37,7 @@ import { Route as SellerAdsRouteImport } from './routes/seller.ads'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as AdminShippingRouteImport } from './routes/admin.shipping'
 import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
 import { Route as AdminAdsRouteImport } from './routes/admin.ads'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -183,6 +184,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminShippingRoute = AdminShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFinanceRoute = AdminFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/seller': typeof SellerRouteWithChildren
   '/admin/ads': typeof AdminAdsRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesRoute
   '/admin/ads': typeof AdminAdsRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/seller': typeof SellerRouteWithChildren
   '/admin/ads': typeof AdminAdsRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/admin/ads'
     | '/admin/finance'
+    | '/admin/shipping'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/admin/ads'
     | '/admin/finance'
+    | '/admin/shipping'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/admin/ads'
     | '/admin/finance'
+    | '/admin/shipping'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -639,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/shipping': {
+      id: '/admin/shipping'
+      path: '/shipping'
+      fullPath: '/admin/shipping'
+      preLoaderRoute: typeof AdminShippingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/finance': {
       id: '/admin/finance'
       path: '/finance'
@@ -680,11 +699,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAdsRoute: typeof AdminAdsRoute
   AdminFinanceRoute: typeof AdminFinanceRoute
+  AdminShippingRoute: typeof AdminShippingRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdsRoute: AdminAdsRoute,
   AdminFinanceRoute: AdminFinanceRoute,
+  AdminShippingRoute: AdminShippingRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -750,13 +771,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
