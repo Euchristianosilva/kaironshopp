@@ -14,6 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          amount_cents: number
+          canceled_at: string | null
+          created_at: string
+          currency: string
+          ends_at: string
+          id: string
+          metadata: Json
+          owner_id: string
+          paid_at: string | null
+          placement: Database["public"]["Enums"]["ad_placement"]
+          priority: number
+          product_id: string
+          seller_id: string
+          starts_at: string
+          status: Database["public"]["Enums"]["ad_campaign_status"]
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          ends_at: string
+          id?: string
+          metadata?: Json
+          owner_id: string
+          paid_at?: string | null
+          placement: Database["public"]["Enums"]["ad_placement"]
+          priority?: number
+          product_id: string
+          seller_id: string
+          starts_at: string
+          status?: Database["public"]["Enums"]["ad_campaign_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          ends_at?: string
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          paid_at?: string | null
+          placement?: Database["public"]["Enums"]["ad_placement"]
+          priority?: number
+          product_id?: string
+          seller_id?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["ad_campaign_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_campaigns_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_metrics: {
+        Row: {
+          campaign_id: string
+          clicks: number
+          conversions: number
+          created_at: string
+          date: string
+          id: string
+          impressions: number
+          revenue_cents: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          date: string
+          id?: string
+          impressions?: number
+          revenue_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          date?: string
+          id?: string
+          impressions?: number
+          revenue_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_pricing: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          placement: Database["public"]["Enums"]["ad_placement"]
+          price_per_day_cents: number
+          price_per_hour_cents: number
+          price_per_week_cents: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          placement: Database["public"]["Enums"]["ad_placement"]
+          price_per_day_cents: number
+          price_per_hour_cents: number
+          price_per_week_cents: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          placement?: Database["public"]["Enums"]["ad_placement"]
+          price_per_day_cents?: number
+          price_per_hour_cents?: number
+          price_per_week_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       addresses: {
         Row: {
           city: string
@@ -1089,6 +1247,15 @@ export type Database = {
       }
     }
     Enums: {
+      ad_campaign_status:
+        | "pending_payment"
+        | "scheduled"
+        | "active"
+        | "ended"
+        | "canceled"
+        | "refunded"
+        | "rejected"
+      ad_placement: "card" | "carousel"
       app_role: "admin" | "seller" | "user"
       notification_type:
         | "new_order"
@@ -1228,6 +1395,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_campaign_status: [
+        "pending_payment",
+        "scheduled",
+        "active",
+        "ended",
+        "canceled",
+        "refunded",
+        "rejected",
+      ],
+      ad_placement: ["card", "carousel"],
       app_role: ["admin", "seller", "user"],
       notification_type: [
         "new_order",
