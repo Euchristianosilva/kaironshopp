@@ -1,64 +1,65 @@
-# Painel do Vendedor Profissional — Plano em Fases
+## Objetivo
+Transformar o Painel do Vendedor em uma experiência tipo Shopee/Mercado Livre: sidebar fixa categorizada, dashboard com métricas reais, todas as páginas funcionais conectadas ao Supabase, design premium SaaS.
 
-O escopo é muito grande (19 áreas, várias tabelas novas, Storage, gráficos, relatórios, cupons, variações, frete, etc.). Não dá para fazer tudo bem feito em um único turno — vou dividir em **6 fases** que entregam valor incremental, cada uma testável de ponta a ponta. Confirme a fase para eu começar (ou ajuste a ordem).
+## Arquitetura nova
 
----
+### 1. Layout com sidebar (nova base)
+- `src/routes/seller.tsx` vira **layout** (`<Outlet />`) com sidebar fixa colapsável usando shadcn `Sidebar`
+- Sidebar agrupada em: **Vendas** (Dashboard, Pedidos, Produtos, Estoque, Categorias) · **Marketing** (Cupons, Promoções, Avaliações) · **Clientes** (Clientes, Mensagens) · **Logística** (Fretes, Envios) · **Financeiro** (Carteira, Extrato, Recebimentos, Saques) · **Conta** (Perfil, Configurações, Assinatura, Ajuda)
+- Header interno com nome da loja, status Stripe, botão "Novo produto"
+- Onboarding (criar loja + Stripe Connect) permanece como gate antes do dashboard
 
-## Fase 1 — Cadastro de produtos profissional (base do resto)
-**Foco:** acabar com URL de imagem e enriquecer o produto.
+### 2. Dashboard `/seller` (index)
+Novo arquivo `seller.index.tsx` com cards de KPIs reais via novo `src/lib/seller-dashboard.functions.ts`:
+- Total de vendas, pedidos pendentes/enviados, produtos ativos/pausados, estoque baixo, faturamento do mês, saldo disponível, valor aguardando liberação, avaliação média, nº de clientes
+- Gráfico simples de vendas dos últimos 30 dias (recharts já no projeto)
 
-- Bucket `product-images` no Storage (público para leitura, RLS de escrita por dono)
-- Componente `ProductImageUploader`: drag-and-drop, múltiplo (até 10), miniaturas, reordenar, escolher principal, remover, compressão client-side (`browser-image-compression`)
-- Tabela nova `product_images` (product_id, url, position, is_primary)
-- Novos campos em `products`: brand, model, sku, barcode, weight_g, height_cm, width_cm, length_cm, color, material, warranty, condition (`new|refurbished|used`), views, sales_count
-- Categorias com subcategorias: tabela `categories` (parent_id self-ref) + seed; seletor em 2 níveis
-- Modal de produto reformulado em abas: Básico · Mídias · Especificações · Estoque · Frete
+### 3. Páginas (criar/refazer com dados reais)
 
-## Fase 2 — Variações + Estoque + Frete
-- Tabela `product_variants` (option1_name/value, option2_name/value, price, stock, sku)
-- UI de matriz de variações (cor × tamanho etc.)
-- Campos de frete no produto: origin_zip, own_delivery, free_shipping, carrier
-- Estoque: min_stock, alerta visual, tabela `stock_movements` com histórico
+| Rota | Estado | Ação |
+|---|---|---|
+| `/seller` (dashboard) | novo | criar `seller.index.tsx` com KPIs |
+| `/seller/products` | mover | extrair `ProductsTable` + modal do `seller.tsx` atual |
+| `/seller/orders` | existe | revisar: tabela, filtros status, ações ver/imprimir/alterar status |
+| `/seller/stock` | existe | revisar: SKU, qty, mín, alertas, ajuste em lote |
+| `/seller/categories` | novo | listar categorias do vendedor |
+| `/seller/coupons` | existe | revisar CRUD completo |
+| `/seller/promotions` | existe | revisar preço orig → promo + % |
+| `/seller/reviews` | existe | revisar + responder |
+| `/seller/customers` | existe | lista agregada (nome, email, qtd compras, total gasto) |
+| `/seller/messages` | novo | redirect/embed do `/messages` |
+| `/seller/shipping` | existe | regras de frete por região |
+| `/seller/shipments` | novo | envios pendentes com tracking |
+| `/seller/finance` | existe | saldo, bloqueado, recebimentos, saques, extrato |
+| `/seller/payouts` | novo | solicitar saque (via Stripe dashboard) |
+| `/seller/profile` | existe | nome, logo, banner, contatos, redes, descrição |
+| `/seller/settings` | existe | senha, notificações, dados bancários |
+| `/seller/subscription` | existe | plano atual + alterar |
+| `/seller/help` | existe | FAQ + abrir chamado |
+| `/seller/reports` | existe | gráficos vendas/pedidos/receita c/ filtros |
 
-## Fase 3 — Dashboard + tabela "Meus Produtos" profissional
-- Dashboard com cards (ativos, pausados, vendidos, pedidos por status, faturamento mês/total, ticket médio, avaliação)
-- Gráficos com `recharts`: vendas por mês, receita, top produtos, pedidos
-- Tabela de produtos com colunas completas, ordenação, busca, paginação
-- Ações: editar, duplicar, pausar/ativar, excluir, visualizar, skeleton loading
+## Detalhes técnicos
+- Componente `AppSellerSidebar` em `src/components/seller/SellerSidebar.tsx` usando `useRouterState` para active
+- `SidebarProvider` envolve o layout em `seller.tsx`; `SidebarTrigger` no header
+- Server fns novos em `src/lib/seller-dashboard.functions.ts` (KPIs agregados), `src/lib/seller-customers.functions.ts`
+- Reaproveitar `orders.functions.ts`, `finance.functions.ts`, `marketing.functions.ts`, `stock.functions.ts` já existentes
+- Cada página: card branco com borda suave, header com título+descrição, ações no topo direito, tabela ou form com `react-hook-form` + zod
+- Toasts via `sonner`, loading states via skeleton
 
-## Fase 4 — Pedidos + Clientes
-- Página `/seller/orders` com filtros por status, detalhe do pedido (cliente, itens, endereço, pagamento, frete, rastreio)
-- Ações: marcar como enviado, adicionar código de rastreio, imprimir etiqueta (PDF simples)
-- Página `/seller/customers` agregando pedidos por buyer_id (qtd, total gasto, última compra)
+## Entrega faseada (ordem)
+**Fase A — Estrutura (esta entrega):**
+1. Sidebar + layout `seller.tsx` refatorado
+2. Dashboard `seller.index.tsx` com KPIs reais
+3. Extrair `seller/products.tsx` do código atual
+4. Polir páginas já existentes que estão "vazias" (stock, shipping, profile, subscription, help) com conteúdo funcional mínimo
 
-## Fase 5 — Financeiro + Cupons + Promoções + Avaliações
-- Financeiro: aproveita `seller.finance.tsx` existente e expande (extrato, comissões, taxas, solicitar saque via Stripe Connect)
-- Tabela `coupons` (code, type percent/fixed, value, valid_from/to, max_uses, used_count, seller_id)
-- Tabela `promotions` (product_id, promo_price, starts_at, ends_at) + contador regressivo na vitrine
-- Tabela `reviews` (já pode existir) com resposta do vendedor e denúncia
+**Fase B (próximas iterações):**
+- Categorias, Mensagens, Envios, Payouts (páginas novas)
+- Refinamento de Reports com filtros avançados
+- Polimento visual final
 
-## Fase 6 — Relatórios + Configurações da loja + Notificações
-- Relatórios com exportação CSV/Excel (via `xlsx`) e PDF (`jspdf`)
-- Configurações: logo/banner (Storage), redes sociais, políticas, horário (campos novos em `sellers`)
-- Tabela `notifications` (user_id, type, payload, read_at) + sino no header com realtime
+## Riscos
+- 13 páginas + dashboard em uma única entrega é arriscado; vou focar Fase A com qualidade e marcar Fase B como próximo passo.
+- Algumas tabelas (ex: `customers`) precisam ser derivadas de `orders`+`profiles` — não há tabela dedicada.
 
----
-
-## Detalhes técnicos transversais
-
-- **Storage:** buckets `product-images` e `store-assets`, ambos públicos para leitura; RLS de escrita exige `owner_id = auth.uid()` via path prefix `{seller_id}/...`
-- **RLS:** todas as novas tabelas com policies `seller_id IN (select id from sellers where owner_id = auth.uid())`; grants para `authenticated` e `service_role`
-- **Tipos:** após cada migration o `src/integrations/supabase/types.ts` é regenerado — só então mexo no código que consome o schema
-- **Compatibilidade:** mantém o checkout/Stripe Connect já implementado; variações entram como linha extra em `order_items.variant_id`
-- **Não-mock:** zero dados fake; tudo persistido
-
----
-
-## Como prosseguir
-
-Responda com **uma** das opções:
-
-1. **"fase 1"** — começo agora pelo cadastro com upload de imagens (recomendado, destrava o resto)
-2. **"tudo em ordem"** — executo fase 1 agora e sigo automaticamente para as próximas conforme você aprova
-3. **Ordem customizada** — ex: "comece por pedidos e dashboard"
-4. **Ajustes no plano** — diga o que mudar
+Posso seguir com a **Fase A** agora?
