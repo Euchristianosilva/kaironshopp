@@ -47,6 +47,11 @@ function Home() {
     queryKey: ["products", "all"],
     queryFn: fetchAllProducts,
   });
+  const { data: sponsoredCards = [] } = useQuery({
+    queryKey: ["sponsored", "card"],
+    queryFn: () => getActiveSponsoredProducts({ data: { placement: "card", limit: 6 } }),
+    staleTime: 60_000,
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -54,6 +59,22 @@ function Home() {
       <main className="flex-1">
         <BannerCarousel />
         <CategoryGrid />
+        <SponsoredCarousel />
+
+        {sponsoredCards.length > 0 && (
+          <section className="container mx-auto px-4 mt-10">
+            <div className="flex items-end justify-between mb-4">
+              <h2 className="text-2xl font-black flex items-center gap-2">
+                <Flame className="h-6 w-6 text-warning" /> Ofertas patrocinadas
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {sponsoredCards.map((it) => (
+                <SponsoredProductCard key={it.campaignId} item={it} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="container mx-auto px-4 mt-10">
           <div className="bg-gradient-brand rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 text-primary-foreground shadow-brand">
