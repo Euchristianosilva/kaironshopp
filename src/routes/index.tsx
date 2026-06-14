@@ -5,6 +5,9 @@ import { Footer } from "@/components/marketplace/Footer";
 import { BannerCarousel } from "@/components/marketplace/BannerCarousel";
 import { CategoryGrid } from "@/components/marketplace/CategoryGrid";
 import { ProductCard } from "@/components/marketplace/ProductCard";
+import { SponsoredCarousel } from "@/components/marketplace/SponsoredCarousel";
+import { SponsoredProductCard } from "@/components/marketplace/SponsoredProductCard";
+import { getActiveSponsoredProducts } from "@/lib/sponsored.functions";
 import { fetchAllProducts, type Product } from "@/lib/products";
 import { Flame, TrendingUp, Sparkles, Clock } from "lucide-react";
 
