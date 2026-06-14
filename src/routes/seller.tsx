@@ -297,55 +297,59 @@ function ConnectCard({ seller }: { seller: Seller }) {
             </button>
           )}
           {isActive && (
-            <>
-              <button
-                onClick={openDashboard}
-                disabled={loading === "dash"}
-                className="h-10 px-4 rounded-lg border border-border font-semibold text-sm hover:bg-secondary disabled:opacity-60"
-              >
-                Painel Stripe
-              </button>
-              <Link to="/seller/orders" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Package className="h-4 w-4 inline mr-1" /> Pedidos
-              </Link>
-              <Link to="/seller/stock" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Boxes className="h-4 w-4 inline mr-1" /> Estoque
-              </Link>
-              <Link to="/seller/shipping" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Truck className="h-4 w-4 inline mr-1" /> Fretes
-              </Link>
-              <Link to="/seller/customers" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Users className="h-4 w-4 inline mr-1" /> Clientes
-              </Link>
-              <Link to="/seller/coupons" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <TicketPercent className="h-4 w-4 inline mr-1" /> Cupons
-              </Link>
-              <Link to="/seller/promotions" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Sparkles className="h-4 w-4 inline mr-1" /> Promoções
-              </Link>
-              <Link to="/seller/reviews" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <MessageSquare className="h-4 w-4 inline mr-1" /> Avaliações
-              </Link>
-              <Link to="/seller/reports" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <BarChart3 className="h-4 w-4 inline mr-1" /> Relatórios
-              </Link>
-              <Link to="/seller/profile" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Store className="h-4 w-4 inline mr-1" /> Perfil
-              </Link>
-              <Link to="/seller/settings" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <Settings className="h-4 w-4 inline mr-1" /> Configurações
-              </Link>
-              <Link to="/seller/subscription" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <CreditCard className="h-4 w-4 inline mr-1" /> Assinatura
-              </Link>
-              <Link to="/seller/help" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
-                <LifeBuoy className="h-4 w-4 inline mr-1" /> Ajuda
-              </Link>
-              <Link to="/seller/finance" className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-sm grid place-items-center">
-                <Wallet className="h-4 w-4 inline mr-1" /> Financeiro
-              </Link>
-            </>
+            <button
+              onClick={openDashboard}
+              disabled={loading === "dash"}
+              className="h-10 px-4 rounded-lg border border-border font-semibold text-sm hover:bg-secondary disabled:opacity-60"
+            >
+              Painel Stripe
+            </button>
           )}
+        </div>
+      </div>
+
+      <div className="mt-5 pt-5 border-t border-border/60">
+        <div className="text-xs font-semibold uppercase text-muted-foreground mb-2">Painel do vendedor</div>
+        <div className="flex gap-2 flex-wrap">
+          <Link to="/seller/orders" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Package className="h-4 w-4 inline mr-1" /> Pedidos
+          </Link>
+          <Link to="/seller/stock" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Boxes className="h-4 w-4 inline mr-1" /> Estoque
+          </Link>
+          <Link to="/seller/shipping" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Truck className="h-4 w-4 inline mr-1" /> Fretes
+          </Link>
+          <Link to="/seller/customers" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Users className="h-4 w-4 inline mr-1" /> Clientes
+          </Link>
+          <Link to="/seller/coupons" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <TicketPercent className="h-4 w-4 inline mr-1" /> Cupons
+          </Link>
+          <Link to="/seller/promotions" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Sparkles className="h-4 w-4 inline mr-1" /> Promoções
+          </Link>
+          <Link to="/seller/reviews" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <MessageSquare className="h-4 w-4 inline mr-1" /> Avaliações
+          </Link>
+          <Link to="/seller/reports" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <BarChart3 className="h-4 w-4 inline mr-1" /> Relatórios
+          </Link>
+          <Link to="/seller/profile" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Store className="h-4 w-4 inline mr-1" /> Perfil
+          </Link>
+          <Link to="/seller/settings" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <Settings className="h-4 w-4 inline mr-1" /> Configurações
+          </Link>
+          <Link to="/seller/subscription" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <CreditCard className="h-4 w-4 inline mr-1" /> Assinatura
+          </Link>
+          <Link to="/seller/help" className="h-10 px-4 rounded-lg border border-border font-semibold text-sm grid place-items-center hover:bg-secondary">
+            <LifeBuoy className="h-4 w-4 inline mr-1" /> Ajuda
+          </Link>
+          <Link to="/seller/finance" className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-semibold text-sm grid place-items-center">
+            <Wallet className="h-4 w-4 inline mr-1" /> Financeiro
+          </Link>
         </div>
       </div>
     </div>
