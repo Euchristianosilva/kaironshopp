@@ -22,8 +22,7 @@ type Quote = {
   error?: string;
 };
 
-function meBase() {
-  const env = (process.env.MELHOR_ENVIO_ENV ?? "sandbox").toLowerCase();
+function meBaseFor(env: string) {
   return env === "production"
     ? "https://www.melhorenvio.com.br/api/v2"
     : "https://sandbox.melhorenvio.com.br/api/v2";
@@ -32,8 +31,17 @@ function meBase() {
 export const calculateShipping = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => CalcInput.parse(d))
   .handler(async ({ data }): Promise<{ quotes: Quote[] }> => {
-    const token = process.env.MELHOR_ENVIO_TOKEN;
-    if (!token) throw new Error("Integração Melhor Envio não configurada.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cfg } = await supabaseAdmin
+      .from("melhor_envio_config")
+      .select("environment, access_token")
+      .eq("id", true)
+      .maybeSingle();
+    const token = cfg?.access_token;
+    const env = cfg?.environment ?? "sandbox";
+    if (!token) throw new Error("Integração Melhor Envio não configurada pelo administrador.");
+    const baseUrl = meBaseFor(env);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
