@@ -671,21 +671,46 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
             <Field label="Estoque atual">
               <input type="number" min="0" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="input" />
             </Field>
+            <Field label="Estoque mínimo (alerta)">
+              <input type="number" min="0" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: Number(e.target.value) })} className="input" />
+            </Field>
+            {Number(form.stock) <= Number(form.min_stock) && Number(form.min_stock) > 0 && (
+              <p className="sm:col-span-2 text-xs text-amber-600 font-semibold">⚠ Estoque abaixo ou igual ao mínimo definido.</p>
+            )}
             <p className="sm:col-span-2 text-xs text-muted-foreground">
-              Variações de produto, estoque mínimo e histórico de movimentação chegam na próxima fase.
+              Quando o produto tiver variações, o estoque por variação tem prioridade sobre este campo.
             </p>
           </div>
+        )}
+
+        {tab === "variants" && (
+          <VariantsEditor value={variants} onChange={setVariants} />
         )}
 
         {tab === "shipping" && (
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Peso (g)"><input type="number" min="0" value={form.weight_g} onChange={(e) => setForm({ ...form, weight_g: e.target.value })} className="input" /></Field>
+            <Field label="CEP de origem"><input value={form.origin_zip} onChange={(e) => setForm({ ...form, origin_zip: e.target.value })} placeholder="00000-000" className="input" /></Field>
             <Field label="Altura (cm)"><input type="number" min="0" step="0.1" value={form.height_cm} onChange={(e) => setForm({ ...form, height_cm: e.target.value })} className="input" /></Field>
             <Field label="Largura (cm)"><input type="number" min="0" step="0.1" value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} className="input" /></Field>
             <Field label="Comprimento (cm)"><input type="number" min="0" step="0.1" value={form.length_cm} onChange={(e) => setForm({ ...form, length_cm: e.target.value })} className="input" /></Field>
+            <Field label="Transportadora">
+              <select value={form.carrier} onChange={(e) => setForm({ ...form, carrier: e.target.value })} className="input">
+                <option value="">Selecione</option>
+                <option value="correios">Correios</option>
+                <option value="jadlog">Jadlog</option>
+                <option value="loggi">Loggi</option>
+                <option value="azul_cargo">Azul Cargo</option>
+                <option value="outra">Outra</option>
+              </select>
+            </Field>
             <label className="flex items-center gap-2 text-sm sm:col-span-2">
               <input type="checkbox" checked={form.free_shipping} onChange={(e) => setForm({ ...form, free_shipping: e.target.checked })} />
               Frete grátis
+            </label>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={form.own_delivery} onChange={(e) => setForm({ ...form, own_delivery: e.target.checked })} />
+              Entrega própria (sem transportadora)
             </label>
           </div>
         )}
