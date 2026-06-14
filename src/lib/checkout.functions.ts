@@ -74,9 +74,8 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       .eq("id", sellerId)
       .maybeSingle();
     if (sellerErr) throw new Error(sellerErr.message);
-    if (!seller?.stripe_account_id || !seller.stripe_charges_enabled) {
-      throw new Error(`A loja "${seller?.name ?? ""}" ainda não está pronta para receber pagamentos.`);
-    }
+    if (!seller) throw new Error("Loja não encontrada");
+    const sellerConnected = Boolean(seller.stripe_account_id && seller.stripe_charges_enabled);
 
     // Commission %
     const { data: settings } = await supabase
