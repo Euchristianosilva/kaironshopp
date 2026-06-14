@@ -8,14 +8,22 @@ import { Upload, X, Star, GripVertical, ImagePlus, Loader2 } from "lucide-react"
 import { toast } from "sonner";
 
 export type UploadedImage = {
-  id: string; // local id for dnd
+  id: string;
   url: string;
   storage_path: string;
   is_primary: boolean;
 };
 
+type PendingImage = {
+  id: string;
+  previewUrl: string;
+  fileName: string;
+};
+
 const MAX_IMAGES = 10;
-const MAX_SIZE_MB = 1;
+const MAX_SIZE_MB = 10;
+const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const ACCEPT_ATTR = ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp";
 
 type Props = {
   sellerId: string;
@@ -24,12 +32,11 @@ type Props = {
 };
 
 export function ProductImageUploader({ sellerId, value, onChange }: Props) {
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<PendingImage[]>([]);
   const [drag, setDrag] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  // garantir que sempre exista uma primária
   useEffect(() => {
     if (value.length === 0) return;
     if (!value.some((i) => i.is_primary)) {
@@ -37,81 +44,128 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
     }
   }, [value, onChange]);
 
+  // cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      pending.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const upload = useCallback(
     async (files: File[]) => {
-      const slots = MAX_IMAGES - value.length;
+      const slots = MAX_IMAGES - value.length - pending.length;
       if (slots <= 0) {
         toast.error(`Máximo de ${MAX_IMAGES} imagens`);
         return;
       }
-      const list = files.slice(0, slots).filter((f) => f.type.startsWith("image/"));
+      const list = files.slice(0, slots).filter((f) => {
+        const ok = ACCEPTED_TYPES.includes(f.type.toLowerCase()) || /\.(jpe?g|png|webp)$/i.test(f.name);
+        if (!ok) toast.error(`"${f.name}": formato não suportado (use JPG, PNG ou WEBP)`);
+        return ok;
+      });
       if (list.length === 0) return;
 
-      setBusy(true);
+      // criar previews locais imediatos
+      const previews: PendingImage[] = list.map((f) => ({
+        id: crypto.randomUUID(),
+        previewUrl: URL.createObjectURL(f),
+        fileName: f.name,
+      }));
+      setPending((p) => [...p, ...previews]);
+
       const added: UploadedImage[] = [];
       try {
-        for (const file of list) {
-          if (file.size > 10 * 1024 * 1024) {
-            toast.error(`"${file.name}": arquivo muito grande (máx 10MB antes da compressão)`);
+        for (let i = 0; i < list.length; i++) {
+          const file = list[i];
+          const pendingItem = previews[i];
+          if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            toast.error(`"${file.name}": máximo ${MAX_SIZE_MB}MB`);
+            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
+            URL.revokeObjectURL(pendingItem.previewUrl);
             continue;
           }
-          let compressed: File | Blob = file;
+
+          let toUpload: File | Blob = file;
+          let contentType = file.type || "image/jpeg";
           try {
-            compressed = await imageCompression(file, {
-              maxSizeMB: MAX_SIZE_MB,
-              maxWidthOrHeight: 1600,
+            const compressed = await imageCompression(file, {
+              maxSizeMB: 1.5,
+              maxWidthOrHeight: 1920,
               useWebWorker: true,
+              fileType: file.type,
             });
-          } catch {
-            // se a compressão falhar, segue com o arquivo original
+            toUpload = compressed;
+            contentType = compressed.type || contentType;
+          } catch (err) {
+            console.warn("[ProductImageUploader] compression failed, uploading original:", err);
           }
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
           const path = `${sellerId}/${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage
             .from("product-images")
-            .upload(path, compressed, { contentType: file.type || "image/jpeg", upsert: true });
+            .upload(path, toUpload, { contentType, upsert: true, cacheControl: "31536000" });
+
           if (upErr) {
+            console.error("[ProductImageUploader] upload error:", upErr);
             const msg = upErr.message?.toLowerCase() ?? "";
-            if (msg.includes("row-level security") || msg.includes("not authorized")) {
-              throw new Error("Permissão negada para enviar imagem. Verifique se a loja está ativa.");
+            if (msg.includes("row-level security") || msg.includes("not authorized") || msg.includes("permission")) {
+              toast.error(`"${file.name}": permissão negada. Verifique se a loja está ativa.`);
+            } else if (msg.includes("bucket") && msg.includes("not found")) {
+              toast.error('Bucket "product-images" não encontrado.');
+            } else if (msg.includes("payload too large") || msg.includes("exceeded")) {
+              toast.error(`"${file.name}": arquivo muito grande.`);
+            } else {
+              toast.error(`"${file.name}": ${upErr.message || "falha no upload"}`);
             }
-            if (msg.includes("bucket") && msg.includes("not found")) {
-              throw new Error('Bucket "product-images" não encontrado.');
-            }
-            if (msg.includes("payload too large") || msg.includes("exceeded")) {
-              throw new Error("Arquivo muito grande.");
-            }
-            throw new Error(upErr.message || "Erro ao enviar imagem.");
+            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
+            URL.revokeObjectURL(pendingItem.previewUrl);
+            continue;
           }
-          // Bucket é privado neste workspace — gera URL assinada de longa duração
+
           const { data: signed, error: sErr } = await supabase.storage
             .from("product-images")
-            .createSignedUrl(path, 60 * 60 * 24 * 365);
+            .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+
           if (sErr || !signed?.signedUrl) {
-            throw new Error("Imagem enviada, mas não foi possível gerar a URL: " + (sErr?.message ?? ""));
+            console.error("[ProductImageUploader] signed URL error:", sErr);
+            toast.error(`"${file.name}": imagem enviada mas URL não gerada`);
+            setPending((p) => p.filter((x) => x.id !== pendingItem.id));
+            URL.revokeObjectURL(pendingItem.previewUrl);
+            continue;
           }
+
           added.push({
             id: crypto.randomUUID(),
             url: signed.signedUrl,
             storage_path: path,
             is_primary: false,
           });
+          setPending((p) => p.filter((x) => x.id !== pendingItem.id));
+          URL.revokeObjectURL(pendingItem.previewUrl);
         }
-        if (added.length === 0) return;
-        const next = [...value, ...added];
-        if (!next.some((i) => i.is_primary) && next[0]) next[0].is_primary = true;
-        onChange(next);
-        toast.success(`${added.length} imagem(ns) enviada(s)`);
+
+        if (added.length > 0) {
+          const next = [...value, ...added];
+          if (!next.some((i) => i.is_primary) && next[0]) next[0].is_primary = true;
+          onChange(next);
+          toast.success(`${added.length} imagem(ns) enviada(s)`);
+        }
       } catch (e: any) {
-        console.error("[ProductImageUploader] upload error:", e);
+        console.error("[ProductImageUploader] unexpected:", e);
         toast.error(e?.message ?? "Falha no upload");
-      } finally {
-        setBusy(false);
+        // limpar previews restantes
+        setPending((p) => {
+          const ids = previews.map((x) => x.id);
+          const remaining = p.filter((x) => !ids.includes(x.id));
+          previews.forEach((x) => URL.revokeObjectURL(x.previewUrl));
+          return remaining;
+        });
       }
     },
-    [sellerId, value, onChange],
+    [sellerId, value, pending.length, onChange],
   );
-
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -145,6 +199,9 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
     onChange(arrayMove(value, oldIdx, newIdx));
   };
 
+  const busy = pending.length > 0;
+  const total = value.length + pending.length;
+
   return (
     <div>
       <div
@@ -158,34 +215,42 @@ export function ProductImageUploader({ sellerId, value, onChange }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPT_ATTR}
           multiple
           hidden
           onChange={onPick}
-          disabled={busy || value.length >= MAX_IMAGES}
+          disabled={total >= MAX_IMAGES}
         />
         <ImagePlus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
         <p className="text-sm font-medium">Arraste imagens aqui ou</p>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={busy || value.length >= MAX_IMAGES}
+          disabled={total >= MAX_IMAGES}
           className="mt-2 inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-gradient-brand text-primary-foreground text-sm font-semibold disabled:opacity-60"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-          Selecionar imagens
+          {busy ? "Enviando..." : "Selecionar imagens"}
         </button>
         <p className="text-xs text-muted-foreground mt-2">
-          {value.length}/{MAX_IMAGES} · até {MAX_SIZE_MB}MB cada · compressão automática
+          {total}/{MAX_IMAGES} · JPG, PNG ou WEBP · até {MAX_SIZE_MB}MB cada
         </p>
       </div>
 
-      {value.length > 0 && (
+      {(value.length > 0 || pending.length > 0) && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={value.map((i) => i.id)} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
               {value.map((img) => (
                 <ImageTile key={img.id} img={img} onRemove={() => remove(img)} onPrimary={() => setPrimary(img)} />
+              ))}
+              {pending.map((p) => (
+                <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden border border-border bg-secondary/30">
+                  <img src={p.previewUrl} alt={p.fileName} className="w-full h-full object-cover opacity-60" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  </div>
+                </div>
               ))}
             </div>
           </SortableContext>
@@ -205,7 +270,7 @@ function ImageTile({ img, onRemove, onPrimary }: { img: UploadedImage; onRemove:
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   return (
     <div ref={setNodeRef} style={style} className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-secondary/30">
-      <img src={img.url} alt="" className="w-full h-full object-cover" />
+      <img src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" />
       {img.is_primary && (
         <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded">
           PRINCIPAL
