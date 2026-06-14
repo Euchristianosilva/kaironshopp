@@ -4,8 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/use-auth";
 import { listMyAdCampaigns } from "@/lib/ads.functions";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Rocket, Eye, MousePointerClick, Percent } from "lucide-react";
@@ -51,70 +49,73 @@ function Page() {
   if (loading || !user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-black flex items-center gap-2">
-            <Rocket className="h-7 w-7 text-primary" /> Anúncios Patrocinados
-          </h1>
-          <Link to="/seller/products" className="text-sm text-primary hover:underline">Turbinar produto →</Link>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-black flex items-center gap-2">
+          <Rocket className="h-7 w-7 text-primary" /> Anúncios Patrocinados
+        </h1>
+        <Link
+          to="/seller/products"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-gradient-brand text-primary-foreground font-bold text-sm hover:opacity-95"
+        >
+          <Rocket className="h-4 w-4" /> Turbinar produto
+        </Link>
+      </div>
 
-        <div className="grid sm:grid-cols-4 gap-4 mb-6">
-          <Kpi icon={Eye} label="Impressões" value={totals.impressions.toLocaleString("pt-BR")} />
-          <Kpi icon={MousePointerClick} label="Cliques" value={totals.clicks.toLocaleString("pt-BR")} />
-          <Kpi icon={Percent} label="CTR" value={`${ctr}%`} />
-          <Kpi icon={Rocket} label="Investido" value={`R$ ${(totals.spent / 100).toFixed(2)}`} />
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Kpi icon={Eye} label="Impressões" value={totals.impressions.toLocaleString("pt-BR")} />
+        <Kpi icon={MousePointerClick} label="Cliques" value={totals.clicks.toLocaleString("pt-BR")} />
+        <Kpi icon={Percent} label="CTR" value={`${ctr}%`} />
+        <Kpi icon={Rocket} label="Investido" value={`R$ ${(totals.spent / 100).toFixed(2)}`} />
+      </div>
 
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {isLoading ? (
-            <p className="p-8 text-center text-muted-foreground">Carregando...</p>
-          ) : campaigns.length === 0 ? (
-            <p className="p-8 text-center text-muted-foreground">Você ainda não criou nenhum anúncio.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produto</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Período</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Impressões</TableHead>
-                  <TableHead className="text-right">Cliques</TableHead>
-                  <TableHead className="text-right">CTR</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campaigns.map((c: any) => {
-                  const s = statusLabel[c.status] ?? { label: c.status, variant: "secondary" };
-                  const itemCtr = c.metrics.impressions ? ((c.metrics.clicks / c.metrics.impressions) * 100).toFixed(2) : "0.00";
-                  return (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-semibold text-sm flex items-center gap-2">
-                        {c.products?.image_url && <img src={c.products.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
+      <div className="bg-card border border-border rounded-xl overflow-x-auto">
+        {isLoading ? (
+          <p className="p-8 text-center text-muted-foreground">Carregando...</p>
+        ) : campaigns.length === 0 ? (
+          <p className="p-8 text-center text-muted-foreground">Você ainda não criou nenhum anúncio.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Produto</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Período</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Impressões</TableHead>
+                <TableHead className="text-right">Cliques</TableHead>
+                <TableHead className="text-right">CTR</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {campaigns.map((c: any) => {
+                const s = statusLabel[c.status] ?? { label: c.status, variant: "secondary" };
+                const itemCtr = c.metrics.impressions ? ((c.metrics.clicks / c.metrics.impressions) * 100).toFixed(2) : "0.00";
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-semibold text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {c.products?.image_url && <img src={c.products.image_url} alt="" className="h-8 w-8 rounded object-cover shrink-0" />}
                         <span className="line-clamp-1">{c.products?.title ?? "—"}</span>
-                      </TableCell>
-                      <TableCell className="text-xs">{c.placement === "carousel" ? "Carrossel" : "Card"}</TableCell>
-                      <TableCell className="text-xs">
-                        {new Date(c.starts_at).toLocaleDateString("pt-BR")} → {new Date(c.ends_at).toLocaleDateString("pt-BR")}
-                      </TableCell>
-                      <TableCell><Badge variant={s.variant}>{s.label}</Badge></TableCell>
-                      <TableCell className="text-right">{c.metrics.impressions.toLocaleString("pt-BR")}</TableCell>
-                      <TableCell className="text-right">{c.metrics.clicks.toLocaleString("pt-BR")}</TableCell>
-                      <TableCell className="text-right">{itemCtr}%</TableCell>
-                      <TableCell className="text-right font-semibold">R$ {(c.amount_cents / 100).toFixed(2)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </main>
-      <Footer />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs">{c.placement === "carousel" ? "Carrossel" : "Card"}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {new Date(c.starts_at).toLocaleDateString("pt-BR")} → {new Date(c.ends_at).toLocaleDateString("pt-BR")}
+                    </TableCell>
+                    <TableCell><Badge variant={s.variant}>{s.label}</Badge></TableCell>
+                    <TableCell className="text-right">{c.metrics.impressions.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-right">{c.metrics.clicks.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-right">{itemCtr}%</TableCell>
+                    <TableCell className="text-right font-semibold whitespace-nowrap">R$ {(c.amount_cents / 100).toFixed(2)}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </div>
     </div>
   );
 }
