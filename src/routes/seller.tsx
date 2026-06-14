@@ -10,6 +10,8 @@ import { Plus, Package, Pencil, Trash2, Store, X, CreditCard, CheckCircle2, Aler
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createConnectAccount, refreshConnectStatus, createExpressDashboardLink } from "@/lib/connect.functions";
+import { ProductImageUploader } from "@/components/seller/ProductImageUploader";
+import { CategorySelect } from "@/components/seller/CategorySelect";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
