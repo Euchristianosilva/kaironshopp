@@ -4,9 +4,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const getAdminOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso negado");
+    const email = (context.claims as any)?.email as string | undefined;
+    const { assertAdminAccess } = await import("@/lib/admin-auth.server");
+    await assertAdminAccess(context.userId, email);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
