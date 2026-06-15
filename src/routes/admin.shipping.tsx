@@ -171,7 +171,9 @@ function AdminShippingWizard() {
             <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último erro" value={diag?.last_error_at ? `${diag.last_error_status ?? "?"} · ${new Date(diag.last_error_at).toLocaleString("pt-BR")}` : "—"} />
             <InfoRow label="Método" value={diag?.last_request_method ?? "—"} />
-            <InfoRow label="Endpoint" value={data.base_url} />
+            <InfoRow label="Status HTTP" value={diag?.last_error_status ?? "—"} />
+            <InfoRow label="Endpoint base" value={data.base_url} />
+            <div className="sm:col-span-2"><InfoRow label="Última URL chamada" value={diag?.last_error_endpoint ?? "—"} /></div>
             <div className="sm:col-span-2"><InfoRow label="Escopos OAuth" value={cfg?.oauth_scopes || data.oauth.scopes} /></div>
             <div className="sm:col-span-2"><InfoRow label="Webhook URL" value={cfg?.webhook_url || "—"} /></div>
           </div>
