@@ -226,6 +226,42 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          position: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: number
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -725,16 +761,31 @@ export type Database = {
         Row: {
           commission_percent: number
           id: boolean
+          logo_url: string | null
+          platform_name: string
+          seo_description: string | null
+          seo_title: string | null
+          support_email: string | null
           updated_at: string
         }
         Insert: {
           commission_percent?: number
           id?: boolean
+          logo_url?: string | null
+          platform_name?: string
+          seo_description?: string | null
+          seo_title?: string | null
+          support_email?: string | null
           updated_at?: string
         }
         Update: {
           commission_percent?: number
           id?: boolean
+          logo_url?: string | null
+          platform_name?: string
+          seo_description?: string | null
+          seo_title?: string | null
+          support_email?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1134,6 +1185,7 @@ export type Database = {
           seo_title: string | null
           shipping_policy: string | null
           slug: string
+          status: string
           stripe_account_id: string | null
           stripe_charges_enabled: boolean
           stripe_onboarding_status: string
@@ -1167,6 +1219,7 @@ export type Database = {
           seo_title?: string | null
           shipping_policy?: string | null
           slug: string
+          status?: string
           stripe_account_id?: string | null
           stripe_charges_enabled?: boolean
           stripe_onboarding_status?: string
@@ -1200,6 +1253,7 @@ export type Database = {
           seo_title?: string | null
           shipping_policy?: string | null
           slug?: string
+          status?: string
           stripe_account_id?: string | null
           stripe_charges_enabled?: boolean
           stripe_onboarding_status?: string
