@@ -128,7 +128,6 @@ function Admin() {
                   </div>
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="font-bold truncate">{m.label}</div>
-                    {m.soon && <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-semibold">Em breve</span>}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.desc}</div>
                 </div>
