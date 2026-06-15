@@ -16,12 +16,15 @@ export type Database = {
     Tables: {
       ad_campaigns: {
         Row: {
+          activated_at: string | null
+          activated_by: string | null
           amount_cents: number
           canceled_at: string | null
           created_at: string
           currency: string
           ends_at: string
           id: string
+          is_manual: boolean
           metadata: Json
           owner_id: string
           paid_at: string | null
@@ -37,12 +40,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
           amount_cents: number
           canceled_at?: string | null
           created_at?: string
           currency?: string
           ends_at: string
           id?: string
+          is_manual?: boolean
           metadata?: Json
           owner_id: string
           paid_at?: string | null
@@ -58,12 +64,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          activated_at?: string | null
+          activated_by?: string | null
           amount_cents?: number
           canceled_at?: string | null
           created_at?: string
           currency?: string
           ends_at?: string
           id?: string
+          is_manual?: boolean
           metadata?: Json
           owner_id?: string
           paid_at?: string | null
@@ -1492,7 +1501,16 @@ export type Database = {
         | "canceled"
         | "refunded"
         | "rejected"
-      ad_placement: "card" | "carousel"
+      ad_placement:
+        | "card"
+        | "carousel"
+        | "banner_principal"
+        | "destaque_home"
+        | "patrocinado"
+        | "vitrine_topo"
+        | "categoria"
+        | "busca"
+        | "premium"
       app_role: "admin" | "seller" | "user" | "customer"
       notification_type:
         | "new_order"
@@ -1641,7 +1659,17 @@ export const Constants = {
         "refunded",
         "rejected",
       ],
-      ad_placement: ["card", "carousel"],
+      ad_placement: [
+        "card",
+        "carousel",
+        "banner_principal",
+        "destaque_home",
+        "patrocinado",
+        "vitrine_topo",
+        "categoria",
+        "busca",
+        "premium",
+      ],
       app_role: ["admin", "seller", "user", "customer"],
       notification_type: [
         "new_order",
