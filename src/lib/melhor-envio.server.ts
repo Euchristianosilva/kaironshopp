@@ -64,7 +64,7 @@ function responseForStorage(text: string) {
 
 function mask(value: string | null | undefined) {
   if (!value) return null;
-  if (value.length <= 6) return "••••";
+  if (value.length <= 6) return `${value.slice(0, 2)}…${value.slice(-1)}`;
   return `${value.slice(0, 3)}…${value.slice(-2)}`;
 }
 
