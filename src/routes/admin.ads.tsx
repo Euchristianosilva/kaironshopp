@@ -1,8 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useAuth } from "@/hooks/use-auth";
+import { useAdminGuard } from "@/hooks/use-admin-guard";
 import { adminUpdateCampaignStatus, listAllAdCampaigns } from "@/lib/ads.functions";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
@@ -28,9 +27,7 @@ const statusLabel: Record<string, { label: string; variant: any }> = {
 };
 
 function Page() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => { if (!loading && !user) navigate({ to: "/auth" }); }, [loading, user, navigate]);
+  const { checking, isAdmin } = useAdminGuard();
 
   const qc = useQueryClient();
   const listFn = useServerFn(listAllAdCampaigns);
@@ -39,7 +36,7 @@ function Page() {
   const { data: campaigns = [], isLoading, error } = useQuery({
     queryKey: ["admin-ad-campaigns"],
     queryFn: () => listFn(),
-    enabled: !!user,
+    enabled: isAdmin,
     retry: false,
   });
 
@@ -52,7 +49,7 @@ function Page() {
     onError: (e: any) => toast.error(e?.message ?? "Erro"),
   });
 
-  if (loading || !user) return null;
+  if (checking || !isAdmin) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
