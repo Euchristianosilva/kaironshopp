@@ -103,6 +103,19 @@ function AdminShippingWizard() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
   });
 
+  const refreshMut = useMutation({
+    mutationFn: () => refreshToken(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success("Token atualizado com sucesso.");
+        qc.invalidateQueries({ queryKey: ["me-config"] });
+      } else {
+        toast.error(res.error ?? "Não foi possível atualizar o token.");
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar token"),
+  });
+
   async function handleFinish() {
     try {
       await saveMut.mutateAsync();
