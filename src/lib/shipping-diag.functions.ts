@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { MELHOR_ENVIO_ENDPOINT_AUDIT, MELHOR_ENVIO_SCOPE_TEXT, meBaseFor, oauthBaseFor } from "@/lib/melhor-envio.shared";
+import { MELHOR_ENVIO_ENDPOINT_AUDIT, MELHOR_ENVIO_SCOPE_TEXT, MELHOR_ENVIO_USER_AGENT, meBaseFor, oauthBaseFor } from "@/lib/melhor-envio.shared";
 
 function normalizeOrigin(origin: string) {
   const url = new URL(origin);
@@ -47,6 +47,9 @@ export const getShippingDiagnostics = createServerFn({ method: "GET" })
 
     const row = (cfg ?? {}) as any;
     const env = row.environment ?? "sandbox";
+    const baseUrl = meBaseFor(env);
+    const oauthTokenEndpoint = `${oauthBaseFor(env)}/oauth/token`;
+    const connectionTestEndpoint = `${baseUrl}/me`;
     return {
       config: {
         environment: env,
@@ -62,9 +65,35 @@ export const getShippingDiagnostics = createServerFn({ method: "GET" })
         updated_at: row.updated_at ?? null,
         oauth_scopes: row.oauth_scopes ?? MELHOR_ENVIO_SCOPE_TEXT,
       },
-      base_url: meBaseFor(env),
+      base_url: baseUrl,
+      endpoints: {
+        oauth_token: oauthTokenEndpoint,
+        oauth_refresh_token: oauthTokenEndpoint,
+        connection_test: connectionTestEndpoint,
+        current_full_url: connectionTestEndpoint,
+      },
+      request_headers: {
+        oauth_token: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        },
+        oauth_refresh_token: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        },
+        connection_test: {
+          Authorization: "Bearer [masked]",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        },
+      },
       oauth: {
         authorize_base_url: `${oauthBaseFor(env)}/oauth/authorize`,
+        token_endpoint: oauthTokenEndpoint,
+        refresh_token_endpoint: oauthTokenEndpoint,
         scopes: MELHOR_ENVIO_SCOPE_TEXT,
         endpoints: MELHOR_ENVIO_ENDPOINT_AUDIT,
       },
@@ -223,6 +252,12 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
         status: 0,
         env,
         endpoint,
+        request_headers: {
+          Authorization: "Bearer [masked]",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        },
         error: "Access Token não configurado. Reautorize o OAuth.",
         reauth_url: null,
         reauth_reason: "Access Token não configurado.",
@@ -238,10 +273,16 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
         status: result.status,
         env,
         endpoint,
+        request_headers: {
+          Authorization: "Bearer [masked]",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        },
         user: parsed && (parsed.email || parsed.name)
           ? { email: parsed.email, name: parsed.name }
           : null,
-        body: result.ok ? null : result.text.slice(0, 500),
+        body: result.text.slice(0, 12000),
         error: result.reauth_reason ?? undefined,
         reauth_url: result.reauth_url,
         reauth_reason: result.reauth_reason,
