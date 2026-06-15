@@ -181,14 +181,14 @@ export const refreshMelhorEnvioToken = createServerFn({ method: "POST" })
       .eq("id", true)
       .maybeSingle();
     if (!cfg?.refresh_token) {
-      return { ok: false, error: "Sem refresh token. Reconecte a aplicação via OAuth." };
+      return { ok: false, error: "Sem refresh token. Reconecte a aplicação via OAuth.", reauth_url: null };
     }
     // Force refresh by zeroing expiry
     const updated = await refreshAccessTokenIfNeeded(supabaseAdmin, { ...(cfg as any), token_expires_at: new Date(0).toISOString() });
     const ok = (updated as any)?.access_token && (updated as any)?.access_token !== (cfg as any)?.access_token;
     return ok
-      ? { ok: true, token_expires_at: (updated as any).token_expires_at }
-      : { ok: false, error: "Falha ao atualizar o token. Verifique credenciais." };
+      ? { ok: true, token_expires_at: (updated as any).token_expires_at, reauth_url: null }
+      : { ok: false, error: "Falha ao atualizar o token. Verifique credenciais.", reauth_url: null };
   });
 
 export const pingMelhorEnvio = createServerFn({ method: "POST" })
