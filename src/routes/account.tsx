@@ -23,7 +23,6 @@ export const Route = createFileRoute("/account")({
 const sections = [
   { id: "orders", label: "Meus pedidos", icon: Package },
   { id: "addresses", label: "Endereços", icon: MapPin },
-  { id: "reviews", label: "Avaliações", icon: Star },
   { id: "favorites", label: "Favoritos", icon: Heart },
   { id: "profile", label: "Perfil", icon: User },
 ] as const;

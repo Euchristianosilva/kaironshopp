@@ -19,11 +19,12 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, role, roleLoading } = useAuth();
 
   useEffect(() => {
-    if (user) navigate({ to: "/account" });
-  }, [user, navigate]);
+    if (!user || roleLoading) return;
+    navigate({ to: role === "admin" ? "/admin" : role === "seller" ? "/seller" : "/account" });
+  }, [user, role, roleLoading, navigate]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +45,6 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Bem-vindo de volta!");
-        navigate({ to: "/account" });
       }
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao autenticar");
