@@ -177,6 +177,16 @@ function AdminShippingWizard() {
           {pingRes && (
             <div className={`text-sm rounded-md p-3 mb-4 ${pingRes.ok ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
               {pingRes.ok ? `Conexão OK (${pingRes.status})${pingRes.user?.email ? ` — ${pingRes.user.email}` : ""}` : `Falha (${pingRes.status}): ${pingRes.error ?? pingRes.body ?? ""}`}
+              {!pingRes.ok && pingRes.reauth_url && (
+                <a href={pingRes.reauth_url} className="block mt-2 underline font-semibold">Reautorizar OAuth no Melhor Envio</a>
+              )}
+            </div>
+          )}
+
+          {diag?.reauth_required && (
+            <div className="text-sm rounded-md p-3 mb-4 bg-destructive/10 text-destructive text-left">
+              <strong>Reautorização necessária:</strong> {diag.reauth_reason ?? "Token inválido ou sem permissão."}
+              {diag.reauth_url && <a href={diag.reauth_url} className="block mt-2 underline font-semibold">Abrir autorização OAuth</a>}
             </div>
           )}
 
@@ -321,8 +331,13 @@ function AdminShippingWizard() {
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Agora a plataforma abre o Melhor Envio para autorização oficial OAuth 2.0. O <strong>Access Token</strong> e o <strong>Refresh Token</strong> serão gerados automaticamente após a aprovação.
-              <code className="block mt-1 text-[10px] bg-secondary rounded p-2">shipping-calculate shipping-tracking cart-read cart-write</code>
+              <code className="block mt-1 text-[10px] bg-secondary rounded p-2">{data.oauth.scopes}</code>
             </p>
+            <div className="rounded-lg bg-secondary/40 p-4 text-xs space-y-2">
+              {data.oauth.endpoints.map((item) => (
+                <InfoRow key={item.path} label={`${item.method} ${item.path}`} value={`${item.scope} · ${item.purpose}`} />
+              ))}
+            </div>
             <button
               type="button"
               onClick={() => oauthMut.mutate()}
@@ -371,6 +386,9 @@ function AdminShippingWizard() {
                   {pingMut.data.ok
                     ? `Conexão OK (${pingMut.data.status})${pingMut.data.user?.email ? ` — ${pingMut.data.user.email}` : ""}`
                     : `Falha (${pingMut.data.status}): ${pingMut.data.error ?? pingMut.data.body ?? "verifique credenciais"}`}
+                  {!pingMut.data.ok && pingMut.data.reauth_url && (
+                    <a href={pingMut.data.reauth_url} className="block mt-2 underline font-semibold">Reautorizar OAuth no Melhor Envio</a>
+                  )}
                 </div>
               </div>
             )}
