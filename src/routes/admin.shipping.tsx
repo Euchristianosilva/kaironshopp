@@ -142,6 +142,8 @@ function AdminShippingWizard() {
           </p>
 
           <div className="grid sm:grid-cols-2 gap-3 text-sm text-left mb-6">
+            <InfoRow label="Status do token" value={cfg?.token_expired ? "Expirado" : "Ativo"} />
+            <InfoRow label="Última sincronização" value={cfg?.last_sync_at ? new Date(cfg.last_sync_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Última atualização" value={cfg?.updated_at ? new Date(cfg.updated_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último erro" value={diag?.last_error_at ? `${diag.last_error_status ?? "?"} · ${new Date(diag.last_error_at).toLocaleString("pt-BR")}` : "—"} />
