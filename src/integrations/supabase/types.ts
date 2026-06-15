@@ -1639,19 +1639,6 @@ export type Database = {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
       }
-      validate_coupon: {
-        Args: { _code: string; _seller_id: string }
-        Returns: {
-          code: string
-          discount_type: string
-          discount_value: number
-          id: string
-          min_purchase_cents: number
-          seller_id: string
-          valid_from: string
-          valid_until: string
-        }[]
-      }
     }
     Enums: {
       ad_campaign_status:
