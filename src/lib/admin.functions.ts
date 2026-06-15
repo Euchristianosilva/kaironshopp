@@ -370,3 +370,50 @@ export const getReports = createServerFn({ method: "POST" })
       rows: rows.slice(0, 100),
     };
   });
+
+/* ============================== SALES SERIES (CHARTS) ============================== */
+
+export const getAdminSalesSeries = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { days?: number }) => ({ days: Math.min(Math.max(d?.days ?? 30, 1), 365) }))
+  .handler(async ({ data, context }) => {
+    const supabaseAdmin = await adminGate(context);
+    const days = data.days;
+    const since = new Date(Date.now() - 1000 * 60 * 60 * 24 * days);
+    since.setHours(0, 0, 0, 0);
+
+    const [ordersRes, usersRes] = await Promise.all([
+      supabaseAdmin
+        .from("orders")
+        .select("created_at, gross_cents, platform_fee_cents, payment_status")
+        .gte("created_at", since.toISOString()),
+      supabaseAdmin
+        .from("profiles")
+        .select("created_at")
+        .gte("created_at", since.toISOString()),
+    ]);
+
+    const buckets = new Map<string, { date: string; revenue: number; orders: number; users: number; fee: number }>();
+    for (let i = 0; i < days; i++) {
+      const d = new Date(since);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      buckets.set(key, { date: key, revenue: 0, orders: 0, users: 0, fee: 0 });
+    }
+    for (const o of (ordersRes.data ?? []) as any[]) {
+      const key = String(o.created_at).slice(0, 10);
+      const b = buckets.get(key);
+      if (!b) continue;
+      if (o.payment_status === "paid") {
+        b.revenue += (o.gross_cents ?? 0) / 100;
+        b.fee += (o.platform_fee_cents ?? 0) / 100;
+        b.orders += 1;
+      }
+    }
+    for (const u of (usersRes.data ?? []) as any[]) {
+      const key = String(u.created_at).slice(0, 10);
+      const b = buckets.get(key);
+      if (b) b.users += 1;
+    }
+    return { days, series: Array.from(buckets.values()) };
+  });
