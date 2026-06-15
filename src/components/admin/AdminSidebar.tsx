@@ -19,7 +19,7 @@ const sections: Array<{ label: string; items: Array<{ to: string; label: string;
     label: "Operação",
     items: [
       { to: "/admin/users", label: "Usuários", icon: Users },
-      { to: "/admin/sellers", label: "Vendedores", icon: Store },
+      { to: "/admin/vendors", label: "Vendedores", icon: Store },
       { to: "/admin/products", label: "Produtos", icon: Package },
       { to: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
       { to: "/admin/categories", label: "Categorias", icon: Tags },

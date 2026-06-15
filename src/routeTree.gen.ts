@@ -19,6 +19,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as SellerSubscriptionRouteImport } from './routes/seller.subscription'
 import { Route as SellerStockRouteImport } from './routes/seller.stock'
 import { Route as SellerShippingRouteImport } from './routes/seller.shipping'
@@ -37,6 +38,7 @@ import { Route as SellerAdsRouteImport } from './routes/seller.ads'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as AdminVendorsRouteImport } from './routes/admin.vendors'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminShippingRouteImport } from './routes/admin.shipping'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -104,6 +106,11 @@ const SellerIndexRoute = SellerIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SellerRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SellerSubscriptionRoute = SellerSubscriptionRouteImport.update({
   id: '/subscription',
@@ -194,6 +201,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   id: '/category/$slug',
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVendorsRoute = AdminVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
@@ -307,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -325,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -334,7 +348,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -353,6 +366,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -371,6 +385,7 @@ export interface FileRoutesByTo {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin': typeof AdminIndexRoute
   '/seller': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -401,6 +416,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
   '/order/success': typeof OrderSuccessRoute
   '/product/$id': typeof ProductIdRoute
@@ -419,6 +435,7 @@ export interface FileRoutesById {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -450,6 +467,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/users'
+    | '/admin/vendors'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -468,6 +486,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -477,7 +496,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
-    | '/admin'
     | '/auth'
     | '/cart'
     | '/checkout'
@@ -496,6 +514,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/users'
+    | '/admin/vendors'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -514,6 +533,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin'
     | '/seller'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -543,6 +563,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipping'
     | '/admin/users'
+    | '/admin/vendors'
     | '/category/$slug'
     | '/order/success'
     | '/product/$id'
@@ -561,6 +582,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -658,6 +680,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/seller/'
       preLoaderRoute: typeof SellerIndexRouteImport
       parentRoute: typeof SellerRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/seller/subscription': {
       id: '/seller/subscription'
@@ -784,6 +813,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/category/$slug'
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/vendors': {
+      id: '/admin/vendors'
+      path: '/vendors'
+      fullPath: '/admin/vendors'
+      preLoaderRoute: typeof AdminVendorsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/users': {
       id: '/admin/users'
@@ -921,6 +957,8 @@ interface AdminRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminShippingRoute: typeof AdminShippingRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminVendorsRoute: typeof AdminVendorsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -937,6 +975,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminShippingRoute: AdminShippingRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminVendorsRoute: AdminVendorsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
