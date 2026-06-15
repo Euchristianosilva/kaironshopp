@@ -18,16 +18,14 @@ export const getAdminOverview = createServerFn({ method: "POST" })
     const [
       usersRes,
       sellersRes,
-      sellersPendingRes,
       productsRes,
-      productsPendingRes,
+      productsInactiveRes,
       ordersTodayRes,
       ordersMonthRes,
       ordersPrevMonthRes,
     ] = await Promise.all([
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
       supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabaseAdmin.from("products").select("id", { count: "exact", head: true }),
       supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabaseAdmin
