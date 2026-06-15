@@ -113,21 +113,21 @@ function AdminShippingWizard() {
     } catch {}
   }
 
-  if (checking || isLoading) {
+  if (isLoading) {
     return (
       <Shell>
         <div className="py-20 text-center text-muted-foreground">Carregando…</div>
       </Shell>
     );
   }
-  if (!isAdmin) return null;
   if (!data) {
     return (
       <Shell>
-        <div className="py-20 text-center text-destructive">Sem acesso (somente admin).</div>
+        <div className="py-20 text-center text-destructive">Sem dados.</div>
       </Shell>
     );
   }
+
 
   // Configured summary screen
   if (alreadyConfigured) {
