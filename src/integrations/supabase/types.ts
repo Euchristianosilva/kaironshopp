@@ -385,6 +385,9 @@ export type Database = {
           client_secret: string | null
           environment: string
           id: boolean
+          last_sync_at: string | null
+          oauth_state: string | null
+          oauth_state_expires_at: string | null
           refresh_token: string | null
           token_expires_at: string | null
           updated_at: string
@@ -398,6 +401,9 @@ export type Database = {
           client_secret?: string | null
           environment?: string
           id?: boolean
+          last_sync_at?: string | null
+          oauth_state?: string | null
+          oauth_state_expires_at?: string | null
           refresh_token?: string | null
           token_expires_at?: string | null
           updated_at?: string
@@ -411,6 +417,9 @@ export type Database = {
           client_secret?: string | null
           environment?: string
           id?: boolean
+          last_sync_at?: string | null
+          oauth_state?: string | null
+          oauth_state_expires_at?: string | null
           refresh_token?: string | null
           token_expires_at?: string | null
           updated_at?: string

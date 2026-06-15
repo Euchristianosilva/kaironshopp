@@ -28,16 +28,90 @@ function meBaseFor(env: string) {
     : "https://sandbox.melhorenvio.com.br/api/v2";
 }
 
+function oauthBaseFor(env: string) {
+  return env === "production"
+    ? "https://www.melhorenvio.com.br"
+    : "https://sandbox.melhorenvio.com.br";
+}
+
+function tokenExpiryFrom(expiresIn: unknown) {
+  const seconds = typeof expiresIn === "number" ? expiresIn : Number(expiresIn ?? 0);
+  return seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
+}
+
+async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: any) {
+  const expiresAt = cfg?.token_expires_at ? Date.parse(cfg.token_expires_at) : null;
+  const stillValid = !expiresAt || expiresAt > Date.now() + 60_000;
+  if (stillValid || !cfg?.refresh_token || !cfg?.client_id || !cfg?.client_secret) return cfg;
+
+  const env = cfg.environment ?? "sandbox";
+  const endpoint = `${oauthBaseFor(env)}/oauth/token`;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "Kairon Shopp (suporte@kaironshopp.com.br)",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: cfg.client_id,
+        client_secret: cfg.client_secret,
+        refresh_token: cfg.refresh_token,
+      }).toString(),
+    });
+    const text = await res.text();
+    let body: any = null;
+    try { body = JSON.parse(text); } catch {}
+
+    if (!res.ok || !body?.access_token) {
+      await supabaseAdmin.from("shipping_diagnostics").upsert({
+        id: true,
+        last_error_at: new Date().toISOString(),
+        last_error_status: res.status,
+        last_error_endpoint: endpoint,
+        last_error_body: text.slice(0, 1000),
+        last_env: env,
+        updated_at: new Date().toISOString(),
+      });
+      return cfg;
+    }
+
+    const patch = {
+      access_token: body.access_token,
+      refresh_token: body.refresh_token ?? cfg.refresh_token,
+      token_expires_at: tokenExpiryFrom(body.expires_in),
+      last_sync_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    await supabaseAdmin.from("melhor_envio_config").update(patch as never).eq("id", true);
+    return { ...cfg, ...patch };
+  } catch (e) {
+    await supabaseAdmin.from("shipping_diagnostics").upsert({
+      id: true,
+      last_error_at: new Date().toISOString(),
+      last_error_status: 0,
+      last_error_endpoint: endpoint,
+      last_error_body: e instanceof Error ? e.message : String(e),
+      last_env: env,
+      updated_at: new Date().toISOString(),
+    });
+    return cfg;
+  }
+}
+
 export const calculateShipping = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => CalcInput.parse(d))
   .handler(async ({ data }): Promise<{ quotes: Quote[] }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: cfg } = await supabaseAdmin
+    let { data: cfg } = await supabaseAdmin
       .from("melhor_envio_config")
-      .select("environment, access_token")
+      .select("*")
       .eq("id", true)
       .maybeSingle();
+    cfg = await refreshAccessTokenIfNeeded(supabaseAdmin, cfg as any);
     const token = cfg?.access_token;
     const env = cfg?.environment ?? "sandbox";
     if (!token) throw new Error("Integração Melhor Envio não configurada pelo administrador.");

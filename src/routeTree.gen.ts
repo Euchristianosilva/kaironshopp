@@ -42,6 +42,7 @@ import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
 import { Route as AdminAdsRouteImport } from './routes/admin.ads'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicMelhorEnvioWebhookRouteImport } from './routes/api/public/melhor-envio/webhook'
+import { Route as ApiPublicMelhorEnvioOauthCallbackRouteImport } from './routes/api/public/melhor-envio/oauth-callback'
 import { Route as ApiPublicHooksAdSchedulerRouteImport } from './routes/api/public/hooks/ad-scheduler'
 
 const SellerRoute = SellerRouteImport.update({
@@ -210,6 +211,12 @@ const ApiPublicMelhorEnvioWebhookRoute =
     path: '/api/public/melhor-envio/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMelhorEnvioOauthCallbackRoute =
+  ApiPublicMelhorEnvioOauthCallbackRouteImport.update({
+    id: '/api/public/melhor-envio/oauth-callback',
+    path: '/api/public/melhor-envio/oauth-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksAdSchedulerRoute =
   ApiPublicHooksAdSchedulerRouteImport.update({
     id: '/api/public/hooks/ad-scheduler',
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
+  '/api/public/melhor-envio/oauth-callback': typeof ApiPublicMelhorEnvioOauthCallbackRoute
   '/api/public/melhor-envio/webhook': typeof ApiPublicMelhorEnvioWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -286,6 +294,7 @@ export interface FileRoutesByTo {
   '/seller': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
+  '/api/public/melhor-envio/oauth-callback': typeof ApiPublicMelhorEnvioOauthCallbackRoute
   '/api/public/melhor-envio/webhook': typeof ApiPublicMelhorEnvioWebhookRoute
 }
 export interface FileRoutesById {
@@ -323,6 +332,7 @@ export interface FileRoutesById {
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
+  '/api/public/melhor-envio/oauth-callback': typeof ApiPublicMelhorEnvioOauthCallbackRoute
   '/api/public/melhor-envio/webhook': typeof ApiPublicMelhorEnvioWebhookRoute
 }
 export interface FileRouteTypes {
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
+    | '/api/public/melhor-envio/oauth-callback'
     | '/api/public/melhor-envio/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
+    | '/api/public/melhor-envio/oauth-callback'
     | '/api/public/melhor-envio/webhook'
   id:
     | '__root__'
@@ -432,6 +444,7 @@ export interface FileRouteTypes {
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
+    | '/api/public/melhor-envio/oauth-callback'
     | '/api/public/melhor-envio/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -450,6 +463,7 @@ export interface RootRouteChildren {
   ProductIdRoute: typeof ProductIdRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicHooksAdSchedulerRoute: typeof ApiPublicHooksAdSchedulerRoute
+  ApiPublicMelhorEnvioOauthCallbackRoute: typeof ApiPublicMelhorEnvioOauthCallbackRoute
   ApiPublicMelhorEnvioWebhookRoute: typeof ApiPublicMelhorEnvioWebhookRoute
 }
 
@@ -686,6 +700,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMelhorEnvioWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/melhor-envio/oauth-callback': {
+      id: '/api/public/melhor-envio/oauth-callback'
+      path: '/api/public/melhor-envio/oauth-callback'
+      fullPath: '/api/public/melhor-envio/oauth-callback'
+      preLoaderRoute: typeof ApiPublicMelhorEnvioOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ad-scheduler': {
       id: '/api/public/hooks/ad-scheduler'
       path: '/api/public/hooks/ad-scheduler'
@@ -766,18 +787,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProductIdRoute: ProductIdRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicHooksAdSchedulerRoute: ApiPublicHooksAdSchedulerRoute,
+  ApiPublicMelhorEnvioOauthCallbackRoute:
+    ApiPublicMelhorEnvioOauthCallbackRoute,
   ApiPublicMelhorEnvioWebhookRoute: ApiPublicMelhorEnvioWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
