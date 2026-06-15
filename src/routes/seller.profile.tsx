@@ -39,6 +39,26 @@ function Page() {
 
   const set = (k: string) => (e: any) => setForm({ ...form, [k]: e.target.value });
 
+  const onZipBlur = async () => {
+    const raw = (form.origin_zip ?? "").replace(/\D/g, "");
+    if (raw.length !== 8) return;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+      const j = await res.json();
+      if (j.erro) { toast.error("CEP não encontrado"); return; }
+      setForm((f: any) => ({
+        ...f,
+        origin_zip: raw,
+        origin_address: f.origin_address || j.logradouro || "",
+        origin_district: f.origin_district || j.bairro || "",
+        origin_city: f.origin_city || j.localidade || "",
+        origin_state: f.origin_state || j.uf || "",
+      }));
+    } catch { toast.error("Falha ao consultar CEP"); }
+  };
+
+  const addrComplete = !!(form.origin_zip && form.origin_address && form.origin_number && form.origin_district && form.origin_city && form.origin_state);
+
   return (
     <div className="min-h-0">
       
@@ -96,6 +116,43 @@ function Page() {
             </div>
           </div>
 
+          <div className="border-t border-border pt-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-lg font-bold">📍 Endereço da Loja</h2>
+              {!addrComplete && <span className="text-xs text-amber-600 dark:text-amber-400">Endereço incompleto — necessário para cálculo de frete</span>}
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-semibold">CEP</label>
+                <input value={form.origin_zip ?? ""} onChange={set("origin_zip")} onBlur={onZipBlur} placeholder="00000-000" className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-semibold">Rua / Avenida</label>
+                <input value={form.origin_address ?? ""} onChange={set("origin_address")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Número</label>
+                <input value={form.origin_number ?? ""} onChange={set("origin_number")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Complemento</label>
+                <input value={form.origin_complement ?? ""} onChange={set("origin_complement")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Bairro</label>
+                <input value={form.origin_district ?? ""} onChange={set("origin_district")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-semibold">Cidade</label>
+                <input value={form.origin_city ?? ""} onChange={set("origin_city")} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm" />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Estado (UF)</label>
+                <input value={form.origin_state ?? ""} onChange={(e) => setForm({ ...form, origin_state: e.target.value.toUpperCase().slice(0, 2) })} maxLength={2} className="w-full h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm uppercase" />
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="text-sm font-semibold">Descrição</label>
             <textarea value={form.description ?? ""} onChange={set("description")} rows={4} className="w-full px-3 py-2 mt-1 rounded-md border border-border bg-background text-sm" />
@@ -104,6 +161,13 @@ function Page() {
           <button onClick={() => mut.mutate({
             name: form.name, logo_url: form.logo_url, banner_url: form.banner_url,
             email: form.email, phone: form.phone, whatsapp: form.whatsapp, description: form.description,
+            origin_zip: (form.origin_zip ?? "").replace(/\D/g, "") || null,
+            origin_address: form.origin_address || null,
+            origin_number: form.origin_number || null,
+            origin_complement: form.origin_complement || null,
+            origin_district: form.origin_district || null,
+            origin_city: form.origin_city || null,
+            origin_state: form.origin_state ? form.origin_state.toUpperCase() : null,
           })} disabled={mut.isPending}
             className="h-11 px-5 rounded-lg bg-gradient-brand text-primary-foreground font-semibold disabled:opacity-60">
             {mut.isPending ? "Salvando..." : "Salvar perfil"}
