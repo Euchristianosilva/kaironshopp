@@ -35,7 +35,6 @@ const STEPS = [
 ] as const;
 
 function AdminShippingWizard() {
-  const { checking, isAdmin } = useAdminGuard();
   const fetchDiag = useServerFn(getShippingDiagnostics);
   const ping = useServerFn(pingMelhorEnvio);
   const save = useServerFn(saveMelhorEnvioConfig);
@@ -45,8 +44,8 @@ function AdminShippingWizard() {
   const { data, isLoading } = useQuery({
     queryKey: ["me-config"],
     queryFn: () => fetchDiag(),
-    enabled: isAdmin,
   });
+
 
   const [step, setStep] = useState(0);
   const [reconfigure, setReconfigure] = useState(false);
