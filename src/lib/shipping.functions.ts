@@ -51,15 +51,15 @@ async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: any) {
       method: "POST",
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent": "Kairon Shopp (suporte@kaironshopp.com.br)",
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
         grant_type: "refresh_token",
         client_id: cfg.client_id,
         client_secret: cfg.client_secret,
         refresh_token: cfg.refresh_token,
-      }),
+      }).toString(),
     });
     const text = await res.text();
     let body: any = null;
