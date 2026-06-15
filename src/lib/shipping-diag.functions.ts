@@ -54,8 +54,9 @@ export const getShippingDiagnostics = createServerFn({ method: "GET" })
       config: {
         environment: env,
         client_id: row.client_id ?? "",
+        client_id_preview: mask(row.client_id),
         client_secret_preview: mask(row.client_secret),
-        access_token_preview: mask(row.access_token),
+        access_token_preview: mask(row.access_token || process.env.MELHOR_ENVIO_ACCESS_TOKEN || process.env.MELHOR_ENVIO_TOKEN),
         refresh_token_preview: mask(row.refresh_token),
         token_expires_at: row.token_expires_at ?? null,
         token_expired: row.token_expires_at ? Date.parse(row.token_expires_at) <= Date.now() : false,
@@ -66,6 +67,15 @@ export const getShippingDiagnostics = createServerFn({ method: "GET" })
         oauth_scopes: row.oauth_scopes ?? MELHOR_ENVIO_SCOPE_TEXT,
       },
       base_url: baseUrl,
+      request_context: {
+        http_status: (diag as any)?.last_error_status ?? null,
+        response_body: (diag as any)?.last_response_body ?? null,
+        endpoint_called: (diag as any)?.last_error_endpoint ?? connectionTestEndpoint,
+        oauth_scopes: row.oauth_scopes ?? MELHOR_ENVIO_SCOPE_TEXT,
+        environment: env === "production" ? "Production" : "Sandbox",
+        redirect_uri: row.callback_url ?? null,
+        client_id_masked: mask(row.client_id),
+      },
       endpoints: {
         oauth_token: oauthTokenEndpoint,
         oauth_refresh_token: oauthTokenEndpoint,
@@ -246,7 +256,8 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
     const base = meBaseFor(env);
     const endpoint = `${base}/me`;
 
-    if (!cfg?.access_token) {
+    const accessToken = cfg?.access_token || process.env.MELHOR_ENVIO_ACCESS_TOKEN || process.env.MELHOR_ENVIO_TOKEN;
+    if (!accessToken) {
       return {
         ok: false,
         status: 0,
@@ -265,7 +276,7 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
     }
 
     try {
-      const result = await melhorEnvioRequest(supabaseAdmin, cfg as any, { endpoint, method: "GET" });
+      const result = await melhorEnvioRequest(supabaseAdmin, { ...(cfg as any), access_token: accessToken }, { endpoint, method: "GET" });
       const parsed: any = result.json;
 
       return {
@@ -282,7 +293,7 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
         user: parsed && (parsed.email || parsed.name)
           ? { email: parsed.email, name: parsed.name }
           : null,
-        body: result.text.slice(0, 12000),
+        body: result.text,
         error: result.reauth_reason ?? undefined,
         reauth_url: result.reauth_url,
         reauth_reason: result.reauth_reason,
