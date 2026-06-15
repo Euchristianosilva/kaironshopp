@@ -35,7 +35,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
       .eq("id", true)
       .maybeSingle();
     const cfg = await refreshAccessTokenIfNeeded(supabaseAdmin, cfgRow as any);
-    const token = cfg?.access_token;
+    const token = cfg?.access_token || process.env.MELHOR_ENVIO_ACCESS_TOKEN || process.env.MELHOR_ENVIO_TOKEN;
     const env = cfg?.environment ?? "sandbox";
     if (!token) throw new Error("Integração Melhor Envio não configurada pelo administrador.");
     const baseUrl = meBaseFor(env);
