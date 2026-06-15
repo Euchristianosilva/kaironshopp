@@ -55,16 +55,16 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
             method: "POST",
             headers: {
               Accept: "application/json",
-              "Content-Type": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded",
               "User-Agent": "Kairon Shopp (suporte@kaironshopp.com.br)",
             },
-            body: JSON.stringify({
+            body: new URLSearchParams({
               grant_type: "authorization_code",
               client_id: row.client_id,
               client_secret: row.client_secret,
               redirect_uri: row.callback_url,
               code,
-            }),
+            }).toString(),
           });
           const text = await res.text();
           let body: any = null;
