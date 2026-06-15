@@ -52,11 +52,14 @@ export const verifyStripeCheckout = createServerFn({ method: "POST" })
 
 export const createStripeCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { items: CartItem[]; origin: string }) => input)
+  .inputValidator((input: { items: CartItem[]; origin: string; shipping?: ShippingSelection | null }) => input)
   .handler(async ({ data, context }) => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error("STRIPE_SECRET_KEY não configurada");
     if (!data.items?.length) throw new Error("Carrinho vazio");
+    if (!data.shipping || !(data.shipping.price >= 0) || !data.shipping.service_id) {
+      throw new Error("Selecione uma opção de frete antes de finalizar a compra.");
+    }
 
     const stripe = new Stripe(key);
     const { supabase, userId } = context;
