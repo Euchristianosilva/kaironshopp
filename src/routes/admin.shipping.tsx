@@ -81,7 +81,7 @@ function AdminShippingWizard() {
 
   const cfg = data?.config;
   const diag = data?.diagnostics;
-  const alreadyConfigured = Boolean(cfg?.access_token_preview) && !reconfigure;
+  const alreadyConfigured = Boolean((cfg as any)?.configured || cfg?.access_token_preview) && !reconfigure;
 
   const saveMut = useMutation({
     mutationFn: () => save({ data: form }),
