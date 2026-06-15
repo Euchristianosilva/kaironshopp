@@ -1,15 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-
-function oauthBaseFor(env: string) {
-  return env === "production"
-    ? "https://www.melhorenvio.com.br"
-    : "https://sandbox.melhorenvio.com.br";
-}
-
-function tokenExpiryFrom(expiresIn: unknown) {
-  const seconds = typeof expiresIn === "number" ? expiresIn : Number(expiresIn ?? 0);
-  return seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
-}
+import { MELHOR_ENVIO_SCOPE_TEXT, oauthBaseFor } from "@/lib/melhor-envio.shared";
+import { recordMelhorEnvioDiagnostic, tokenExpiryFrom } from "@/lib/melhor-envio.server";
 
 function redirectToAdmin(request: Request, status: "success" | "error", message?: string) {
   const url = new URL(request.url);
