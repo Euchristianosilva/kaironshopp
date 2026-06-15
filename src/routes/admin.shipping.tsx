@@ -167,6 +167,7 @@ function AdminShippingWizard() {
           <div className="grid sm:grid-cols-2 gap-3 text-sm text-left mb-6">
             <InfoRow label="Status do token" value={cfg?.token_expired ? "Expirado" : "Ativo"} />
             <InfoRow label="Ambiente ativo" value={cfg?.environment === "production" ? "Production" : "Sandbox"} />
+            <InfoRow label="Client ID" value={cfg?.client_id_preview ?? "—"} />
             <InfoRow label="Última sincronização" value={cfg?.last_sync_at ? new Date(cfg.last_sync_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Última atualização" value={cfg?.updated_at ? new Date(cfg.updated_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
@@ -180,8 +181,22 @@ function AdminShippingWizard() {
             <div className="sm:col-span-2"><InfoRow label="URL completa atual" value={diag?.last_error_endpoint ?? data.endpoints.current_full_url} /></div>
             <div className="sm:col-span-2"><InfoRow label="Última URL chamada" value={diag?.last_error_endpoint ?? "—"} /></div>
             <div className="sm:col-span-2"><InfoRow label="Escopos OAuth" value={cfg?.oauth_scopes || data.oauth.scopes} /></div>
+            <div className="sm:col-span-2"><InfoRow label="Redirect URI" value={cfg?.callback_url || "—"} /></div>
             <div className="sm:col-span-2"><InfoRow label="Webhook URL" value={cfg?.webhook_url || "—"} /></div>
           </div>
+
+          <details className="text-left text-xs rounded-md bg-secondary/40 p-3 mb-4" open>
+            <summary className="cursor-pointer font-semibold">Log detalhado da última chamada</summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words max-h-72 overflow-auto">{JSON.stringify({
+              http_status: diag?.last_error_status ?? data.request_context.http_status,
+              response_body: diag?.last_response_body ?? data.request_context.response_body,
+              endpoint_called: diag?.last_error_endpoint ?? data.request_context.endpoint_called,
+              oauth_scopes: cfg?.oauth_scopes || data.request_context.oauth_scopes,
+              environment: data.request_context.environment,
+              redirect_uri: cfg?.callback_url || data.request_context.redirect_uri,
+              client_id_masked: cfg?.client_id_preview || data.request_context.client_id_masked,
+            }, null, 2)}</pre>
+          </details>
 
           <details className="text-left text-xs rounded-md bg-secondary/40 p-3 mb-4" open>
             <summary className="cursor-pointer font-semibold">Headers enviados nas requisições</summary>
