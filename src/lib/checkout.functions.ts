@@ -3,6 +3,15 @@ import Stripe from "stripe";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type CartItem = { productId: string; qty: number };
+type ShippingSelection = {
+  service_id: string;
+  service_name: string;
+  company: string;
+  price: number; // BRL
+  delivery_time: number; // days
+  to_zip: string;
+  address?: Record<string, unknown> | null;
+};
 
 export const verifyStripeCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -43,11 +52,14 @@ export const verifyStripeCheckout = createServerFn({ method: "POST" })
 
 export const createStripeCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { items: CartItem[]; origin: string }) => input)
+  .inputValidator((input: { items: CartItem[]; origin: string; shipping?: ShippingSelection | null }) => input)
   .handler(async ({ data, context }) => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error("STRIPE_SECRET_KEY não configurada");
     if (!data.items?.length) throw new Error("Carrinho vazio");
+    if (!data.shipping || !(data.shipping.price >= 0) || !data.shipping.service_id) {
+      throw new Error("Selecione uma opção de frete antes de finalizar a compra.");
+    }
 
     const stripe = new Stripe(key);
     const { supabase, userId } = context;
@@ -115,6 +127,24 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       });
     }
 
+    const shippingCents = Math.round(Number(data.shipping.price) * 100);
+    if (shippingCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "brl",
+          product_data: {
+            name: `Frete — ${data.shipping.company} ${data.shipping.service_name}`.trim(),
+            description: data.shipping.delivery_time
+              ? `Prazo estimado: ${data.shipping.delivery_time} dia(s) úteis`
+              : undefined,
+          },
+          unit_amount: shippingCents,
+        },
+        quantity: 1,
+      });
+    }
+
+    const totalCents = grossCents + shippingCents;
     const platformFeeCents = Math.round((grossCents * commissionPct) / 100);
 
     // Distribute fee proportionally per item
@@ -137,9 +167,17 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         gross_cents: grossCents,
         platform_fee_cents: platformFeeCents,
         payment_status: "pending",
-        total: grossCents / 100,
+        total: totalCents / 100,
         status: "pending",
-      })
+        shipping_cents: shippingCents,
+        shipping_service_id: data.shipping.service_id,
+        shipping_service_name: data.shipping.service_name,
+        shipping_company: data.shipping.company,
+        shipping_delivery_days: data.shipping.delivery_time ?? null,
+        shipping_to_zip: data.shipping.to_zip,
+        carrier: data.shipping.company,
+        shipping_address: (data.shipping.address as any) ?? null,
+      } as any)
       .select("id")
       .single();
     if (orderErr) throw new Error("Falha ao criar pedido: " + orderErr.message);
@@ -160,8 +198,6 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { error: itemsErr } = await supabaseAdmin.from("order_items").insert(itemsPayload);
     if (itemsErr) throw new Error("Falha ao criar itens: " + itemsErr.message);
 
-    // If seller is Connect-ready, split via destination charge + application fee.
-    // Otherwise, charge the platform directly (payout handled off-Stripe).
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
@@ -169,12 +205,18 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         ? {
             application_fee_amount: platformFeeCents,
             transfer_data: { destination: seller.stripe_account_id as string },
-            metadata: { order_id: order.id, seller_id: sellerId },
+            metadata: { order_id: order.id, seller_id: sellerId, shipping_cents: String(shippingCents) },
           }
         : {
-            metadata: { order_id: order.id, seller_id: sellerId },
+            metadata: { order_id: order.id, seller_id: sellerId, shipping_cents: String(shippingCents) },
           },
-      metadata: { order_id: order.id, seller_id: sellerId, user_id: userId },
+      metadata: {
+        order_id: order.id,
+        seller_id: sellerId,
+        user_id: userId,
+        shipping_cents: String(shippingCents),
+        total_cents: String(totalCents),
+      },
       success_url: `${data.origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${data.origin}/checkout?payment=canceled`,
     });

@@ -598,6 +598,12 @@ export type Database = {
           seller_notes: string | null
           shipped_at: string | null
           shipping_address: Json | null
+          shipping_cents: number
+          shipping_company: string | null
+          shipping_delivery_days: number | null
+          shipping_service_id: string | null
+          shipping_service_name: string | null
+          shipping_to_zip: string | null
           status: string
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
@@ -620,6 +626,12 @@ export type Database = {
           seller_notes?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
+          shipping_cents?: number
+          shipping_company?: string | null
+          shipping_delivery_days?: number | null
+          shipping_service_id?: string | null
+          shipping_service_name?: string | null
+          shipping_to_zip?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
@@ -642,6 +654,12 @@ export type Database = {
           seller_notes?: string | null
           shipped_at?: string | null
           shipping_address?: Json | null
+          shipping_cents?: number
+          shipping_company?: string | null
+          shipping_delivery_days?: number | null
+          shipping_service_id?: string | null
+          shipping_service_name?: string | null
+          shipping_to_zip?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
