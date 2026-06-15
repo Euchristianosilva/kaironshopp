@@ -65,6 +65,11 @@ export const getShippingDiagnostics = createServerFn({ method: "GET" })
         last_sync_at: row.last_sync_at ?? null,
         updated_at: row.updated_at ?? null,
         oauth_scopes: row.oauth_scopes ?? MELHOR_ENVIO_SCOPE_TEXT,
+        // Persisted integration is "configured" as long as the admin has
+        // saved credentials + a callback URL. Token freshness is a separate
+        // signal shown via token_expired / reauth_required so a transient
+        // 401/403 never sends the admin back to Step 1 of the wizard.
+        configured: Boolean(row.client_id && row.client_secret && row.callback_url),
       },
       base_url: baseUrl,
       request_context: {
