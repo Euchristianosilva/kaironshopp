@@ -102,6 +102,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ad_campaigns_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ad_metrics: {
@@ -364,6 +371,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversations_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       coupons: {
@@ -418,6 +432,13 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -622,6 +643,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "order_items_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "order_items_variant_id_fkey"
             columns: ["variant_id"]
             isOneToOne: false
@@ -723,6 +751,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       payouts: {
@@ -765,6 +800,13 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -910,6 +952,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "product_variants_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       products: {
@@ -1038,6 +1087,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -1116,6 +1172,13 @@ export type Database = {
             referencedRelation: "sellers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "promotions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reviews: {
@@ -1168,6 +1231,13 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1408,6 +1478,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "stock_movements_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "stock_movements_variant_id_fkey"
             columns: ["variant_id"]
             isOneToOne: false
@@ -1460,7 +1537,78 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      sellers_public: {
+        Row: {
+          banner_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          logo_url: string | null
+          name: string | null
+          owner_id: string | null
+          rating: number | null
+          return_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          shipping_policy: string | null
+          slug: string | null
+          status: string | null
+          stripe_charges_enabled: boolean | null
+          stripe_onboarding_status: string | null
+          stripe_payouts_enabled: boolean | null
+          terms: string | null
+          updated_at: string | null
+          vacation_mode: boolean | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          rating?: number | null
+          return_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          shipping_policy?: string | null
+          slug?: string | null
+          status?: string | null
+          stripe_charges_enabled?: boolean | null
+          stripe_onboarding_status?: string | null
+          stripe_payouts_enabled?: boolean | null
+          terms?: string | null
+          updated_at?: string | null
+          vacation_mode?: boolean | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          owner_id?: string | null
+          rating?: number | null
+          return_policy?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          shipping_policy?: string | null
+          slug?: string | null
+          status?: string | null
+          stripe_charges_enabled?: boolean | null
+          stripe_onboarding_status?: string | null
+          stripe_payouts_enabled?: boolean | null
+          terms?: string | null
+          updated_at?: string | null
+          vacation_mode?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
