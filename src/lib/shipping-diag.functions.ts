@@ -24,7 +24,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
 
 function mask(s: string | null | undefined) {
   if (!s) return null;
-  if (s.length <= 10) return "••••";
+  if (s.length <= 10) return `${s.slice(0, 3)}…${s.slice(-2)}`;
   return `${s.slice(0, 6)}…${s.slice(-4)}`;
 }
 
