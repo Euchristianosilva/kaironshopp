@@ -165,6 +165,7 @@ export async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: Melhor
   const env = cfg.environment ?? "sandbox";
   const endpoint = `${oauthBaseFor(env)}/oauth/token`;
   const method = "POST";
+  const requestContext = requestContextFor(cfg, env, endpoint);
   const requestHeaders = {
     Accept: "application/json",
     "Content-Type": "application/x-www-form-urlencoded",
@@ -196,6 +197,7 @@ export async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: Melhor
           status: res.status,
           responseBody: text,
           requestHeaders,
+          requestContext,
         });
       } else {
         await recordMelhorEnvioDiagnostic(supabaseAdmin, {
@@ -206,6 +208,7 @@ export async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: Melhor
           status: res.status,
           responseBody: text,
           requestHeaders,
+          requestContext,
         });
       }
       return cfg;
@@ -228,6 +231,7 @@ export async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: Melhor
       status: res.status,
       responseBody: text,
       requestHeaders,
+      requestContext,
     });
     return { ...cfg, ...patch };
   } catch (e) {
@@ -239,6 +243,7 @@ export async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: Melhor
       status: 0,
       responseBody: e instanceof Error ? e.message : String(e),
       requestHeaders,
+      requestContext,
     });
     return cfg;
   }
