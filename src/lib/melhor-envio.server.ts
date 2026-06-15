@@ -38,8 +38,26 @@ function safeJson(text: string) {
   try { return text ? JSON.parse(text) : null; } catch { return null; }
 }
 
+function redactSensitiveProviderBody(text: string) {
+  const parsed = safeJson(text);
+  if (!parsed) {
+    return text.replace(/("?(?:access_token|refresh_token|client_secret|token)"?\s*[:=]\s*)"?[^",\s}]+"?/gi, "$1\"[redacted]\"");
+  }
+  const redact = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(redact);
+    if (value && typeof value === "object") {
+      return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, val]) => [
+        key,
+        /^(access_token|refresh_token|client_secret|token)$/i.test(key) ? "[redacted]" : redact(val),
+      ]));
+    }
+    return value;
+  };
+  return JSON.stringify(redact(parsed));
+}
+
 function responseForStorage(text: string) {
-  return text.slice(0, 12000);
+  return redactSensitiveProviderBody(text).slice(0, 12000);
 }
 
 export async function recordMelhorEnvioDiagnostic(supabaseAdmin: any, input: DiagnosticInput) {
