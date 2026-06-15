@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MELHOR_ENVIO_SCOPE_TEXT, oauthBaseFor } from "@/lib/melhor-envio.shared";
-import { recordMelhorEnvioDiagnostic, tokenExpiryFrom } from "@/lib/melhor-envio.server";
+
+function tokenExpiryFrom(expiresIn: unknown) {
+  const seconds = typeof expiresIn === "number" ? expiresIn : Number(expiresIn ?? 0);
+  return seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
+}
 
 function redirectToAdmin(request: Request, status: "success" | "error", message?: string) {
   const url = new URL(request.url);
@@ -40,6 +44,7 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
 
         const env = row.environment ?? "sandbox";
         const endpoint = `${oauthBaseFor(env)}/oauth/token`;
+        const { recordMelhorEnvioDiagnostic } = await import("@/lib/melhor-envio.server");
 
         try {
           const res = await fetch(endpoint, {
