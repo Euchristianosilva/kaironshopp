@@ -21,7 +21,7 @@ export function Header() {
   const { user, signOut, role } = useAuth();
   const displayName = (user?.user_metadata?.full_name as string) || user?.email?.split("@")[0];
   const panelLink = role === "admin" ? "/admin" : role === "seller" ? "/seller" : null;
-  const panelLabel = role === "admin" ? "Admin" : role === "seller" ? "Vendedor" : null;
+  const panelLabel = role === "admin" ? "Painel Admin" : role === "seller" ? "Painel Vendedor" : null;
   const PanelIcon = role === "admin" ? ShieldCheck : Store;
 
   return (
@@ -95,7 +95,7 @@ export function Header() {
               to={panelLink as any}
               className="hidden lg:flex flex-col items-start px-3 py-1.5 rounded hover:bg-secondary transition"
             >
-              <span className="text-[11px] text-muted-foreground">Painel</span>
+              <span className="text-[11px] text-muted-foreground">Acesso</span>
               <span className="font-semibold flex items-center gap-1">
                 <PanelIcon className="h-3.5 w-3.5" /> {panelLabel}
               </span>
