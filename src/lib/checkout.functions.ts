@@ -3,6 +3,15 @@ import Stripe from "stripe";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type CartItem = { productId: string; qty: number };
+type ShippingSelection = {
+  service_id: string;
+  service_name: string;
+  company: string;
+  price: number; // BRL
+  delivery_time: number; // days
+  to_zip: string;
+  address?: Record<string, unknown> | null;
+};
 
 export const verifyStripeCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
