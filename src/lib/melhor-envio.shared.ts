@@ -15,6 +15,8 @@ export const MELHOR_ENVIO_SCOPES = [
 
 export const MELHOR_ENVIO_SCOPE_TEXT = MELHOR_ENVIO_SCOPES.join(" ");
 
+export const MELHOR_ENVIO_USER_AGENT = "Kairon Shopp (suporte@kaironshopp.com.br)";
+
 export const MELHOR_ENVIO_ENDPOINT_AUDIT = [
   { path: "/api/v2/me", method: "GET", scope: "users-read", purpose: "validar usuário/token" },
   { path: "/api/v2/me/shipment", method: "GET", scope: "orders-read shipping-tracking", purpose: "consultar envios/etiquetas" },
