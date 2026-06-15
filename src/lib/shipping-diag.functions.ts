@@ -247,6 +247,27 @@ export const saveMelhorEnvioConfig = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const refreshMelhorEnvioToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: cfg } = await supabaseAdmin
+      .from("melhor_envio_config")
+      .select("*")
+      .eq("id", true)
+      .maybeSingle();
+    if (!cfg?.refresh_token) {
+      return { ok: false, error: "Sem refresh token. Reconecte a aplicação via OAuth." };
+    }
+    // Force refresh by zeroing expiry
+    const updated = await refreshAccessTokenIfNeeded(supabaseAdmin, { ...(cfg as any), token_expires_at: new Date(0).toISOString() });
+    const ok = (updated as any)?.access_token && (updated as any)?.access_token !== (cfg as any)?.access_token;
+    return ok
+      ? { ok: true, token_expires_at: (updated as any).token_expires_at }
+      : { ok: false, error: "Falha ao atualizar o token. Verifique credenciais." };
+  });
+
 export const pingMelhorEnvio = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

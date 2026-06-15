@@ -13,6 +13,7 @@ import {
   pingMelhorEnvio,
   saveMelhorEnvioConfig,
   startMelhorEnvioOAuth,
+  refreshMelhorEnvioToken,
 } from "@/lib/shipping-diag.functions";
 import { toast } from "sonner";
 
@@ -25,6 +26,7 @@ type Wizard = {
   environment: "sandbox" | "production";
   client_id: string;
   client_secret: string;
+  webhook_url: string;
 };
 
 const STEPS = [
@@ -39,6 +41,7 @@ function AdminShippingWizard() {
   const ping = useServerFn(pingMelhorEnvio);
   const save = useServerFn(saveMelhorEnvioConfig);
   const startOAuth = useServerFn(startMelhorEnvioOAuth);
+  const refreshToken = useServerFn(refreshMelhorEnvioToken);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -53,6 +56,7 @@ function AdminShippingWizard() {
     environment: "sandbox",
     client_id: "",
     client_secret: "",
+    webhook_url: "",
   });
   const [oauthUrl, setOauthUrl] = useState<string | null>(null);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
@@ -71,6 +75,7 @@ function AdminShippingWizard() {
       ...p,
       environment: (data.config.environment as "sandbox" | "production") ?? "sandbox",
       client_id: data.config.client_id ?? "",
+      webhook_url: data.config.webhook_url ?? "",
     }));
   }, [data]);
 
@@ -96,6 +101,19 @@ function AdminShippingWizard() {
   const pingMut = useMutation({
     mutationFn: () => ping(),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
+  });
+
+  const refreshMut = useMutation({
+    mutationFn: () => refreshToken(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success("Token atualizado com sucesso.");
+        qc.invalidateQueries({ queryKey: ["me-config"] });
+      } else {
+        toast.error(res.error ?? "Não foi possível atualizar o token.");
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao atualizar token"),
   });
 
   async function handleFinish() {
@@ -135,10 +153,11 @@ function AdminShippingWizard() {
     return (
       <Shell>
         <div className="bg-card border border-border rounded-xl p-8 max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-success/15 text-success mb-4">
-            <CheckCircle2 className="h-8 w-8" />
+          <div className={`inline-flex items-center gap-2 px-3 h-8 rounded-full text-sm font-bold mb-4 ${cfg?.token_expired ? "bg-destructive/15 text-destructive" : "bg-success/15 text-success"}`}>
+            <span className="text-base leading-none">{cfg?.token_expired ? "🔴" : "🟢"}</span>
+            {cfg?.token_expired ? "Desconectado" : "Conectado"}
           </div>
-          <h2 className="text-2xl font-black mb-1">Integração ativa</h2>
+          <h2 className="text-2xl font-black mb-1">Integração Melhor Envio</h2>
           <p className="text-muted-foreground mb-6">
             Ambiente <strong>{cfg?.environment}</strong> · Token {cfg?.access_token_preview}
           </p>
@@ -150,6 +169,7 @@ function AdminShippingWizard() {
             <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último erro" value={diag?.last_error_at ? `${diag.last_error_status ?? "?"} · ${new Date(diag.last_error_at).toLocaleString("pt-BR")}` : "—"} />
             <InfoRow label="Endpoint" value={data.base_url} />
+            <div className="sm:col-span-2"><InfoRow label="Webhook URL" value={cfg?.webhook_url || "—"} /></div>
           </div>
 
           {pingRes && (
@@ -166,6 +186,14 @@ function AdminShippingWizard() {
             >
               {pingMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
               Testar conexão
+            </button>
+            <button
+              onClick={() => refreshMut.mutate()}
+              disabled={refreshMut.isPending}
+              className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-secondary hover:bg-secondary/70 font-semibold disabled:opacity-60"
+            >
+              {refreshMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Atualizar Token
             </button>
             <button
               onClick={() => { setReconfigure(true); setStep(0); }}
@@ -271,6 +299,18 @@ function AdminShippingWizard() {
                 onChange={(e) => setForm({ ...form, client_secret: e.target.value })}
                 placeholder="Cole o Client Secret"
               />
+            </Field>
+            <Field label="Webhook URL">
+              <input
+                className="input"
+                type="url"
+                value={form.webhook_url}
+                onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
+                placeholder="https://seu-dominio/api/public/melhor-envio/webhook"
+              />
+              <span className="block text-[11px] text-muted-foreground mt-1">
+                URL que receberá eventos (frete, etiqueta, rastreio, status).
+              </span>
             </Field>
           </div>
         )}
