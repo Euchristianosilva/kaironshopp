@@ -35,7 +35,7 @@ const modules: Array<{ to: string; label: string; desc: string; icon: any; accen
   { to: "/admin", label: "Planos & Assinaturas", desc: "Planos de vendedores", icon: CreditCard, accent: "from-teal-500 to-emerald-500", soon: true },
   { to: "/admin", label: "Marketing", desc: "Notificações e campanhas", icon: Megaphone, accent: "from-orange-500 to-amber-500", soon: true },
   { to: "/admin", label: "Configurações", desc: "Plataforma, SEO e identidade", icon: Settings, accent: "from-slate-500 to-zinc-500", soon: true },
-] as const;
+];
 
 function Admin() {
   const navigate = useNavigate();
