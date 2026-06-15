@@ -180,7 +180,7 @@ function AdminShippingWizard() {
   const canNext = (() => {
     if (step === 0) return !!form.environment;
     if (step === 1) return form.client_id.trim().length > 0 && form.client_secret.trim().length > 0;
-    if (step === 2) return Boolean(oauthUrl || cfg?.access_token_preview);
+    if (step === 2) return Boolean(cfg?.access_token_preview);
     return true;
   })();
 
