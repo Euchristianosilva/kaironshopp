@@ -15,10 +15,10 @@ import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as SellerSubscriptionRouteImport } from './routes/seller.subscription'
 import { Route as SellerStockRouteImport } from './routes/seller.stock'
 import { Route as SellerShippingRouteImport } from './routes/seller.shipping'
@@ -85,11 +85,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -104,6 +99,11 @@ const SellerIndexRoute = SellerIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SellerRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SellerSubscriptionRoute = SellerSubscriptionRouteImport.update({
   id: '/subscription',
@@ -196,69 +196,69 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminShippingRoute = AdminShippingRouteImport.update({
-  id: '/shipping',
-  path: '/shipping',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/shipping',
+  path: '/admin/shipping',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSellersRoute = AdminSellersRouteImport.update({
-  id: '/sellers',
-  path: '/sellers',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/sellers',
+  path: '/admin/sellers',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/products',
+  path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminFinanceRoute = AdminFinanceRouteImport.update({
-  id: '/finance',
-  path: '/finance',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/finance',
+  path: '/admin/finance',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCouponsRoute = AdminCouponsRouteImport.update({
-  id: '/coupons',
-  path: '/coupons',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/coupons',
+  path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/categories',
+  path: '/admin/categories',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBannersRoute = AdminBannersRouteImport.update({
-  id: '/banners',
-  path: '/banners',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/banners',
+  path: '/admin/banners',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAdsRoute = AdminAdsRouteImport.update({
-  id: '/ads',
-  path: '/ads',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/ads',
+  path: '/admin/ads',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
@@ -287,7 +287,6 @@ const ApiPublicHooksAdSchedulerRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -325,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -334,7 +334,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -371,6 +370,7 @@ export interface FileRoutesByTo {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin': typeof AdminIndexRoute
   '/seller': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -381,7 +381,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
@@ -419,6 +418,7 @@ export interface FileRoutesById {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/api/public/hooks/ad-scheduler': typeof ApiPublicHooksAdSchedulerRoute
@@ -430,7 +430,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
-    | '/admin'
     | '/auth'
     | '/cart'
     | '/checkout'
@@ -468,6 +467,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -477,7 +477,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
-    | '/admin'
     | '/auth'
     | '/cart'
     | '/checkout'
@@ -514,6 +513,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin'
     | '/seller'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -523,7 +523,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
-    | '/admin'
     | '/auth'
     | '/cart'
     | '/checkout'
@@ -561,6 +560,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
     | '/api/public/hooks/ad-scheduler'
@@ -571,16 +571,29 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   FavoritesRoute: typeof FavoritesRoute
   MessagesRoute: typeof MessagesRoute
   SellerRoute: typeof SellerRouteWithChildren
+  AdminAdsRoute: typeof AdminAdsRoute
+  AdminBannersRoute: typeof AdminBannersRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminFinanceRoute: typeof AdminFinanceRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSellersRoute: typeof AdminSellersRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminShippingRoute: typeof AdminShippingRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   CategorySlugRoute: typeof CategorySlugRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
   ProductIdRoute: typeof ProductIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicHooksAdSchedulerRoute: typeof ApiPublicHooksAdSchedulerRoute
   ApiPublicMelhorEnvioOauthCallbackRoute: typeof ApiPublicMelhorEnvioOauthCallbackRoute
@@ -631,13 +644,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/account': {
       id: '/account'
       path: '/account'
@@ -658,6 +664,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/seller/'
       preLoaderRoute: typeof SellerIndexRouteImport
       parentRoute: typeof SellerRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/seller/subscription': {
       id: '/seller/subscription'
@@ -787,94 +800,94 @@ declare module '@tanstack/react-router' {
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/users'
+      path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/shipping': {
       id: '/admin/shipping'
-      path: '/shipping'
+      path: '/admin/shipping'
       fullPath: '/admin/shipping'
       preLoaderRoute: typeof AdminShippingRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings': {
       id: '/admin/settings'
-      path: '/settings'
+      path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/sellers': {
       id: '/admin/sellers'
-      path: '/sellers'
+      path: '/admin/sellers'
       fullPath: '/admin/sellers'
       preLoaderRoute: typeof AdminSellersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/reports': {
       id: '/admin/reports'
-      path: '/reports'
+      path: '/admin/reports'
       fullPath: '/admin/reports'
       preLoaderRoute: typeof AdminReportsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/products': {
       id: '/admin/products'
-      path: '/products'
+      path: '/admin/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/orders': {
       id: '/admin/orders'
-      path: '/orders'
+      path: '/admin/orders'
       fullPath: '/admin/orders'
       preLoaderRoute: typeof AdminOrdersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/finance': {
       id: '/admin/finance'
-      path: '/finance'
+      path: '/admin/finance'
       fullPath: '/admin/finance'
       preLoaderRoute: typeof AdminFinanceRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/dashboard': {
       id: '/admin/dashboard'
-      path: '/dashboard'
+      path: '/admin/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/coupons': {
       id: '/admin/coupons'
-      path: '/coupons'
+      path: '/admin/coupons'
       fullPath: '/admin/coupons'
       preLoaderRoute: typeof AdminCouponsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/categories': {
       id: '/admin/categories'
-      path: '/categories'
+      path: '/admin/categories'
       fullPath: '/admin/categories'
       preLoaderRoute: typeof AdminCategoriesRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/banners': {
       id: '/admin/banners'
-      path: '/banners'
+      path: '/admin/banners'
       fullPath: '/admin/banners'
       preLoaderRoute: typeof AdminBannersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/ads': {
       id: '/admin/ads'
-      path: '/ads'
+      path: '/admin/ads'
       fullPath: '/admin/ads'
       preLoaderRoute: typeof AdminAdsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
@@ -906,40 +919,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AdminRouteChildren {
-  AdminAdsRoute: typeof AdminAdsRoute
-  AdminBannersRoute: typeof AdminBannersRoute
-  AdminCategoriesRoute: typeof AdminCategoriesRoute
-  AdminCouponsRoute: typeof AdminCouponsRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminFinanceRoute: typeof AdminFinanceRoute
-  AdminOrdersRoute: typeof AdminOrdersRoute
-  AdminProductsRoute: typeof AdminProductsRoute
-  AdminReportsRoute: typeof AdminReportsRoute
-  AdminSellersRoute: typeof AdminSellersRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminShippingRoute: typeof AdminShippingRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminAdsRoute: AdminAdsRoute,
-  AdminBannersRoute: AdminBannersRoute,
-  AdminCategoriesRoute: AdminCategoriesRoute,
-  AdminCouponsRoute: AdminCouponsRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
-  AdminFinanceRoute: AdminFinanceRoute,
-  AdminOrdersRoute: AdminOrdersRoute,
-  AdminProductsRoute: AdminProductsRoute,
-  AdminReportsRoute: AdminReportsRoute,
-  AdminSellersRoute: AdminSellersRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
-  AdminShippingRoute: AdminShippingRoute,
-  AdminUsersRoute: AdminUsersRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface SellerRouteChildren {
   SellerAdsRoute: typeof SellerAdsRoute
@@ -985,16 +964,29 @@ const SellerRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
-  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   FavoritesRoute: FavoritesRoute,
   MessagesRoute: MessagesRoute,
   SellerRoute: SellerRouteWithChildren,
+  AdminAdsRoute: AdminAdsRoute,
+  AdminBannersRoute: AdminBannersRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminFinanceRoute: AdminFinanceRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSellersRoute: AdminSellersRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminShippingRoute: AdminShippingRoute,
+  AdminUsersRoute: AdminUsersRoute,
   CategorySlugRoute: CategorySlugRoute,
   OrderSuccessRoute: OrderSuccessRoute,
   ProductIdRoute: ProductIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicHooksAdSchedulerRoute: ApiPublicHooksAdSchedulerRoute,
   ApiPublicMelhorEnvioOauthCallbackRoute:
@@ -1004,13 +996,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
