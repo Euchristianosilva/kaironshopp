@@ -1,14 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { Header } from "@/components/marketplace/Header";
-import { Footer } from "@/components/marketplace/Footer";
-import { useAdminGuard } from "@/hooks/use-admin-guard";
+import { AdminShell } from "@/components/admin/AdminShell";
 import {
-  Truck, CheckCircle2, XCircle, Loader2, ArrowLeft, ArrowRight,
+  CheckCircle2, XCircle, Loader2, ArrowLeft, ArrowRight,
   KeyRound, ShieldCheck, Sparkles, RefreshCw,
 } from "lucide-react";
+
 import {
   getShippingDiagnostics,
   pingMelhorEnvio,
