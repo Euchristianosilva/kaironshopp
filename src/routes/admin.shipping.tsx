@@ -12,6 +12,7 @@ import {
   getShippingDiagnostics,
   pingMelhorEnvio,
   saveMelhorEnvioConfig,
+  startMelhorEnvioOAuth,
 } from "@/lib/shipping-diag.functions";
 import { toast } from "sonner";
 
@@ -24,14 +25,12 @@ type Wizard = {
   environment: "sandbox" | "production";
   client_id: string;
   client_secret: string;
-  access_token: string;
-  refresh_token: string;
 };
 
 const STEPS = [
   { key: "env", title: "Ambiente", icon: Sparkles },
   { key: "client", title: "Client ID & Secret", icon: KeyRound },
-  { key: "tokens", title: "Tokens de acesso", icon: ShieldCheck },
+  { key: "oauth", title: "Autorizar OAuth", icon: ShieldCheck },
   { key: "test", title: "Validar e salvar", icon: CheckCircle2 },
 ] as const;
 
@@ -39,6 +38,7 @@ function AdminShippingWizard() {
   const fetchDiag = useServerFn(getShippingDiagnostics);
   const ping = useServerFn(pingMelhorEnvio);
   const save = useServerFn(saveMelhorEnvioConfig);
+  const startOAuth = useServerFn(startMelhorEnvioOAuth);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -52,9 +52,17 @@ function AdminShippingWizard() {
     environment: "sandbox",
     client_id: "",
     client_secret: "",
-    access_token: "",
-    refresh_token: "",
   });
+  const [oauthUrl, setOauthUrl] = useState<string | null>(null);
+  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauth = params.get("oauth");
+    if (oauth === "success") toast.success("Autorização concluída. Tokens gerados automaticamente.");
+    if (oauth === "error") toast.error(params.get("message") ?? "Falha na autorização OAuth.");
+    if (oauth) window.history.replaceState({}, "", window.location.pathname);
+  }, []);
 
   useEffect(() => {
     if (!data) return;
@@ -74,6 +82,16 @@ function AdminShippingWizard() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao salvar"),
   });
 
+  const oauthMut = useMutation({
+    mutationFn: () => startOAuth({ data: { ...form, origin: window.location.origin } }),
+    onSuccess: (res) => {
+      setOauthUrl(res.authorization_url);
+      setCallbackUrl(res.callback_url);
+      toast.success("Credenciais salvas. Autorize a aplicação no Melhor Envio.");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao iniciar OAuth"),
+  });
+
   const pingMut = useMutation({
     mutationFn: () => ping(),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro ao testar"),
@@ -85,7 +103,7 @@ function AdminShippingWizard() {
       const res = await pingMut.mutateAsync();
       if (res.ok) {
         toast.success("Integração ativada com sucesso!");
-        setForm((p) => ({ ...p, client_secret: "", access_token: "", refresh_token: "" }));
+        setForm((p) => ({ ...p, client_secret: "" }));
         setReconfigure(false);
         await qc.invalidateQueries({ queryKey: ["me-config"] });
       } else {
@@ -162,12 +180,12 @@ function AdminShippingWizard() {
   const canNext = (() => {
     if (step === 0) return !!form.environment;
     if (step === 1) return form.client_id.trim().length > 0 && form.client_secret.trim().length > 0;
-    if (step === 2) return form.access_token.trim().length > 20;
+    if (step === 2) return Boolean(oauthUrl || cfg?.access_token_preview);
     return true;
   })();
 
   const StepIcon = STEPS[step].icon;
-  const isBusy = saveMut.isPending || pingMut.isPending;
+  const isBusy = saveMut.isPending || pingMut.isPending || oauthMut.isPending;
 
   return (
     <Shell>
