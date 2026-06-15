@@ -9,6 +9,7 @@ import {
   MapPin,
   LogOut,
   MessageCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,8 +18,11 @@ import { NotificationBell } from "./NotificationBell";
 export function Header() {
   const cartCount = useStore((s) => s.cart.reduce((a, i) => a + i.qty, 0));
   const favCount = useStore((s) => s.favorites.length);
-  const { user, signOut } = useAuth();
+  const { user, signOut, role } = useAuth();
   const displayName = (user?.user_metadata?.full_name as string) || user?.email?.split("@")[0];
+  const panelLink = role === "admin" ? "/admin" : role === "seller" ? "/seller" : null;
+  const panelLabel = role === "admin" ? "Admin" : role === "seller" ? "Vendedor" : null;
+  const PanelIcon = role === "admin" ? ShieldCheck : Store;
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background border-b border-border shadow-sm">
@@ -86,15 +90,17 @@ export function Header() {
               <LogOut className="h-5 w-5" />
             </button>
           )}
-          <Link
-            to="/seller"
-            className="hidden lg:flex flex-col items-start px-3 py-1.5 rounded hover:bg-secondary transition"
-          >
-            <span className="text-[11px] text-muted-foreground">Painel</span>
-            <span className="font-semibold flex items-center gap-1">
-              <Store className="h-3.5 w-3.5" /> Vendedor
-            </span>
-          </Link>
+          {panelLink && panelLabel && (
+            <Link
+              to={panelLink as any}
+              className="hidden lg:flex flex-col items-start px-3 py-1.5 rounded hover:bg-secondary transition"
+            >
+              <span className="text-[11px] text-muted-foreground">Painel</span>
+              <span className="font-semibold flex items-center gap-1">
+                <PanelIcon className="h-3.5 w-3.5" /> {panelLabel}
+              </span>
+            </Link>
+          )}
           <Link to="/favorites" aria-label="Favoritos" className="relative p-2.5 rounded-lg hover:bg-secondary transition">
             <Heart className="h-5 w-5" />
             {favCount > 0 && (
