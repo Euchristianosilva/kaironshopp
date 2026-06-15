@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { meBaseFor } from "@/lib/melhor-envio.shared";
-import { melhorEnvioRequest, refreshAccessTokenIfNeeded } from "@/lib/melhor-envio.server";
 
 const ItemSchema = z.object({ product_id: z.string().uuid(), qty: z.number().int().min(1).max(999) });
 const CalcInput = z.object({
@@ -28,6 +27,7 @@ export const calculateShipping = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => CalcInput.parse(d))
   .handler(async ({ data }): Promise<{ quotes: Quote[] }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { melhorEnvioRequest, refreshAccessTokenIfNeeded } = await import("@/lib/melhor-envio.server");
 
     const { data: cfgRow } = await supabaseAdmin
       .from("melhor_envio_config")
