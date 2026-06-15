@@ -30,12 +30,14 @@ export type Seller = {
 };
 
 function SellerLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, role, roleLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
+    if (loading || roleLoading) return;
+    if (!user) navigate({ to: "/auth" });
+    if (role === "admin") navigate({ to: "/admin" });
+  }, [loading, roleLoading, user, role, navigate]);
 
   const { data: seller, isLoading: sellerLoading } = useQuery<Seller | null>({
     queryKey: ["seller", user?.id],
@@ -51,7 +53,7 @@ function SellerLayout() {
     },
   });
 
-  if (loading || !user || sellerLoading) {
+  if (loading || roleLoading || !user || sellerLoading || role === "admin") {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />

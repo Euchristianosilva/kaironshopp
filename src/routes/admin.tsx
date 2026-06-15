@@ -1,10 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { useAdminGuard } from "@/hooks/use-admin-guard";
 import { getAdminOverview } from "@/lib/admin.functions";
 import {
   Users, Store, ShoppingBag, DollarSign, Image as ImageIcon, Ticket,
@@ -21,52 +20,34 @@ function formatBRL(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-const modules: Array<{ to: string; label: string; desc: string; icon: any; accent: string; soon?: boolean }> = [
-  { to: "/admin", label: "Dashboard", desc: "Visão geral", icon: BarChart3, accent: "from-blue-500 to-cyan-500" },
+const modules: Array<{ to: string; label: string; desc: string; icon: any; accent: string }> = [
+  { to: "/admin/dashboard", label: "Dashboard", desc: "Visão geral", icon: BarChart3, accent: "from-blue-500 to-cyan-500" },
+  { to: "/admin/users", label: "Usuários", desc: "Bloquear e consultar", icon: Users, accent: "from-sky-500 to-blue-500" },
+  { to: "/admin/sellers", label: "Vendedores", desc: "Aprovar, suspender e editar", icon: Store, accent: "from-indigo-500 to-violet-500" },
+  { to: "/admin/products", label: "Produtos", desc: "Aprovar, destacar e remover", icon: Package, accent: "from-rose-500 to-red-500" },
+  { to: "/admin/orders", label: "Pedidos", desc: "Listar, filtrar e cancelar", icon: ShoppingBag, accent: "from-lime-500 to-green-500" },
+  { to: "/admin/categories", label: "Categorias", desc: "Organizar vitrines e departamentos", icon: Ticket, accent: "from-violet-500 to-purple-500" },
+  { to: "/admin/banners", label: "Banners", desc: "Gerenciar banners da home", icon: ImageIcon, accent: "from-pink-500 to-rose-500" },
+  { to: "/admin/coupons", label: "Cupons", desc: "Criar e gerenciar cupons", icon: Percent, accent: "from-purple-500 to-indigo-500" },
   { to: "/admin/finance", label: "Financeiro", desc: "Receita, comissões e relatórios", icon: DollarSign, accent: "from-emerald-500 to-teal-500" },
+  { to: "/admin/reports", label: "Relatórios", desc: "Vendas, usuários e operação", icon: TrendingUp, accent: "from-orange-500 to-amber-500" },
+  { to: "/admin/settings", label: "Configurações do sistema", desc: "Plataforma, SEO e identidade", icon: Settings, accent: "from-slate-500 to-zinc-500" },
   { to: "/admin/shipping", label: "Frete (Melhor Envio)", desc: "Integração e testes", icon: Truck, accent: "from-amber-500 to-orange-500" },
   { to: "/admin/ads", label: "Anúncios patrocinados", desc: "Campanhas e métricas", icon: Rocket, accent: "from-fuchsia-500 to-pink-500" },
-  { to: "/admin", label: "Vendedores", desc: "Aprovar, suspender e editar", icon: Store, accent: "from-indigo-500 to-violet-500", soon: true },
-  { to: "/admin", label: "Usuários", desc: "Bloquear e consultar", icon: Users, accent: "from-sky-500 to-blue-500", soon: true },
-  { to: "/admin", label: "Produtos", desc: "Aprovar, destacar e remover", icon: Package, accent: "from-rose-500 to-red-500", soon: true },
-  { to: "/admin", label: "Pedidos", desc: "Listar, filtrar e cancelar", icon: ShoppingBag, accent: "from-lime-500 to-green-500", soon: true },
-  { to: "/admin", label: "Cupons & Promoções", desc: "Criar e gerenciar cupons", icon: Ticket, accent: "from-purple-500 to-indigo-500", soon: true },
-  { to: "/admin", label: "Banners", desc: "Gerenciar banners da home", icon: ImageIcon, accent: "from-pink-500 to-rose-500", soon: true },
-  { to: "/admin", label: "Planos & Assinaturas", desc: "Planos de vendedores", icon: CreditCard, accent: "from-teal-500 to-emerald-500", soon: true },
-  { to: "/admin", label: "Marketing", desc: "Notificações e campanhas", icon: Megaphone, accent: "from-orange-500 to-amber-500", soon: true },
-  { to: "/admin", label: "Configurações", desc: "Plataforma, SEO e identidade", icon: Settings, accent: "from-slate-500 to-zinc-500", soon: true },
 ];
 
 function Admin() {
-  const navigate = useNavigate();
-  const [authChecked, setAuthChecked] = useState(false);
-  const [allowed, setAllowed] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      if (!userRes.user) {
-        navigate({ to: "/auth" });
-        return;
-      }
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userRes.user.id, _role: "admin" });
-      if (!mounted) return;
-      setAllowed(Boolean(isAdmin));
-      setAuthChecked(true);
-    })();
-    return () => { mounted = false; };
-  }, [navigate]);
+  const { checking, isAdmin } = useAdminGuard();
 
   const fetchOverview = useServerFn(getAdminOverview);
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-overview"],
     queryFn: () => fetchOverview(),
-    enabled: allowed,
+    enabled: isAdmin,
     staleTime: 30_000,
   });
 
-  if (!authChecked) {
+  if (checking) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
@@ -76,7 +57,7 @@ function Admin() {
     );
   }
 
-  if (!allowed) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
@@ -85,7 +66,7 @@ function Admin() {
             <ShieldCheck className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-black mb-2">Acesso restrito</h1>
-          <p className="text-muted-foreground mb-6">Esta área é exclusiva para o proprietário da plataforma.</p>
+          <p className="text-muted-foreground mb-6">Acesso negado.</p>
           <Link to="/" className="inline-flex items-center px-4 h-10 rounded-md bg-primary text-primary-foreground font-semibold">Voltar para a loja</Link>
         </main>
         <Footer />
@@ -148,14 +129,10 @@ function Admin() {
                   </div>
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="font-bold truncate">{m.label}</div>
-                    {m.soon && <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-semibold">Em breve</span>}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.desc}</div>
                 </div>
               );
-              if (m.soon) {
-                return <div key={m.label} className="opacity-70 cursor-not-allowed">{content}</div>;
-              }
               return (
                 <Link key={m.label} to={m.to as any} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-xl">
                   {content}

@@ -63,9 +63,9 @@ export const getSellerFinance = createServerFn({ method: "POST" })
 export const getAdminFinance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso negado");
+    const email = (context.claims as any)?.email as string | undefined;
+    const { assertAdminAccess } = await import("@/lib/admin-auth.server");
+    await assertAdminAccess(context.userId, email);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -95,9 +95,9 @@ export const updateCommission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { commission_percent: number }) => i)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso negado");
+    const email = (context.claims as any)?.email as string | undefined;
+    const { assertAdminAccess } = await import("@/lib/admin-auth.server");
+    await assertAdminAccess(context.userId, email);
     if (data.commission_percent < 0 || data.commission_percent > 100) throw new Error("Valor inválido");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin

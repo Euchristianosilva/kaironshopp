@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
+import { useAdminGuard } from "@/hooks/use-admin-guard";
 import {
   Truck, CheckCircle2, XCircle, Loader2, ArrowLeft, ArrowRight,
   KeyRound, ShieldCheck, Sparkles, RefreshCw,
@@ -35,6 +36,7 @@ const STEPS = [
 ] as const;
 
 function AdminShippingWizard() {
+  const { checking, isAdmin } = useAdminGuard();
   const fetchDiag = useServerFn(getShippingDiagnostics);
   const ping = useServerFn(pingMelhorEnvio);
   const save = useServerFn(saveMelhorEnvioConfig);
@@ -44,6 +46,7 @@ function AdminShippingWizard() {
   const { data, isLoading } = useQuery({
     queryKey: ["me-config"],
     queryFn: () => fetchDiag(),
+    enabled: isAdmin,
   });
 
   const [step, setStep] = useState(0);
@@ -112,13 +115,14 @@ function AdminShippingWizard() {
     } catch {}
   }
 
-  if (isLoading) {
+  if (checking || isLoading) {
     return (
       <Shell>
         <div className="py-20 text-center text-muted-foreground">Carregando…</div>
       </Shell>
     );
   }
+  if (!isAdmin) return null;
   if (!data) {
     return (
       <Shell>

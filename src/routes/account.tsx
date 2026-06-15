@@ -23,7 +23,6 @@ export const Route = createFileRoute("/account")({
 const sections = [
   { id: "orders", label: "Meus pedidos", icon: Package },
   { id: "addresses", label: "Endereços", icon: MapPin },
-  { id: "reviews", label: "Avaliações", icon: Star },
   { id: "favorites", label: "Favoritos", icon: Heart },
   { id: "profile", label: "Perfil", icon: User },
 ] as const;
@@ -105,7 +104,6 @@ function Account() {
           <section className="bg-card border border-border rounded-xl p-6 min-h-[400px]">
             {tab === "orders" && <OrdersTab />}
             {tab === "addresses" && <AddressesTab />}
-            {tab === "reviews" && <ReviewsTab />}
             {tab === "favorites" && <FavoritesTab />}
             {tab === "profile" && <ProfileTab initialName={profileName} email={user.email ?? ""} onUpdated={setProfileName} />}
           </section>

@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/marketplace/Header";
 import { Footer } from "@/components/marketplace/Footer";
-import { useAuth } from "@/hooks/use-auth";
+import { useAdminGuard } from "@/hooks/use-admin-guard";
 import { getAdminFinance, updateCommission } from "@/lib/finance.functions";
 import { formatBRL } from "@/lib/mock-data";
 import { toast } from "sonner";
@@ -16,18 +16,14 @@ export const Route = createFileRoute("/admin/finance")({
 });
 
 function AdminFinancePage() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
-  }, [loading, user, navigate]);
+  const { checking, isAdmin } = useAdminGuard();
 
   const fetchData = useServerFn(getAdminFinance);
   const updateComm = useServerFn(updateCommission);
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["admin-finance"],
     queryFn: () => fetchData(),
-    enabled: !!user,
+    enabled: isAdmin,
   });
 
   const [pct, setPct] = useState<string>("");
@@ -35,7 +31,7 @@ function AdminFinancePage() {
     if (data?.settings?.commission_percent != null) setPct(String(data.settings.commission_percent));
   }, [data?.settings?.commission_percent]);
 
-  if (loading || isLoading || !user) {
+  if (checking || isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
@@ -44,6 +40,8 @@ function AdminFinancePage() {
       </div>
     );
   }
+
+  if (!isAdmin) return null;
 
   if (error) {
     return (

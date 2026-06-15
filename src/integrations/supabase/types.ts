@@ -1394,7 +1394,7 @@ export type Database = {
         | "refunded"
         | "rejected"
       ad_placement: "card" | "carousel"
-      app_role: "admin" | "seller" | "user"
+      app_role: "admin" | "seller" | "user" | "customer"
       notification_type:
         | "new_order"
         | "payment_paid"
@@ -1543,7 +1543,7 @@ export const Constants = {
         "rejected",
       ],
       ad_placement: ["card", "carousel"],
-      app_role: ["admin", "seller", "user"],
+      app_role: ["admin", "seller", "user", "customer"],
       notification_type: [
         "new_order",
         "payment_paid",

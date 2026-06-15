@@ -99,11 +99,8 @@ async function refreshAccessTokenIfNeeded(supabaseAdmin: any, cfg: any) {
 }
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
-  const { data: isAdmin, error } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
-    _role: "admin",
-  });
-  if (error || !isAdmin) throw new Error("Forbidden");
+  const { assertAdminAccess } = await import("@/lib/admin-auth.server");
+  await assertAdminAccess(ctx.userId);
 }
 
 function mask(s: string | null | undefined) {
