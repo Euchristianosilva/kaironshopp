@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { MELHOR_ENVIO_ENDPOINT_AUDIT, MELHOR_ENVIO_SCOPE_TEXT, meBaseFor, oauthBaseFor } from "@/lib/melhor-envio.shared";
-import { melhorEnvioRequest, refreshAccessTokenIfNeeded } from "@/lib/melhor-envio.server";
 
 function normalizeOrigin(origin: string) {
   const url = new URL(origin);
@@ -178,6 +177,7 @@ export const refreshMelhorEnvioToken = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { refreshAccessTokenIfNeeded } = await import("@/lib/melhor-envio.server");
     const { data: cfg } = await supabaseAdmin
       .from("melhor_envio_config")
       .select("*")
@@ -204,6 +204,7 @@ export const pingMelhorEnvio = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { melhorEnvioRequest } = await import("@/lib/melhor-envio.server");
     const { data: cfg } = await supabaseAdmin
       .from("melhor_envio_config")
       .select("*")
