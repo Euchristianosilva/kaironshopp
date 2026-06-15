@@ -170,9 +170,18 @@ function AdminShippingWizard() {
             <InfoRow label="Última atualização" value={cfg?.updated_at ? new Date(cfg.updated_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último sucesso" value={diag?.last_success_at ? new Date(diag.last_success_at).toLocaleString("pt-BR") : "—"} />
             <InfoRow label="Último erro" value={diag?.last_error_at ? `${diag.last_error_status ?? "?"} · ${new Date(diag.last_error_at).toLocaleString("pt-BR")}` : "—"} />
+            <InfoRow label="Método" value={diag?.last_request_method ?? "—"} />
             <InfoRow label="Endpoint" value={data.base_url} />
+            <div className="sm:col-span-2"><InfoRow label="Escopos OAuth" value={cfg?.oauth_scopes || data.oauth.scopes} /></div>
             <div className="sm:col-span-2"><InfoRow label="Webhook URL" value={cfg?.webhook_url || "—"} /></div>
           </div>
+
+          {diag?.last_response_body && (
+            <details className="text-left text-xs rounded-md bg-secondary/40 p-3 mb-4">
+              <summary className="cursor-pointer font-semibold">Resposta completa da última chamada</summary>
+              <pre className="mt-2 whitespace-pre-wrap break-words max-h-56 overflow-auto">{diag.last_response_body}</pre>
+            </details>
+          )}
 
           {pingRes && (
             <div className={`text-sm rounded-md p-3 mb-4 ${pingRes.ok ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
