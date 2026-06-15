@@ -157,7 +157,7 @@ function Admin() {
                 return <div key={m.label} className="opacity-70 cursor-not-allowed">{content}</div>;
               }
               return (
-                <Link key={m.label} to={m.to} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-xl">
+                <Link key={m.label} to={m.to as any} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-xl">
                   {content}
                 </Link>
               );
