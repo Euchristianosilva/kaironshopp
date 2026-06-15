@@ -1,21 +1,37 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentUserAccess } from "@/lib/auth.functions";
 
 type AppRole = "admin" | "seller" | "customer";
+const OWNER_ADMIN_EMAIL = "kaironshopp@gmail.com";
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const getAccess = useServerFn(getCurrentUserAccess);
 
   const { data: access, isLoading: roleLoading, refetch: refetchRole } = useQuery({
     queryKey: ["auth-access", user?.id],
-    queryFn: () => getAccess(),
+    queryFn: async () => {
+      if (!user) return { role: null as AppRole | null, roles: [] as string[] };
+      const email = user.email?.toLowerCase() ?? null;
+
+      const [rolesRes, sellerRes] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase.from("sellers").select("id").eq("owner_id", user.id).maybeSingle(),
+      ]);
+
+      if (rolesRes.error) throw rolesRes.error;
+      const roles = (rolesRes.data ?? []).map((row) => row.role as string);
+      const role: AppRole = email === OWNER_ADMIN_EMAIL || roles.includes("admin")
+        ? "admin"
+        : roles.includes("seller") || !!sellerRes.data
+          ? "seller"
+          : "customer";
+
+      return { role, roles };
+    },
     enabled: !!user && !loading,
     retry: false,
     staleTime: 30_000,
