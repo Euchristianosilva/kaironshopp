@@ -110,6 +110,7 @@ function AdminShippingWizard() {
         toast.success("Token atualizado com sucesso.");
         qc.invalidateQueries({ queryKey: ["me-config"] });
       } else {
+        if (res.reauth_url) setOauthUrl(res.reauth_url);
         toast.error(res.error ?? "Não foi possível atualizar o token.");
       }
     },
@@ -126,7 +127,8 @@ function AdminShippingWizard() {
         setReconfigure(false);
         await qc.invalidateQueries({ queryKey: ["me-config"] });
       } else {
-        toast.error(`Credenciais inválidas (${res.status}). Revise os tokens.`);
+        if (res.reauth_url) setOauthUrl(res.reauth_url);
+        toast.error(res.reauth_reason ?? `Credenciais inválidas (${res.status}). Revise os tokens.`);
       }
     } catch {}
   }
