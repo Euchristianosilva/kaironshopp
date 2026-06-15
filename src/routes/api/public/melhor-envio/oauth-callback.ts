@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MELHOR_ENVIO_SCOPE_TEXT, oauthBaseFor } from "@/lib/melhor-envio.shared";
+import { MELHOR_ENVIO_SCOPE_TEXT, MELHOR_ENVIO_USER_AGENT, oauthBaseFor } from "@/lib/melhor-envio.shared";
 
 function tokenExpiryFrom(expiresIn: unknown) {
   const seconds = typeof expiresIn === "number" ? expiresIn : Number(expiresIn ?? 0);
@@ -45,15 +45,16 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
         const env = row.environment ?? "sandbox";
         const endpoint = `${oauthBaseFor(env)}/oauth/token`;
         const { recordMelhorEnvioDiagnostic } = await import("@/lib/melhor-envio.server");
+        const requestHeaders = {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": MELHOR_ENVIO_USER_AGENT,
+        };
 
         try {
           const res = await fetch(endpoint, {
             method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/x-www-form-urlencoded",
-              "User-Agent": "Kairon Shopp (suporte@kaironshopp.com.br)",
-            },
+            headers: requestHeaders,
             body: new URLSearchParams({
               grant_type: "authorization_code",
               client_id: row.client_id,
@@ -74,6 +75,7 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
               method: "POST",
               status: res.status,
               responseBody: text,
+              requestHeaders,
             });
             return redirectToAdmin(request, "error", "Não foi possível gerar os tokens.");
           }
@@ -96,6 +98,7 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
             method: "POST",
             status: res.status,
             responseBody: text,
+            requestHeaders,
           });
 
           return redirectToAdmin(request, "success");
@@ -107,6 +110,7 @@ export const Route = createFileRoute("/api/public/melhor-envio/oauth-callback")(
             method: "POST",
             status: 0,
             responseBody: e instanceof Error ? e.message : String(e),
+            requestHeaders,
           });
           return redirectToAdmin(request, "error", "Falha ao concluir autorização.");
         }
