@@ -27,7 +27,7 @@ export const getAdminOverview = createServerFn({ method: "POST" })
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
       supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }),
       supabaseAdmin.from("products").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("is_active", false),
       supabaseAdmin
         .from("orders")
         .select("gross_cents, platform_fee_cents", { count: "exact" })
