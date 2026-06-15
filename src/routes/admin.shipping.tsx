@@ -300,6 +300,18 @@ function AdminShippingWizard() {
                 placeholder="Cole o Client Secret"
               />
             </Field>
+            <Field label="Webhook URL">
+              <input
+                className="input"
+                type="url"
+                value={form.webhook_url}
+                onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
+                placeholder="https://seu-dominio/api/public/melhor-envio/webhook"
+              />
+              <span className="block text-[11px] text-muted-foreground mt-1">
+                URL que receberá eventos (frete, etiqueta, rastreio, status).
+              </span>
+            </Field>
           </div>
         )}
 
