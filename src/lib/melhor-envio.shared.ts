@@ -17,6 +17,7 @@ export const MELHOR_ENVIO_SCOPE_TEXT = MELHOR_ENVIO_SCOPES.join(" ");
 
 export const MELHOR_ENVIO_ENDPOINT_AUDIT = [
   { path: "/api/v2/me", method: "GET", scope: "users-read", purpose: "validar usuário/token" },
+  { path: "/api/v2/me/shipment", method: "GET", scope: "orders-read shipping-tracking", purpose: "consultar envios/etiquetas" },
   { path: "/api/v2/me/shipment/calculate", method: "POST", scope: "shipping-calculate", purpose: "calcular frete" },
   { path: "/api/v2/me/shipment/companies", method: "GET", scope: "shipping-companies", purpose: "consultar transportadoras" },
   { path: "/api/v2/me/cart", method: "GET/POST", scope: "cart-read cart-write", purpose: "consultar/inserir fretes no carrinho" },
