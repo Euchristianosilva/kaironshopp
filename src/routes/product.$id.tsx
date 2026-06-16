@@ -30,7 +30,7 @@ function ProductPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const startChat = useServerFn(getOrCreateConversation);
-  const checkoutFn = useServerFn(createStripeCheckout);
+  
   const [chatLoading, setChatLoading] = useState(false);
   const [buying, setBuying] = useState(false);
   const buyNow = () => {
