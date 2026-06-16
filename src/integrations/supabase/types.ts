@@ -1760,6 +1760,92 @@ export type Database = {
       }
     }
     Functions: {
+      get_my_seller: {
+        Args: never
+        Returns: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          origin_address: string | null
+          origin_city: string | null
+          origin_complement: string | null
+          origin_district: string | null
+          origin_number: string | null
+          origin_state: string | null
+          origin_zip: string | null
+          owner_id: string
+          phone: string | null
+          rating: number | null
+          return_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          shipping_policy: string | null
+          slug: string
+          status: string
+          stripe_account_id: string | null
+          stripe_charges_enabled: boolean
+          stripe_onboarding_status: string
+          stripe_payouts_enabled: boolean
+          terms: string | null
+          updated_at: string
+          vacation_mode: boolean
+          whatsapp: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sellers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_seller_for_owner: {
+        Args: { _seller_id: string }
+        Returns: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          origin_address: string | null
+          origin_city: string | null
+          origin_complement: string | null
+          origin_district: string | null
+          origin_number: string | null
+          origin_state: string | null
+          origin_zip: string | null
+          owner_id: string
+          phone: string | null
+          rating: number | null
+          return_policy: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          shipping_policy: string | null
+          slug: string
+          status: string
+          stripe_account_id: string | null
+          stripe_charges_enabled: boolean
+          stripe_onboarding_status: string
+          stripe_payouts_enabled: boolean
+          terms: string | null
+          updated_at: string
+          vacation_mode: boolean
+          whatsapp: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "sellers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
