@@ -40,6 +40,7 @@ export function TicketChat({
   const fetchTicket = useServerFn(getTicket);
   const send = useServerFn(sendTicketMessage);
   const setStatus = useServerFn(updateTicketStatus);
+  const transfer = useServerFn(transferTicket);
   const [text, setText] = useState("");
   const scrollerRef = useRef<HTMLDivElement>(null);
 
