@@ -8,6 +8,7 @@ type Store = {
   cart: CartItem[];
   favorites: string[];
   addToCart: (p: Product, qty?: number) => void;
+  buyNow: (p: Product, qty?: number) => void;
   updateQty: (id: string, qty: number) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
@@ -31,6 +32,7 @@ export const useStore = create<Store>()(
           }
           return { cart: [...s.cart, { product: p, qty }] };
         }),
+      buyNow: (p, qty = 1) => set({ cart: [{ product: p, qty: Math.max(1, qty) }] }),
       updateQty: (id, qty) =>
         set((s) => ({
           cart: s.cart.map((i) => (i.product.id === id ? { ...i, qty: Math.max(1, qty) } : i)),
