@@ -270,7 +270,7 @@ export async function buildLabelHtml(data: LabelData): Promise<string> {
     <!-- Cabeçalho com marca Kairon Shop -->
     <div class="header">
       <div class="brand">
-        <div class="logo">${s.logoUrl ? `<img src="${esc(s.logoUrl)}" alt="" />` : "K"}</div>
+        <div class="logo${logoSrc ? " has-img" : ""}">${logoSrc ? `<img src="${esc(logoSrc)}" alt="${esc(marketplace)}" />` : "K"}</div>
         <div class="wordmark">
           <div class="n">${esc(marketplace)}</div>
           <div class="t">Etiqueta de envio</div>
