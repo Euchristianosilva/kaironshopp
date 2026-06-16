@@ -105,13 +105,22 @@ function Page() {
 }
 
 function PromoDialog({ open, onOpenChange, editing, products, onSave, saving }: any) {
-  const [form, setForm] = useState<any>({ product_id: "", name: "", discount_percent: 10, ends_at: "", active: true });
+  const toLocal = (iso: string) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const [form, setForm] = useState<any>({ product_id: "", name: "", type: "flash", discount_percent: 10, starts_at: "", ends_at: "", active: true });
   useEffect(() => {
     if (editing) setForm({
-      id: editing.id, product_id: editing.product_id, name: editing.name,
-      discount_percent: editing.discount_percent, ends_at: editing.ends_at?.slice(0, 10) ?? "", active: editing.active,
+      id: editing.id, product_id: editing.product_id, name: editing.name, type: editing.type ?? "flash",
+      discount_percent: editing.discount_percent,
+      starts_at: toLocal(editing.starts_at),
+      ends_at: toLocal(editing.ends_at),
+      active: editing.active,
     });
-    else setForm({ product_id: products[0]?.id ?? "", name: "", discount_percent: 10, ends_at: "", active: true });
+    else setForm({ product_id: products[0]?.id ?? "", name: "", type: "flash", discount_percent: 10, starts_at: toLocal(new Date().toISOString()), ends_at: "", active: true });
   }, [editing, open, products]);
 
   return (
@@ -120,22 +129,34 @@ function PromoDialog({ open, onOpenChange, editing, products, onSave, saving }: 
         <DialogHeader><DialogTitle>{editing ? "Editar promoção" : "Nova promoção"}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div><Label>Nome</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Black Friday" /></div>
+          <div><Label>Tipo</Label>
+            <Select value={form.type} onValueChange={(v: string) => setForm({ ...form, type: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="flash">Oferta Relâmpago</SelectItem>
+                <SelectItem value="exclusive">Oferta Exclusiva</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div><Label>Produto</Label>
             <Select value={form.product_id} onValueChange={(v: string) => setForm({ ...form, product_id: v })}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>{products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
             </Select>
           </div>
+          <div><Label>Desconto (%)</Label><Input type="number" min="1" max="90" value={form.discount_percent} onChange={(e) => setForm({ ...form, discount_percent: Number(e.target.value) })} /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><Label>Desconto (%)</Label><Input type="number" min="1" max="90" value={form.discount_percent} onChange={(e) => setForm({ ...form, discount_percent: Number(e.target.value) })} /></div>
-            <div><Label>Termina em</Label><Input type="date" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} /></div>
+            <div><Label>Início</Label><Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} /></div>
+            <div><Label>Término</Label><Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} /></div>
           </div>
           <div className="flex items-center gap-2"><Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} /><Label>Ativa</Label></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button disabled={saving || !form.name || !form.product_id || !form.ends_at} onClick={() => onSave({
-            ...form, ends_at: new Date(form.ends_at).toISOString(),
+            ...form,
+            starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : new Date().toISOString(),
+            ends_at: new Date(form.ends_at).toISOString(),
           })}>{saving ? "Salvando..." : "Salvar"}</Button>
         </DialogFooter>
       </DialogContent>
