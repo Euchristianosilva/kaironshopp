@@ -94,6 +94,17 @@ export function TicketChat({
     },
   });
 
+  const transferMut = useMutation({
+    mutationFn: async (department: string) =>
+      transfer({ data: { ticket_id: ticketId, department: department as any } }),
+    onSuccess: () => {
+      toast.success("Chamado transferido");
+      refetch();
+      qc.invalidateQueries({ queryKey: ["support-tickets-list"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erro ao transferir"),
+  });
+
   if (isLoading || !data) {
     return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
   }
