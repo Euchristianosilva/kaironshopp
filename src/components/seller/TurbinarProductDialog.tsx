@@ -55,8 +55,6 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
   const carouselPrice = pricing.find((p: any) => p.placement === "carousel");
 
   async function handlePay() {
-    // Pre-abre uma aba sincronamente para evitar bloqueio de popup após o await.
-    const popup = window.open("about:blank", "_blank");
     try {
       setSubmitting(true);
       const res = await createCheckout({
@@ -69,15 +67,9 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
         },
       });
       if (!res?.url) throw new Error("Falha ao iniciar pagamento");
-      if (popup && !popup.closed) {
-        popup.location.href = res.url;
-      } else {
-        // popup bloqueado — navega na mesma aba como fallback
-        window.location.href = res.url;
-      }
+      window.location.assign(res.url);
       onClose();
     } catch (e: any) {
-      if (popup && !popup.closed) popup.close();
       console.error("createAdCheckout failed", e);
       toast.error(e?.message ?? "Não foi possível iniciar o pagamento");
     } finally {
