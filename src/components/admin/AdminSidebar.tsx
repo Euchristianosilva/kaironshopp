@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Store, Package, ShoppingBag, Tags, Ticket,
-  Image as ImageIcon, DollarSign, TrendingUp, Truck, Megaphone, Settings, ShieldCheck,
+  Image as ImageIcon, DollarSign, TrendingUp, Truck, Megaphone, Settings, ShieldCheck, Flame,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -31,6 +31,7 @@ const sections: Array<{ label: string; items: Array<{ to: string; label: string;
       { to: "/admin/coupons", label: "Cupons", icon: Ticket },
       { to: "/admin/banners", label: "Banners", icon: ImageIcon },
       { to: "/admin/ads", label: "Anúncios", icon: Megaphone },
+      { to: "/admin/carousel", label: "Carrossel Premium", icon: Flame },
     ],
   },
   {
