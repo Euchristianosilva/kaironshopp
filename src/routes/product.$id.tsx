@@ -38,7 +38,6 @@ function ProductPage() {
   const buyNow = (event?: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
     if (buying) return;
-    if (!user) { navigate({ to: "/auth" }); return; }
     const productData = product;
     if (!productData) {
       toast.error("Produto não disponível");
