@@ -257,7 +257,7 @@ export const listPremiumCarouselRequests = createServerFn({ method: "GET" })
       .from("ad_campaigns")
       .select("id, status, starts_at, ends_at, amount_cents, currency, paid_at, created_at, metadata, products(title, image_url), sellers(name)")
       .eq("placement", "carousel")
-      .not("paid_at", "is", null)
+      .or("paid_at.not.is.null,is_manual.eq.true")
       .order("paid_at", { ascending: false })
       .limit(200);
     if (error) throw error;
