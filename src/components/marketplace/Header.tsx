@@ -14,7 +14,9 @@ import {
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
 import { NotificationBell } from "./NotificationBell";
+import { MobileBottomNav } from "./MobileBottomNav";
 import kaironLogo from "@/assets/kairon-logo.png.asset.json";
+
 
 export function Header() {
   const cartCount = useStore((s) => s.cart.reduce((a, i) => a + i.qty, 0));
@@ -125,8 +127,8 @@ export function Header() {
         </nav>
       </div>
 
-      {/* Categories nav */}
-      <div className="border-t border-border bg-secondary/30">
+      {/* Categories nav - hidden on mobile (replaced by bottom nav) */}
+      <div className="border-t border-border bg-secondary/30 hidden md:block">
         <div className="container mx-auto px-4 h-11 flex items-center gap-6 overflow-x-auto text-sm whitespace-nowrap">
           <button className="flex items-center gap-1.5 font-semibold text-primary">
             <Menu className="h-4 w-4" /> Todas as categorias
@@ -153,6 +155,9 @@ export function Header() {
           ))}
         </div>
       </div>
+
+      <MobileBottomNav />
     </header>
   );
 }
+
