@@ -128,7 +128,7 @@ export const getTicket = createServerFn({ method: "POST" })
 
     const { data: ticket, error } = await supabase
       .from("support_tickets")
-      .select("id, subject, category, status, seller_id, opened_by, assigned_to, created_at, sellers(id, name, logo_url)")
+      .select("id, subject, category, status, department, seller_id, opened_by, assigned_to, created_at, sellers(id, name, logo_url)")
       .eq("id", data.ticket_id)
       .maybeSingle();
     if (error || !ticket) throw new Error("Chamado não encontrado");
