@@ -86,18 +86,25 @@ export const createTicket = createServerFn({ method: "POST" })
 
 export const listAllTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { status?: Status | "all" }) => i)
+  .inputValidator((i: { status?: Status | "all"; department?: Department | "all" }) => i)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { isAdmin, isAgent } = await isSupportOrAdmin(supabase, userId);
+    const { isAdmin, isAgent, agent } = await isSupportOrAdmin(supabase, userId);
     if (!isAdmin && !isAgent) throw new Error("Sem permissão");
 
     let q = supabase
       .from("support_tickets")
-      .select("id, subject, category, status, seller_id, opened_by, assigned_to, last_message_at, last_message_preview, agent_unread, created_at, sellers(name, logo_url)")
+      .select("id, subject, category, status, department, seller_id, opened_by, assigned_to, last_message_at, last_message_preview, agent_unread, created_at, sellers(name, logo_url)")
       .order("last_message_at", { ascending: false })
       .limit(200);
     if (data.status && data.status !== "all") q = q.eq("status", data.status);
+
+    // Department scope: managers/admins see all; supervisors/agents pinned to their dept
+    if (!isAdmin && agent && agent.role !== "manager") {
+      q = q.eq("department", agent.department);
+    } else if (data.department && data.department !== "all") {
+      q = q.eq("department", data.department);
+    }
 
     const { data: tickets, error } = await q;
     if (error) throw new Error(error.message);
@@ -107,6 +114,8 @@ export const listAllTickets = createServerFn({ method: "POST" })
     const pmap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
     return {
       tickets: (tickets ?? []).map((t: any) => ({ ...t, opener: pmap.get(t.opened_by) ?? null })),
+      viewerAgent: agent ?? null,
+      isAdmin,
     };
   });
 
