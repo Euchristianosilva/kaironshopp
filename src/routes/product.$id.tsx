@@ -25,6 +25,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const [qty, setQty] = useState(1);
   const addToCart = useStore((s) => s.addToCart);
+  const setBuyNowCart = useStore((s) => s.buyNow);
   const toggleFav = useStore((s) => s.toggleFavorite);
   const isFav = useStore((s) => s.favorites.includes(id));
   const { user } = useAuth();
@@ -33,7 +34,8 @@ function ProductPage() {
   
   const [chatLoading, setChatLoading] = useState(false);
   const [buying, setBuying] = useState(false);
-  const buyNow = () => {
+  const buyNow = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
     if (buying) return;
     if (!user) { navigate({ to: "/auth" }); return; }
     const productData = product;
@@ -43,7 +45,7 @@ function ProductPage() {
     }
     setBuying(true);
     try {
-      addToCart(productData, qty);
+      setBuyNowCart(productData, qty);
       navigate({ to: "/checkout" });
     } catch (e: any) {
       console.error("buyNow failed", e);
@@ -176,6 +178,7 @@ function ProductPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={buyNow}
                 disabled={buying}
                 className="w-full h-11 rounded-lg bg-gradient-brand text-primary-foreground font-bold flex items-center justify-center gap-2 hover:opacity-95 disabled:opacity-60"
@@ -183,6 +186,7 @@ function ProductPage() {
                 <ShoppingCart className="h-4 w-4" /> {buying ? "Redirecionando..." : "Comprar agora"}
               </button>
               <button
+                type="button"
                 onClick={() => { addToCart(product, qty); toast.success("Adicionado ao carrinho"); }}
                 className="w-full h-11 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary/5"
               >
