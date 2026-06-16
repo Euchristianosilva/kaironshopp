@@ -14,7 +14,7 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Painel Admin — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Painel Admin — Kairon Shop" }] }),
   component: AdminHubPage,
 });
 

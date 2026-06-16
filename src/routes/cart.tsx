@@ -11,7 +11,7 @@ import { calculateShipping } from "@/lib/shipping.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Carrinho — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Carrinho — Kairon Shop" }] }),
   component: CartPage,
 });
 

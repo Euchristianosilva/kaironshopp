@@ -16,7 +16,7 @@ import { Sparkles, Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/promotions")({
-  head: () => ({ meta: [{ title: "Promoções — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Promoções — Kairon Shop" }] }),
   component: Page,
 });
 

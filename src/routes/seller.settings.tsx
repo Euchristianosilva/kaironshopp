@@ -15,7 +15,7 @@ import { SingleImageUpload } from "@/components/seller/SingleImageUpload";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/settings")({
-  head: () => ({ meta: [{ title: "Configurações da loja — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Configurações da loja — Kairon Shop" }] }),
   component: Page,
 });
 
@@ -106,7 +106,7 @@ function Page() {
           <div className="text-xs bg-secondary/40 rounded p-3 border border-border">
             <strong>Preview Google:</strong>
             <div className="text-blue-600 truncate mt-1">{form.seo_title || form.name}</div>
-            <div className="text-green-700 text-xs">mercabrasil.com/loja/{form.slug}</div>
+            <div className="text-green-700 text-xs">kaironshop.com/loja/{form.slug}</div>
             <div className="text-muted-foreground text-xs line-clamp-2">{form.seo_description || form.description}</div>
           </div>
         </TabsContent>

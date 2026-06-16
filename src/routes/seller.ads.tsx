@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Rocket, Eye, MousePointerClick, Percent } from "lucide-react";
 
 export const Route = createFileRoute("/seller/ads")({
-  head: () => ({ meta: [{ title: "Anúncios Patrocinados — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Anúncios Patrocinados — Kairon Shop" }] }),
   component: Page,
 });
 

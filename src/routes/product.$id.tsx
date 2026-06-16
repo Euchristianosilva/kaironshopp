@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { Star, Heart, ShoppingCart, Truck, ShieldCheck, RotateCcw, Store, MessageCircle, Minus, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/product/$id")({
-  head: () => ({ meta: [{ title: "Produto — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Produto — Kairon Shop" }] }),
   errorComponent: () => <div className="min-h-screen grid place-items-center">Erro ao carregar.</div>,
   notFoundComponent: () => <div className="min-h-screen grid place-items-center">Produto não encontrado.</div>,
   component: ProductPage,

@@ -8,7 +8,7 @@ import { formatBRL } from "@/lib/mock-data";
 import { Wallet, TrendingUp, ArrowDownToLine, Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/seller/finance")({
-  head: () => ({ meta: [{ title: "Financeiro do Vendedor — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Financeiro do Vendedor — Kairon Shop" }] }),
   component: SellerFinancePage,
 });
 

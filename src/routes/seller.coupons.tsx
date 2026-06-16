@@ -16,7 +16,7 @@ import { TicketPercent, Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/coupons")({
-  head: () => ({ meta: [{ title: "Cupons — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Cupons — Kairon Shop" }] }),
   component: Page,
 });
 

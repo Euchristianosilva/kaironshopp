@@ -10,7 +10,7 @@ import { Star, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller/reviews")({
-  head: () => ({ meta: [{ title: "Avaliações — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Avaliações — Kairon Shop" }] }),
   component: Page,
 });
 

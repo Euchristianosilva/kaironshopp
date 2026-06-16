@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { CreditCard, Lock, CheckCircle2, Truck, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Checkout — Kairon Shop" }] }),
   component: Checkout,
 });
 

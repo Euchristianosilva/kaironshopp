@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { openShippingLabel, downloadLabelHtml, type LabelData } from "@/lib/shipping-label";
 
 export const Route = createFileRoute("/seller/orders")({
-  head: () => ({ meta: [{ title: "Pedidos — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Pedidos — Kairon Shop" }] }),
   component: SellerOrdersPage,
 });
 

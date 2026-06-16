@@ -8,7 +8,7 @@ import { fetchAllProducts } from "@/lib/products";
 import { HeartCrack } from "lucide-react";
 
 export const Route = createFileRoute("/favorites")({
-  head: () => ({ meta: [{ title: "Favoritos — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Favoritos — Kairon Shop" }] }),
   component: FavPage,
 });
 

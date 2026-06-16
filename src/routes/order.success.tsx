@@ -13,7 +13,7 @@ export const Route = createFileRoute("/order/success")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     session_id: typeof s.session_id === "string" ? s.session_id : undefined,
   }),
-  head: () => ({ meta: [{ title: "Pedido confirmado — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Pedido confirmado — Kairon Shop" }] }),
   errorComponent: () => <div className="min-h-screen grid place-items-center">Erro ao confirmar pedido.</div>,
   notFoundComponent: () => <div className="min-h-screen grid place-items-center">Página não encontrada.</div>,
   component: OrderSuccessPage,

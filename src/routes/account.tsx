@@ -16,7 +16,7 @@ import { listMyOrders, listMyReviews, listMyAddresses, upsertAddress, deleteAddr
 import { User, Package, Heart, MapPin, Star, LogOut, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "Minha conta — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Minha conta — Kairon Shop" }] }),
   component: Account,
 });
 

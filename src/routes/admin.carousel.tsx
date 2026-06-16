@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { adminReviewPremiumCarousel, listPremiumCarouselRequests } from "@/lib/ads.functions";
 
 export const Route = createFileRoute("/admin/carousel")({
-  head: () => ({ meta: [{ title: "Admin · Carrossel Premium — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Admin · Carrossel Premium — Kairon Shop" }] }),
   component: Page,
 });
 

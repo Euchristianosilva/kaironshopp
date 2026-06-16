@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/seller/customers")({
-  head: () => ({ meta: [{ title: "Clientes — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Clientes — Kairon Shop" }] }),
   component: SellerCustomersPage,
 });
 

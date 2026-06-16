@@ -14,7 +14,7 @@ export const Route = createFileRoute("/category/$slug")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.cat.name ?? "Categoria"} — MercaBrasil` },
+      { title: `${loaderData?.cat.name ?? "Categoria"} — Kairon Shop` },
       { name: "description", content: `Os melhores produtos de ${loaderData?.cat.name ?? "categoria"} com frete grátis.` },
     ],
   }),

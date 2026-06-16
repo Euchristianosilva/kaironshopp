@@ -5,7 +5,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { getAdminOverview } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard Admin — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Admin — Kairon Shop" }] }),
   component: Page,
 });
 

@@ -10,7 +10,7 @@ import { DollarSign, TrendingUp, Users, Percent } from "lucide-react";
 
 
 export const Route = createFileRoute("/admin/finance")({
-  head: () => ({ meta: [{ title: "Financeiro Master — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Financeiro Master — Kairon Shop" }] }),
   component: AdminFinancePage,
 });
 

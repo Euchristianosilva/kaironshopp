@@ -12,7 +12,7 @@ import { Pause, Ban, Play, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/ads")({
-  head: () => ({ meta: [{ title: "Admin · Anúncios — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Admin · Anúncios — Kairon Shop" }] }),
   component: Page,
 });
 

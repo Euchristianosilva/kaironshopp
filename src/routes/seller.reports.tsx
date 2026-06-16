@@ -11,7 +11,7 @@ import { FileSpreadsheet, Download, BarChart3 } from "lucide-react";
 import { formatBRL } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/seller/reports")({
-  head: () => ({ meta: [{ title: "Relatórios — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Relatórios — Kairon Shop" }] }),
   component: Page,
 });
 

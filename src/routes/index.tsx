@@ -13,9 +13,9 @@ import { Flame, TrendingUp, Sparkles, Clock } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MercaBrasil — O marketplace dos brasileiros" },
+      { title: "Kairon Shop — O marketplace dos brasileiros" },
       { name: "description", content: "Compre eletrônicos, moda, casa, games e mais com frete grátis, parcelamento em 12x e a melhor experiência de compra do Brasil." },
-      { property: "og:title", content: "MercaBrasil — Marketplace" },
+      { property: "og:title", content: "Kairon Shop — Marketplace" },
       { property: "og:description", content: "Milhares de produtos com os melhores preços e frete grátis." },
     ],
   }),

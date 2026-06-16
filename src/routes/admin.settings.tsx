@@ -18,11 +18,11 @@ function Page() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["admin-settings"], queryFn: () => fn() });
 
-  const [form, setForm] = useState({ commission_percent: 10, platform_name: "MercaBrasil", logo_url: "", support_email: "", seo_title: "", seo_description: "" });
+  const [form, setForm] = useState({ commission_percent: 10, platform_name: "Kairon Shop", logo_url: "", support_email: "", seo_title: "", seo_description: "" });
   useEffect(() => {
     if (data) setForm({
       commission_percent: Number((data as any).commission_percent ?? 10),
-      platform_name: (data as any).platform_name ?? "MercaBrasil",
+      platform_name: (data as any).platform_name ?? "Kairon Shop",
       logo_url: (data as any).logo_url ?? "",
       support_email: (data as any).support_email ?? "",
       seo_title: (data as any).seo_title ?? "",

@@ -28,7 +28,7 @@ export function Footer() {
         <div className="col-span-2">
           <div className="flex items-center gap-2 mb-3">
             <div className="h-9 w-9 rounded-lg bg-gradient-brand grid place-items-center text-primary-foreground font-black">M</div>
-            <span className="font-black text-xl">MercaBrasil</span>
+            <span className="font-black text-xl">Kairon Shop</span>
           </div>
           <p className="opacity-70 max-w-sm">O marketplace que conecta milhares de vendedores e compradores em todo o Brasil com segurança, agilidade e melhores preços.</p>
           <div className="flex gap-3 mt-4">
@@ -55,7 +55,7 @@ export function Footer() {
         ))}
       </div>
       <div className="border-t border-background/10 py-5 text-center text-xs opacity-60">
-        © {new Date().getFullYear()} MercaBrasil — Todos os direitos reservados · CNPJ 00.000.000/0001-00
+        © {new Date().getFullYear()} Kairon Shop — Todos os direitos reservados · CNPJ 00.000.000/0001-00
       </div>
     </footer>
   );

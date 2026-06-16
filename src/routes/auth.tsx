@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Entrar — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Entrar — Kairon Shop" }] }),
   component: AuthPage,
 });
 

@@ -56,8 +56,8 @@ function Page() {
           <h2 className="font-bold mb-2">Ainda precisa de ajuda?</h2>
           <p className="text-sm text-muted-foreground mb-4">Fale com nosso time de suporte.</p>
           <div className="flex flex-wrap gap-3">
-            <a href="mailto:suporte@mercabrasil.com" className="h-11 px-5 rounded-lg border border-border font-semibold text-sm inline-flex items-center gap-2 hover:bg-muted">
-              <Mail className="h-4 w-4" /> suporte@mercabrasil.com
+            <a href="mailto:suporte@kaironshop.com" className="h-11 px-5 rounded-lg border border-border font-semibold text-sm inline-flex items-center gap-2 hover:bg-muted">
+              <Mail className="h-4 w-4" /> suporte@kaironshop.com
             </a>
             <Link to="/messages" className="h-11 px-5 rounded-lg bg-gradient-brand text-primary-foreground font-semibold text-sm inline-flex items-center gap-2">
               <MessageSquare className="h-4 w-4" /> Mensagens

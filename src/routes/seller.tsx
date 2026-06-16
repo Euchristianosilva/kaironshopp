@@ -12,7 +12,7 @@ import { Store, CheckCircle2, AlertTriangle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/seller")({
-  head: () => ({ meta: [{ title: "Painel do Vendedor — MercaBrasil" }] }),
+  head: () => ({ meta: [{ title: "Painel do Vendedor — Kairon Shop" }] }),
   component: SellerLayout,
 });
 
