@@ -667,6 +667,7 @@ export type Database = {
           fulfillment_status: string
           gross_cents: number
           id: string
+          package_weight_grams: number | null
           payment_method: string | null
           payment_status: string
           platform_fee_cents: number
@@ -677,6 +678,8 @@ export type Database = {
           shipping_cents: number
           shipping_company: string | null
           shipping_delivery_days: number | null
+          shipping_label_url: string | null
+          shipping_method: string | null
           shipping_service_id: string | null
           shipping_service_name: string | null
           shipping_to_zip: string | null
@@ -695,6 +698,7 @@ export type Database = {
           fulfillment_status?: string
           gross_cents?: number
           id?: string
+          package_weight_grams?: number | null
           payment_method?: string | null
           payment_status?: string
           platform_fee_cents?: number
@@ -705,6 +709,8 @@ export type Database = {
           shipping_cents?: number
           shipping_company?: string | null
           shipping_delivery_days?: number | null
+          shipping_label_url?: string | null
+          shipping_method?: string | null
           shipping_service_id?: string | null
           shipping_service_name?: string | null
           shipping_to_zip?: string | null
@@ -723,6 +729,7 @@ export type Database = {
           fulfillment_status?: string
           gross_cents?: number
           id?: string
+          package_weight_grams?: number | null
           payment_method?: string | null
           payment_status?: string
           platform_fee_cents?: number
@@ -733,6 +740,8 @@ export type Database = {
           shipping_cents?: number
           shipping_company?: string | null
           shipping_delivery_days?: number | null
+          shipping_label_url?: string | null
+          shipping_method?: string | null
           shipping_service_id?: string | null
           shipping_service_name?: string | null
           shipping_to_zip?: string | null
