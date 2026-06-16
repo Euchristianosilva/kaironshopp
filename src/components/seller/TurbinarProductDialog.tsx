@@ -34,6 +34,7 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
   const [startsAt, setStartsAt] = useState(defaultDate(0));
   const [endsAt, setEndsAt] = useState(defaultDate(3));
   const [submitting, setSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const priceRow = pricing.find((p: any) => p.placement === placement);
 
@@ -57,6 +58,8 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
   async function handlePay() {
     try {
       setSubmitting(true);
+      setPaymentError(null);
+      console.info("[ad-checkout] solicitando sessão", { productId: product.id, placement, startsAt, endsAt });
       const res = await createCheckout({
         data: {
           productId: product.id,
@@ -67,11 +70,14 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
         },
       });
       if (!res?.url) throw new Error("Falha ao iniciar pagamento");
-      window.location.assign(res.url);
-      onClose();
+      console.info("[ad-checkout] URL recebida, redirecionando para Stripe", { campaignId: res.campaignId, amountCents: res.amountCents });
+      window.location.href = res.url;
+      return;
     } catch (e: any) {
       console.error("createAdCheckout failed", e);
-      toast.error(e?.message ?? "Não foi possível iniciar o pagamento");
+      const message = e?.message ?? "Não foi possível iniciar o pagamento";
+      setPaymentError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +169,11 @@ export function TurbinarProductDialog({ product, onClose }: { product: Product; 
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
           {submitting ? "Abrindo pagamento..." : `Pagar ${formatBRL(calc.totalCents / 100)} com Stripe`}
         </button>
+        {paymentError && (
+          <p className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+            {paymentError}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground text-center mt-2">
           O anúncio será programado automaticamente após confirmação do pagamento.
         </p>
