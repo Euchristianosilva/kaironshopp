@@ -50,6 +50,7 @@ import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminCarouselRouteImport } from './routes/admin.carousel'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminAdsRouteImport } from './routes/admin.ads'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
@@ -262,6 +263,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCarouselRoute = AdminCarouselRouteImport.update({
+  id: '/carousel',
+  path: '/carousel',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBannersRoute = AdminBannersRouteImport.update({
   id: '/banners',
   path: '/banners',
@@ -308,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/seller': typeof SellerRouteWithChildren
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/carousel': typeof AdminCarouselRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -355,6 +362,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesRoute
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/carousel': typeof AdminCarouselRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -405,6 +413,7 @@ export interface FileRoutesById {
   '/seller': typeof SellerRouteWithChildren
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/carousel': typeof AdminCarouselRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -456,6 +465,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/admin/ads'
     | '/admin/banners'
+    | '/admin/carousel'
     | '/admin/categories'
     | '/admin/coupons'
     | '/admin/dashboard'
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/admin/ads'
     | '/admin/banners'
+    | '/admin/carousel'
     | '/admin/categories'
     | '/admin/coupons'
     | '/admin/dashboard'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/admin/ads'
     | '/admin/banners'
+    | '/admin/carousel'
     | '/admin/categories'
     | '/admin/coupons'
     | '/admin/dashboard'
@@ -898,6 +910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/carousel': {
+      id: '/admin/carousel'
+      path: '/carousel'
+      fullPath: '/admin/carousel'
+      preLoaderRoute: typeof AdminCarouselRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/banners': {
       id: '/admin/banners'
       path: '/banners'
@@ -946,6 +965,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAdsRoute: typeof AdminAdsRoute
   AdminBannersRoute: typeof AdminBannersRoute
+  AdminCarouselRoute: typeof AdminCarouselRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
@@ -964,6 +984,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdsRoute: AdminAdsRoute,
   AdminBannersRoute: AdminBannersRoute,
+  AdminCarouselRoute: AdminCarouselRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
