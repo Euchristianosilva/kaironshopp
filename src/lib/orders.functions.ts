@@ -59,18 +59,26 @@ export const getSellerOrder = createServerFn({ method: "POST" })
       .eq("id", order.buyer_id)
       .maybeSingle();
 
-    return { order, items: items ?? [], buyer: profile };
+    const { data: seller } = await supabase
+      .from("sellers")
+      .select("name, phone, whatsapp, email, logo_url, origin_zip, origin_state, origin_city, origin_district, origin_address, origin_number, origin_complement")
+      .eq("id", sellerId)
+      .maybeSingle();
+
+    return { order, items: items ?? [], buyer: profile, seller };
   });
 
 export const updateFulfillment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { orderId: string; fulfillment_status?: string; tracking_code?: string; carrier?: string; seller_notes?: string }) =>
+  .inputValidator((i: { orderId: string; fulfillment_status?: string; tracking_code?: string; carrier?: string; seller_notes?: string; shipping_method?: string; package_weight_grams?: number }) =>
     z.object({
       orderId: z.string().uuid(),
       fulfillment_status: z.enum(["pending","processing","shipped","delivered","canceled","returned"]).optional(),
       tracking_code: z.string().max(100).optional(),
       carrier: z.string().max(100).optional(),
       seller_notes: z.string().max(2000).optional(),
+      shipping_method: z.string().max(100).optional(),
+      package_weight_grams: z.number().int().min(0).max(100000).optional(),
     }).parse(i),
   )
   .handler(async ({ data, context }) => {
@@ -84,6 +92,8 @@ export const updateFulfillment = createServerFn({ method: "POST" })
     if (data.tracking_code !== undefined) patch.tracking_code = data.tracking_code || null;
     if (data.carrier !== undefined) patch.carrier = data.carrier || null;
     if (data.seller_notes !== undefined) patch.seller_notes = data.seller_notes || null;
+    if (data.shipping_method !== undefined) patch.shipping_method = data.shipping_method || null;
+    if (data.package_weight_grams !== undefined) patch.package_weight_grams = data.package_weight_grams;
     const { error } = await supabase.from("orders").update(patch).eq("id", data.orderId);
     if (error) throw new Error(error.message);
     return { ok: true };
