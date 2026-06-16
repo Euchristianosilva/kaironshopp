@@ -192,10 +192,11 @@ function ProductPage() {
               >
                 Adicionar ao carrinho
               </button>
-              <button onClick={() => toggleFav(product.id)} className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary">
+              <button type="button" onClick={() => toggleFav(product.id)} className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary">
                 <Heart className={`h-4 w-4 ${isFav ? "fill-primary text-primary" : ""}`} /> {isFav ? "Favoritado" : "Adicionar aos favoritos"}
               </button>
               <button
+                type="button"
                 onClick={() => openChat(product.sellerId)}
                 disabled={chatLoading}
                 className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-secondary border border-border disabled:opacity-50"
