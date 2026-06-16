@@ -3,10 +3,30 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Category = "financial" | "products" | "orders" | "shipping" | "technical" | "other";
 type Status = "open" | "in_progress" | "waiting_seller" | "resolved" | "closed";
+type Department = "financial" | "commercial" | "logistics" | "technical" | "general";
+type AgentRole = "agent" | "supervisor" | "manager";
+
+const DEPARTMENTS: Department[] = ["financial", "commercial", "logistics", "technical", "general"];
+const AGENT_ROLES: AgentRole[] = ["agent", "supervisor", "manager"];
+const DEPT_LABEL_PT: Record<Department, string> = {
+  financial: "Financeiro",
+  commercial: "Comercial",
+  logistics: "Logística",
+  technical: "Técnico",
+  general: "Atendimento Geral",
+};
+
+function categoryToDepartment(c: Category): Department {
+  if (c === "financial") return "financial";
+  if (c === "shipping") return "logistics";
+  if (c === "technical") return "technical";
+  if (c === "products" || c === "orders") return "commercial";
+  return "general";
+}
 
 async function isSupportOrAdmin(supabase: any, userId: string) {
   const [{ data: agent }, { data: roles }] = await Promise.all([
-    supabase.from("support_agents").select("role, active, permissions").eq("user_id", userId).maybeSingle(),
+    supabase.from("support_agents").select("id, role, active, department, permissions").eq("user_id", userId).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
   ]);
   const isAdmin = (roles ?? []).some((r: any) => r.role === "admin");
