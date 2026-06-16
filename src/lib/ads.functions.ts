@@ -289,7 +289,7 @@ export const adminReviewPremiumCarousel = createServerFn({ method: "POST" })
     const startsAt = new Date(campaign.starts_at).getTime();
     const endsAt = new Date(campaign.ends_at).getTime();
     const currentMetadata = ((campaign as any).metadata ?? {}) as Record<string, unknown>;
-    const update: Record<string, unknown> = {
+    const update: any = {
       metadata: { ...currentMetadata, reviewed_by: context.userId, reviewed_at: now.toISOString(), admin_action: data.action },
     };
     if (data.action === "approve") {
@@ -306,7 +306,7 @@ export const adminReviewPremiumCarousel = createServerFn({ method: "POST" })
       update.metadata = { ...(update.metadata as Record<string, unknown>), admin_status: "removed" };
     }
 
-    const { error } = await supabaseAdmin.from("ad_campaigns").update(update).eq("id", data.campaignId);
+    const { error } = await supabaseAdmin.from("ad_campaigns").update(update as any).eq("id", data.campaignId);
     if (error) throw error;
     return { ok: true };
   });
