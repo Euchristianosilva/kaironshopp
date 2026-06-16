@@ -97,7 +97,17 @@ function SellerOrdersPage() {
                       <TableCell><span className={`text-xs px-2 py-0.5 rounded font-semibold ${o.payment_status === "paid" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{o.payment_status}</span></TableCell>
                       <TableCell><span className={`text-xs px-2 py-1 rounded-full font-semibold inline-flex items-center gap-1 ${st.cls}`}><Icon className="h-3 w-3" /> {st.label}</span></TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{o.tracking_code ?? "—"}</TableCell>
-                      <TableCell><Button size="sm" variant="outline" onClick={() => setSelectedId(o.id)}>Abrir</Button></TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap justify-end">
+                          {o.tracking_code && (
+                            <>
+                              <Button size="icon" variant="ghost" title="Copiar rastreio" onClick={() => { navigator.clipboard.writeText(o.tracking_code); toast.success("Rastreio copiado"); }}><Copy className="h-4 w-4" /></Button>
+                              <Button size="icon" variant="ghost" title="Abrir rastreamento" asChild><a href={`https://www.linkcorreios.com.br/?id=${encodeURIComponent(o.tracking_code)}`} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
+                            </>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => setSelectedId(o.id)}>Abrir</Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
