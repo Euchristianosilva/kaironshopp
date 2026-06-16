@@ -76,12 +76,13 @@ export const getConversation = createServerFn({ method: "POST" })
 
     const { data: profile } = await supabase.from("profiles").select("id, full_name, avatar_url").eq("id", conv.buyer_id).maybeSingle();
 
-    const { data: messages } = await supabase
+    const { data: messages, error: messagesError } = await supabase
       .from("messages")
       .select("id, sender_id, body, read_at, created_at")
       .eq("conversation_id", data.conversation_id)
       .order("created_at", { ascending: true })
       .limit(500);
+    if (messagesError) throw new Error(messagesError.message);
 
     // mark messages from the other party as read
     await supabase
@@ -109,9 +110,11 @@ export const sendMessage = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase
+    const { data: message, error } = await supabase
       .from("messages")
-      .insert({ conversation_id: data.conversation_id, sender_id: userId, body: data.body });
+      .insert({ conversation_id: data.conversation_id, sender_id: userId, body: data.body })
+      .select("id, conversation_id, sender_id, body, read_at, created_at")
+      .single();
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, message };
   });

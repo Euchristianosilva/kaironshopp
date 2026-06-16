@@ -108,16 +108,36 @@ function ChatPane({ conversationId, onBack }: { conversationId: string; onBack: 
   useEffect(() => {
     const ch = supabase.channel(`msgs-${conversationId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
-        () => { refetch(); qc.invalidateQueries({ queryKey: ["my-conversations"] }); })
+        async () => {
+          await refetch();
+          qc.invalidateQueries({ queryKey: ["my-conversations"] });
+          qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [conversationId, refetch, qc]);
+
+  useEffect(() => {
+    if (!data) return;
+    qc.invalidateQueries({ queryKey: ["my-conversations"] });
+    qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
+  }, [conversationId, data?.messages.length, qc]);
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [data?.messages.length]);
 
   const sendMut = useMutation({
     mutationFn: () => send({ data: { conversation_id: conversationId, body: text } }),
-    onSuccess: () => { setText(""); refetch(); qc.invalidateQueries({ queryKey: ["my-conversations"] }); },
+    onSuccess: (result) => {
+      setText("");
+      if (result?.message) {
+        qc.setQueryData(["conversation", conversationId], (current: any) => current
+          ? { ...current, messages: [...current.messages.filter((m: any) => m.id !== result.message.id), result.message] }
+          : current);
+      }
+      refetch();
+      qc.invalidateQueries({ queryKey: ["my-conversations"] });
+      qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
