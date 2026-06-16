@@ -199,7 +199,7 @@ function OrderDetailDialog({ orderId, onClose }: { orderId: string; onClose: () 
         zip: seller.origin_zip,
         logoUrl: seller.logo_url,
       },
-      marketplaceName: "MercaBrasil",
+      marketplaceName: "Kairon Shop",
       trackingUrl: tracking ? `https://www.linkcorreios.com.br/?id=${encodeURIComponent(tracking)}` : undefined,
       orderUrl: `${window.location.origin}/account`,
     };
