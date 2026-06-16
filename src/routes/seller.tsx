@@ -30,14 +30,15 @@ export type Seller = {
 };
 
 function SellerLayout() {
-  const { user, loading, role, roleLoading } = useAuth();
+  const { user, loading, role, roleLoading, isSupport, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading || roleLoading) return;
     if (!user) navigate({ to: "/auth" });
-    if (role === "admin") navigate({ to: "/admin" });
-  }, [loading, roleLoading, user, role, navigate]);
+    else if (isSupport && !isAdmin) navigate({ to: "/admin/support" });
+    else if (role === "admin") navigate({ to: "/admin" });
+  }, [loading, roleLoading, user, role, isSupport, isAdmin, navigate]);
 
   const { data: seller, isLoading: sellerLoading } = useQuery<Seller | null>({
     queryKey: ["seller", user?.id],
