@@ -149,10 +149,11 @@ export const createAdCheckout = createServerFn({ method: "POST" })
       cancel_url: `${data.origin}/seller/promotions?ads=canceled`,
     });
 
-    await supabase
+    const { error: sessionUpdateErr } = await supabase
       .from("ad_campaigns")
       .update({ stripe_session_id: session.id })
       .eq("id", campaign.id);
+    if (sessionUpdateErr) throw sessionUpdateErr;
 
     if (!session.url) throw new Error("Stripe não retornou a URL de pagamento");
     return { url: session.url, campaignId: campaign.id, amountCents };
