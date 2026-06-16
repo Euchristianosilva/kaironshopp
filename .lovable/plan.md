@@ -1,66 +1,88 @@
-## Contexto
+## Sistema Completo de Suporte
 
-A mensagem "Não foi possível calcular o frete agora" aparece quando a API do Melhor Envio responde **401/403**. O código da integração em `src/lib/shipping.functions.ts` já está correto:
+Vou implementar um sistema profissional de tickets de suporte com chat em tempo real, equipe com permissões, e integração nos painéis admin e vendedor.
 
-- Endpoint certo: `POST /api/v2/me/shipment/calculate`
-- Header `Authorization: Bearer <token>` + `User-Agent` (obrigatório pela ME)
-- `from.postal_code`, `to.postal_code`, dimensões e peso em kg
-- Cache, agrupamento por vendedor, validação de CEP de origem e dimensões
+### 1. Banco de Dados (migration)
 
-**Causa real do erro 401/403:** o token em `MELHOR_ENVIO_TOKEN` está inválido, expirado, sem os escopos certos, ou em ambiente diferente do configurado em `MELHOR_ENVIO_ENV`. Não é problema de OAuth nem de Client ID/Secret.
+**Novo enum:**
+- `support_role`: `agent`, `supervisor`, `manager`
+- `ticket_status`: `open`, `in_progress`, `waiting_seller`, `resolved`, `closed`
+- `ticket_category`: `financial`, `products`, `orders`, `shipping`, `technical`, `other`
 
-## Por que NÃO implementar OAuth completo agora
+**Novas tabelas:**
+- `support_agents` (user_id, role, active, permissions jsonb)
+- `support_tickets` (seller_id, opened_by, subject, category, status, assigned_to, last_message_at, seller_unread, agent_unread)
+- `support_messages` (ticket_id, sender_id, sender_type [seller|agent], body, attachments jsonb)
 
-OAuth (Client ID + Secret + Refresh Token + Callback) só faz sentido quando **cada vendedor conecta a própria conta Melhor Envio**. Hoje a plataforma usa **um único token de plataforma** (modelo correto para marketplace que cobra/envia em nome próprio). Trocar para OAuth multi-conta é um projeto de dias e não resolve o erro atual — é apenas um caminho diferente para obter o mesmo `access_token`.
+**RLS:**
+- Vendedores veem/criam tickets dos seus próprios sellers
+- Agentes ativos veem todos os tickets; supervisor/manager podem reatribuir/encerrar
+- Admin (`has_role admin`) tem acesso total
+- Realtime habilitado em todas as três tabelas
+- GRANTs apropriados
 
-Mantemos o **Personal Access Token** (modelo single-tenant) e vamos:
-1. Dar ao admin uma tela para ver o status e disparar diagnóstico
-2. Logar erros com detalhes (status, endpoint, payload, resposta)
-3. Validar dimensões/peso/CEP antes de enviar
+**Security definer functions:**
+- `is_support_agent(uid)` → boolean
+- `support_agent_role(uid)` → support_role
 
-## O que vou construir
+**Triggers:**
+- Em INSERT messages: atualizar `last_message_at`, contadores de não lidas, criar notificação para o destinatário (reutiliza `notifications` existente, type `generic`)
 
-### 1. Server fns de diagnóstico (`src/lib/shipping-diag.functions.ts`)
-- `pingMelhorEnvio()` — chama `GET /api/v2/me` (endpoint leve que valida o token). Retorna `{ ok, status, env, user?, error? }`.
-- `getShippingDiagnostics()` — retorna último erro armazenado, última cotação, ambiente atual, presença do token (sem expor valor).
-- Ambas com `requireSupabaseAuth` + verificação `has_role(_, 'admin')`.
+### 2. Server Functions (`src/lib/support.functions.ts`)
+- `listMyTickets` (vendedor)
+- `createTicket` (vendedor)
+- `listAllTickets` (suporte/admin) com filtros
+- `getTicket` (ambos, conforme permissão)
+- `sendTicketMessage`
+- `updateTicketStatus` (suporte)
+- `assignTicket` (supervisor+)
+- `listAgents` / `createAgent` / `updateAgentPermissions` / `removeAgent` (admin)
+- `markTicketRead`
 
-### 2. Persistência de diagnóstico (migration)
-Tabela `shipping_diagnostics` com 1 linha (singleton):
-- `last_success_at`, `last_error_at`, `last_error_status`, `last_error_endpoint`, `last_error_body`, `last_request_payload`, `last_env`
-- RLS: apenas admin lê; `service_role` grava
-- `shipping.functions.ts` passa a gravar erro/sucesso aqui
+`createAgent` usa `supabaseAdmin` (dynamic import) para criar usuário via Auth Admin API + insere em `support_agents` + `user_roles`.
 
-### 3. Logs detalhados em `shipping.functions.ts`
-Já loga `status/env/body`. Vou adicionar: endpoint usado, payload enviado (sem dados sensíveis), e gravar no `shipping_diagnostics`.
+### 3. Frontend
 
-### 4. Tela admin `/admin/shipping`
-- Cartão "Status da Integração": ambiente, token presente, último sucesso, último erro
-- Botão **Testar Conexão** → chama `pingMelhorEnvio()`
-- Tabela com último payload enviado + resposta da API
-- Instruções de como gerar/renovar o token (link para painel ME, escopos necessários)
-- Campo informativo do Webhook URL: `https://kaironshopp.lovable.app/api/public/melhor-envio/webhook` (somente leitura, com botão copiar)
+**Vendedor — `src/routes/seller.support.tsx`** (reescrever):
+- Lista de chamados com status badges
+- Botão "Novo Chamado" → dialog com assunto/categoria/mensagem
+- Selecionar chamado → chat em tempo real (componente reutilizável `TicketChat`)
+- Realtime via `supabase.channel` em `support_messages` filtrando por ticket_id
 
-Os valores `MELHOR_ENVIO_TOKEN` e `MELHOR_ENVIO_ENV` continuam em **Secrets** (não em formulário do app) — é a forma segura no Lovable Cloud. A tela admin mostra status e instrui como atualizar.
+**Admin — novas rotas:**
+- `src/routes/admin.support.tsx` — central de atendimento (lista + chat)
+- `src/routes/admin.support-team.tsx` — gerenciamento de equipe (adicionar/editar/remover atendentes, definir permissões)
 
-### 5. Mensagens de erro mais úteis no carrinho
-Em vez de "Tente novamente em instantes", quando o status for 401/403 mostrar: "Cálculo de frete temporariamente indisponível. Nossa equipe foi notificada." e logar o problema real no diagnóstico.
+**Suporte (atendentes) — `src/routes/support.tsx`:**
+- Layout simplificado para atendentes não-admin
+- Mesma central de tickets, escopo conforme permissões
 
-## Arquivos
+**Sidebar Admin (`AdminSidebar`):** adicionar "Suporte" e "Equipe de Suporte" (visível só para admin)
+**Sidebar Vendedor:** já tem "Suporte" — atualizar com badge de não lidas
 
-```
-+ supabase migration: shipping_diagnostics table
-+ src/lib/shipping-diag.functions.ts
-+ src/routes/admin.shipping.tsx
-~ src/lib/shipping.functions.ts  (gravar diagnóstico + log de endpoint/payload)
-~ src/routes/admin.tsx  (link "Frete / Melhor Envio" no menu)
-```
+**Login redirect:** após login, se usuário for `support_agent` e não admin → `/support`; senão fluxo normal.
 
-## Próximo passo seu (independe de código)
+### 4. Realtime
+- Habilitar `support_tickets` e `support_messages` no `supabase_realtime` publication
+- Inscrição via `supabase.channel` em mount/unmount com `setQueryData` otimista
 
-Depois de eu publicar a tela admin, abra `/admin/shipping`, clique **Testar Conexão**. Se retornar 401:
-1. Vá ao painel Melhor Envio (sandbox ou produção, conforme `MELHOR_ENVIO_ENV`)
-2. Minha Conta → Tokens → gere novo token com escopos `shipping-calculate shipping-tracking cart-read cart-write`
-3. Atualize o secret `MELHOR_ENVIO_TOKEN` (eu peço com a ferramenta de secrets)
+### 5. Componente compartilhado
+`src/components/support/TicketChat.tsx` — usado por vendedor, admin e suporte. Recebe `ticketId` + `viewerType`.
 
-Posso prosseguir?
+### Arquivos a criar/editar
+- `supabase/migrations/<ts>_support_system.sql` (novo)
+- `src/lib/support.functions.ts` (novo)
+- `src/components/support/TicketChat.tsx` (novo)
+- `src/components/support/TicketList.tsx` (novo)
+- `src/components/support/NewTicketDialog.tsx` (novo)
+- `src/routes/seller.support.tsx` (reescrever)
+- `src/routes/admin.support.tsx` (novo)
+- `src/routes/admin.support-team.tsx` (novo)
+- `src/routes/support.tsx` (novo, layout atendente)
+- `src/components/admin/AdminSidebar.tsx` (editar — adicionar itens)
+- `src/components/seller/SellerSidebar.tsx` (editar — badge suporte)
+- `src/routes/auth.tsx` ou handler de login (editar — redirect agente)
+
+### Observações
+- Sem upload de anexos no primeiro release (campo `attachments jsonb` fica preparado; UI marca como "em breve") — para não estourar escopo. Confirme se devo incluir upload já agora.
+- "Indicador de digitando" via Realtime broadcast (presence) — incluído.

@@ -1523,6 +1523,140 @@ export type Database = {
         }
         Relationships: []
       }
+      support_agents: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          permissions: Json
+          role: Database["public"]["Enums"]["support_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          permissions?: Json
+          role?: Database["public"]["Enums"]["support_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          permissions?: Json
+          role?: Database["public"]["Enums"]["support_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          attachments: Json
+          body: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          sender_type: string
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json
+          body: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          sender_type: string
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json
+          body?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          sender_type?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          agent_unread: number
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["ticket_category"]
+          created_at: string
+          id: string
+          last_message_at: string
+          last_message_preview: string | null
+          opened_by: string
+          seller_id: string | null
+          seller_unread: number
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          agent_unread?: number
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          opened_by: string
+          seller_id?: string | null
+          seller_unread?: number
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          agent_unread?: number
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          opened_by?: string
+          seller_id?: string | null
+          seller_unread?: number
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1640,6 +1774,11 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      is_support_agent: { Args: { _uid: string }; Returns: boolean }
+      support_agent_role: {
+        Args: { _uid: string }
+        Returns: Database["public"]["Enums"]["support_role"]
+      }
       user_is_order_buyer: {
         Args: { _order_id: string; _user_id: string }
         Returns: boolean
@@ -1680,6 +1819,20 @@ export type Database = {
         | "payout_paid"
         | "generic"
       product_condition: "new" | "refurbished" | "used"
+      support_role: "agent" | "supervisor" | "manager"
+      ticket_category:
+        | "financial"
+        | "products"
+        | "orders"
+        | "shipping"
+        | "technical"
+        | "other"
+      ticket_status:
+        | "open"
+        | "in_progress"
+        | "waiting_seller"
+        | "resolved"
+        | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1840,6 +1993,22 @@ export const Constants = {
         "generic",
       ],
       product_condition: ["new", "refurbished", "used"],
+      support_role: ["agent", "supervisor", "manager"],
+      ticket_category: [
+        "financial",
+        "products",
+        "orders",
+        "shipping",
+        "technical",
+        "other",
+      ],
+      ticket_status: [
+        "open",
+        "in_progress",
+        "waiting_seller",
+        "resolved",
+        "closed",
+      ],
     },
   },
 } as const

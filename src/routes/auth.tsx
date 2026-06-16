@@ -23,7 +23,18 @@ function AuthPage() {
 
   useEffect(() => {
     if (!user || roleLoading) return;
-    navigate({ to: role === "admin" ? "/admin" : role === "seller" ? "/seller" : "/account" });
+    (async () => {
+      // support agents → support center
+      try {
+        const { data: agent } = await supabase
+          .from("support_agents").select("active").eq("user_id", user.id).maybeSingle();
+        if (agent?.active && role !== "admin") {
+          navigate({ to: "/admin/support" });
+          return;
+        }
+      } catch {}
+      navigate({ to: role === "admin" ? "/admin" : role === "seller" ? "/seller" : "/account" });
+    })();
   }, [user, role, roleLoading, navigate]);
 
   async function onSubmit(e: React.FormEvent) {

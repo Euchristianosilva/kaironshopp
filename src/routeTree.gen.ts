@@ -42,6 +42,8 @@ import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as AdminVendorsRouteImport } from './routes/admin.vendors'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminSupportTeamRouteImport } from './routes/admin.support-team'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminShippingRouteImport } from './routes/admin.shipping'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSellersRouteImport } from './routes/admin.sellers'
@@ -225,6 +227,16 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSupportTeamRoute = AdminSupportTeamRouteImport.update({
+  id: '/support-team',
+  path: '/support-team',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminShippingRoute = AdminShippingRouteImport.update({
   id: '/shipping',
   path: '/shipping',
@@ -337,6 +349,8 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AdminSellersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/support-team': typeof AdminSupportTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -387,6 +401,8 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AdminSellersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/support-team': typeof AdminSupportTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -440,6 +456,8 @@ export interface FileRoutesById {
   '/admin/sellers': typeof AdminSellersRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/admin/support-team': typeof AdminSupportTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vendors': typeof AdminVendorsRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -494,6 +512,8 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/settings'
     | '/admin/shipping'
+    | '/admin/support'
+    | '/admin/support-team'
     | '/admin/users'
     | '/admin/vendors'
     | '/category/$slug'
@@ -544,6 +564,8 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/settings'
     | '/admin/shipping'
+    | '/admin/support'
+    | '/admin/support-team'
     | '/admin/users'
     | '/admin/vendors'
     | '/category/$slug'
@@ -596,6 +618,8 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/settings'
     | '/admin/shipping'
+    | '/admin/support'
+    | '/admin/support-team'
     | '/admin/users'
     | '/admin/vendors'
     | '/category/$slug'
@@ -878,6 +902,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/support-team': {
+      id: '/admin/support-team'
+      path: '/support-team'
+      fullPath: '/admin/support-team'
+      preLoaderRoute: typeof AdminSupportTeamRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/shipping': {
       id: '/admin/shipping'
       path: '/shipping'
@@ -1014,6 +1052,8 @@ interface AdminRouteChildren {
   AdminSellersRoute: typeof AdminSellersRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminShippingRoute: typeof AdminShippingRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminSupportTeamRoute: typeof AdminSupportTeamRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVendorsRoute: typeof AdminVendorsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1033,6 +1073,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSellersRoute: AdminSellersRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminShippingRoute: AdminShippingRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminSupportTeamRoute: AdminSupportTeamRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVendorsRoute: AdminVendorsRoute,
   AdminIndexRoute: AdminIndexRoute,

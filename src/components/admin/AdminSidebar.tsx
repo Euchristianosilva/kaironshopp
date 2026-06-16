@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Store, Package, ShoppingBag, Tags, Ticket,
-  Image as ImageIcon, DollarSign, TrendingUp, Truck, Megaphone, Settings, ShieldCheck, Flame,
+  Image as ImageIcon, DollarSign, TrendingUp, Truck, Megaphone, Settings, ShieldCheck, Flame, LifeBuoy, UserCog,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -39,6 +39,13 @@ const sections: Array<{ label: string; items: Array<{ to: string; label: string;
     items: [
       { to: "/admin/finance", label: "Financeiro", icon: DollarSign },
       { to: "/admin/reports", label: "Relatórios", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Atendimento",
+    items: [
+      { to: "/admin/support", label: "Suporte", icon: LifeBuoy },
+      { to: "/admin/support-team", label: "Equipe de Suporte", icon: UserCog },
     ],
   },
   {
