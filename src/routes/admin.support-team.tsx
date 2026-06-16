@@ -59,14 +59,22 @@ function AdminTeamPage() {
   }, [qc]);
 
   const createMut = useMutation({
-    mutationFn: () => create({ data: form as any }),
+    mutationFn: async () => {
+      console.log("[admin.support-team] submitting", { ...form, password: "***" });
+      const res = await create({ data: form as any });
+      console.log("[admin.support-team] response", res);
+      return res;
+    },
     onSuccess: () => {
       toast.success("Atendente adicionado");
       setOpen(false);
       setForm(EMPTY_FORM);
       qc.invalidateQueries({ queryKey: ["support-agents"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao adicionar"),
+    onError: (e: any) => {
+      console.error("[admin.support-team] createAgent error:", e);
+      toast.error(e?.message ?? "Erro ao adicionar atendente");
+    },
   });
 
   const updateMut = useMutation({
@@ -83,10 +91,12 @@ function AdminTeamPage() {
 
   const agents = (data as any)?.agents ?? [];
 
-  function submit() {
-    if (!form.full_name.trim()) return toast.error("Informe o nome");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return toast.error("E-mail inválido");
-    if (form.password.length < 8) return toast.error("Senha precisa ter ao menos 8 caracteres");
+  function submit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (createMut.isPending) return;
+    if (!form.full_name.trim()) { toast.error("Informe o nome"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { toast.error("E-mail inválido"); return; }
+    if (form.password.length < 8) { toast.error("Senha precisa ter ao menos 8 caracteres"); return; }
     createMut.mutate();
   }
 
@@ -99,10 +109,10 @@ function AdminTeamPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Adicionar atendente</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <Input placeholder="Nome completo" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-              <Input type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <Input type="password" placeholder="Senha (mín. 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <form onSubmit={submit} className="space-y-3">
+              <Input placeholder="Nome completo" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} autoComplete="name" />
+              <Input type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="off" />
+              <Input type="password" placeholder="Senha (mín. 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} autoComplete="new-password" />
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-bold text-muted-foreground">Cargo</label>
@@ -126,13 +136,13 @@ function AdminTeamPage() {
               <p className="text-[11px] text-muted-foreground">
                 Gerentes vêem todos os departamentos. Supervisores e atendentes vêem apenas o próprio.
               </p>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)} disabled={createMut.isPending}>Cancelar</Button>
-              <Button disabled={createMut.isPending} onClick={submit}>
-                {createMut.isPending ? "Salvando…" : "Adicionar"}
-              </Button>
-            </DialogFooter>
+              <DialogFooter className="pt-2">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={createMut.isPending}>Cancelar</Button>
+                <Button type="submit" disabled={createMut.isPending}>
+                  {createMut.isPending ? "Salvando…" : "Adicionar"}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
