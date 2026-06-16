@@ -23,16 +23,20 @@ export const getActiveSponsoredProducts = createServerFn({ method: "GET" })
     const now = new Date().toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("ad_campaigns")
-      .select("id, placement, priority, product:products!inner(*)")
+      .select("id, placement, priority, metadata, is_manual, product:products!inner(*)")
       .eq("placement", data.placement)
-      .eq("status", "active")
+      .in("status", ["active", "scheduled"])
       .lte("starts_at", now)
       .gt("ends_at", now)
       .order("priority", { ascending: false })
       .limit(data.limit);
     if (error) throw error;
     return (rows ?? [])
-      .filter((r: any) => r.product && r.product.is_active)
+      .filter((r: any) => {
+        const adminStatus = r.metadata?.admin_status;
+        const approvedForPremium = data.placement !== "carousel" || r.is_manual || adminStatus === "approved";
+        return r.product && r.product.is_active && approvedForPremium;
+      })
       .map((r: any) => ({
         campaignId: r.id,
         placement: r.placement,
