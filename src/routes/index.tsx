@@ -6,6 +6,7 @@ import { BannerCarousel } from "@/components/marketplace/BannerCarousel";
 import { CategoryGrid } from "@/components/marketplace/CategoryGrid";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { SponsoredProductCard } from "@/components/marketplace/SponsoredProductCard";
+import { PromotionsSection } from "@/components/marketplace/PromotionsSection";
 import { getActiveSponsoredProducts } from "@/lib/sponsored.functions";
 import { fetchAllProducts, type Product } from "@/lib/products";
 import { Flame, TrendingUp, Sparkles, Clock } from "lucide-react";
@@ -79,16 +80,7 @@ function Home() {
           </section>
         )}
 
-        <section className="container mx-auto px-4 mt-10">
-          <div className="bg-gradient-brand rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 text-primary-foreground shadow-brand">
-            <div>
-              <div className="text-xs font-bold tracking-widest uppercase opacity-90">Oferta relâmpago</div>
-              <h3 className="text-2xl md:text-3xl font-black mt-1">Termina em 02h 35min</h3>
-              <p className="opacity-90 mt-1">Aproveite até 70% OFF em itens selecionados.</p>
-            </div>
-            <span className="bg-background text-primary font-bold px-6 py-3 rounded-lg">Ver ofertas</span>
-          </div>
-        </section>
+        <PromotionsSection />
 
         <Showcase title="Ofertas do dia" icon={Flame} loading={isLoading} items={products.slice(0, 6)} />
         <Showcase title="Mais vendidos" icon={TrendingUp} loading={isLoading} items={[...products].sort((a, b) => b.sold - a.sold).slice(0, 6)} />
