@@ -43,6 +43,20 @@ function Checkout() {
   const shippingPrice = selected?.price ?? 0;
   const total = subtotal + shippingPrice;
 
+  const fillAddressFromCep = async (cepDigits: string) => {
+    const response = await fetch(`https://viacep.com.br/ws/${cepDigits}/json/`);
+    if (!response.ok) throw new Error("Não foi possível consultar o CEP.");
+    const via = await response.json();
+    if (via?.erro) throw new Error("CEP não encontrado.");
+    setAddress((prev) => ({
+      ...prev,
+      street: via.logradouro || "",
+      neighborhood: via.bairro || "",
+      city: via.localidade || "",
+      state: via.uf || "",
+    }));
+  };
+
   const handleCalc = async () => {
     setShipErr(null);
     setOptions([]);
@@ -52,13 +66,10 @@ function Checkout() {
       setShipErr("Informe um CEP válido (00000-000).");
       return;
     }
-    if (cart.length === 0) return;
     try {
       setCalculating(true);
-      // Autofill via ViaCEP (em paralelo ao cálculo de frete)
-      const viaCepPromise = fetch(`https://viacep.com.br/ws/${cepDigits}/json/`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null);
+      await fillAddressFromCep(cepDigits);
+      if (cart.length === 0) return;
       const res = await calcShip({
         data: {
           to_zip: cepDigits,
@@ -72,20 +83,6 @@ function Checkout() {
       }
       setOptions(all);
       if (all.length === 0 && !shipErr) setShipErr("Nenhuma opção de frete disponível para este CEP.");
-
-      const via = await viaCepPromise;
-      if (via && !via.erro) {
-        setAddress((prev) => ({
-          ...prev,
-          street: prev.street || via.logradouro || "",
-          complement: prev.complement || via.complemento || "",
-          neighborhood: prev.neighborhood || via.bairro || "",
-          city: prev.city || via.localidade || "",
-          state: prev.state || via.uf || "",
-        }));
-      } else if (via?.erro) {
-        setShipErr((e) => e ?? "CEP não encontrado.");
-      }
     } catch (e: any) {
       setShipErr(e?.message ?? "Erro ao calcular frete");
     } finally {
@@ -153,6 +150,7 @@ function Checkout() {
                 <div className="flex gap-2">
                   <Input placeholder="CEP (00000-000)" value={cep} onChange={(e) => setCep(e.target.value)} />
                   <button
+                    type="button"
                     onClick={handleCalc}
                     disabled={calculating || cart.length === 0}
                     className="h-10 px-3 rounded-md bg-primary text-primary-foreground text-sm font-semibold whitespace-nowrap disabled:opacity-50"
