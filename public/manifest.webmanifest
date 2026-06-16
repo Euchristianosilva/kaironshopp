@@ -1,0 +1,31 @@
+{
+  "name": "Kairon Shop",
+  "short_name": "Kairon",
+  "description": "Marketplace Kairon Shop — compre, venda e gerencie sua loja.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ea3a14",
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/935fa8ee-e476-44db-bca1-260b8f266779/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/b5fec9f4-eed4-4b95-b8be-27e92b38c141/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/b5fec9f4-eed4-4b95-b8be-27e92b38c141/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
