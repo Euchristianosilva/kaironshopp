@@ -20,6 +20,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SellerSupportRouteImport } from './routes/seller.support'
 import { Route as SellerSubscriptionRouteImport } from './routes/seller.subscription'
 import { Route as SellerStockRouteImport } from './routes/seller.stock'
 import { Route as SellerShippingRouteImport } from './routes/seller.shipping'
@@ -30,6 +31,7 @@ import { Route as SellerPromotionsRouteImport } from './routes/seller.promotions
 import { Route as SellerProfileRouteImport } from './routes/seller.profile'
 import { Route as SellerProductsRouteImport } from './routes/seller.products'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
+import { Route as SellerMessagesRouteImport } from './routes/seller.messages'
 import { Route as SellerHelpRouteImport } from './routes/seller.help'
 import { Route as SellerFinanceRouteImport } from './routes/seller.finance'
 import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
@@ -113,6 +115,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const SellerSupportRoute = SellerSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerSubscriptionRoute = SellerSubscriptionRouteImport.update({
   id: '/subscription',
   path: '/subscription',
@@ -161,6 +168,11 @@ const SellerProductsRoute = SellerProductsRouteImport.update({
 const SellerOrdersRoute = SellerOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerMessagesRoute = SellerMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => SellerRoute,
 } as any)
 const SellerHelpRoute = SellerHelpRouteImport.update({
@@ -335,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
+  '/seller/messages': typeof SellerMessagesRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
@@ -345,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/seller/support': typeof SellerSupportRoute
   '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -383,6 +397,7 @@ export interface FileRoutesByTo {
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
+  '/seller/messages': typeof SellerMessagesRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
@@ -393,6 +408,7 @@ export interface FileRoutesByTo {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/seller/support': typeof SellerSupportRoute
   '/admin': typeof AdminIndexRoute
   '/seller': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -434,6 +450,7 @@ export interface FileRoutesById {
   '/seller/customers': typeof SellerCustomersRoute
   '/seller/finance': typeof SellerFinanceRoute
   '/seller/help': typeof SellerHelpRoute
+  '/seller/messages': typeof SellerMessagesRoute
   '/seller/orders': typeof SellerOrdersRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/profile': typeof SellerProfileRoute
@@ -444,6 +461,7 @@ export interface FileRoutesById {
   '/seller/shipping': typeof SellerShippingRoute
   '/seller/stock': typeof SellerStockRoute
   '/seller/subscription': typeof SellerSubscriptionRoute
+  '/seller/support': typeof SellerSupportRoute
   '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
@@ -486,6 +504,7 @@ export interface FileRouteTypes {
     | '/seller/customers'
     | '/seller/finance'
     | '/seller/help'
+    | '/seller/messages'
     | '/seller/orders'
     | '/seller/products'
     | '/seller/profile'
@@ -496,6 +515,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/seller/support'
     | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
@@ -534,6 +554,7 @@ export interface FileRouteTypes {
     | '/seller/customers'
     | '/seller/finance'
     | '/seller/help'
+    | '/seller/messages'
     | '/seller/orders'
     | '/seller/products'
     | '/seller/profile'
@@ -544,6 +565,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/seller/support'
     | '/admin'
     | '/seller'
     | '/api/public/stripe-webhook'
@@ -584,6 +606,7 @@ export interface FileRouteTypes {
     | '/seller/customers'
     | '/seller/finance'
     | '/seller/help'
+    | '/seller/messages'
     | '/seller/orders'
     | '/seller/products'
     | '/seller/profile'
@@ -594,6 +617,7 @@ export interface FileRouteTypes {
     | '/seller/shipping'
     | '/seller/stock'
     | '/seller/subscription'
+    | '/seller/support'
     | '/admin/'
     | '/seller/'
     | '/api/public/stripe-webhook'
@@ -700,6 +724,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/seller/support': {
+      id: '/seller/support'
+      path: '/support'
+      fullPath: '/seller/support'
+      preLoaderRoute: typeof SellerSupportRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/subscription': {
       id: '/seller/subscription'
       path: '/subscription'
@@ -768,6 +799,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/seller/orders'
       preLoaderRoute: typeof SellerOrdersRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/messages': {
+      id: '/seller/messages'
+      path: '/messages'
+      fullPath: '/seller/messages'
+      preLoaderRoute: typeof SellerMessagesRouteImport
       parentRoute: typeof SellerRoute
     }
     '/seller/help': {
@@ -1008,6 +1046,7 @@ interface SellerRouteChildren {
   SellerCustomersRoute: typeof SellerCustomersRoute
   SellerFinanceRoute: typeof SellerFinanceRoute
   SellerHelpRoute: typeof SellerHelpRoute
+  SellerMessagesRoute: typeof SellerMessagesRoute
   SellerOrdersRoute: typeof SellerOrdersRoute
   SellerProductsRoute: typeof SellerProductsRoute
   SellerProfileRoute: typeof SellerProfileRoute
@@ -1018,6 +1057,7 @@ interface SellerRouteChildren {
   SellerShippingRoute: typeof SellerShippingRoute
   SellerStockRoute: typeof SellerStockRoute
   SellerSubscriptionRoute: typeof SellerSubscriptionRoute
+  SellerSupportRoute: typeof SellerSupportRoute
   SellerIndexRoute: typeof SellerIndexRoute
 }
 
@@ -1027,6 +1067,7 @@ const SellerRouteChildren: SellerRouteChildren = {
   SellerCustomersRoute: SellerCustomersRoute,
   SellerFinanceRoute: SellerFinanceRoute,
   SellerHelpRoute: SellerHelpRoute,
+  SellerMessagesRoute: SellerMessagesRoute,
   SellerOrdersRoute: SellerOrdersRoute,
   SellerProductsRoute: SellerProductsRoute,
   SellerProfileRoute: SellerProfileRoute,
@@ -1037,6 +1078,7 @@ const SellerRouteChildren: SellerRouteChildren = {
   SellerShippingRoute: SellerShippingRoute,
   SellerStockRoute: SellerStockRoute,
   SellerSubscriptionRoute: SellerSubscriptionRoute,
+  SellerSupportRoute: SellerSupportRoute,
   SellerIndexRoute: SellerIndexRoute,
 }
 

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, ShoppingBag, Package, BarChart3, Store, MessageSquare,
+  LayoutDashboard, ShoppingBag, Package, BarChart3, Store, MessageSquare, LifeBuoy,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -17,8 +17,9 @@ const ITEMS: { to: string; label: string; icon: any }[] = [
   { to: "/seller", label: "Painel Vendedor", icon: LayoutDashboard },
   { to: "/seller/products", label: "Produtos", icon: Package },
   { to: "/seller/orders", label: "Pedidos", icon: ShoppingBag },
-  { to: "/messages", label: "Mensagens", icon: MessageSquare },
+  { to: "/seller/messages", label: "Mensagens", icon: MessageSquare },
   { to: "/seller/reports", label: "Vendas", icon: BarChart3 },
+  { to: "/seller/support", label: "Suporte", icon: LifeBuoy },
 ];
 
 export function SellerSidebar() {
@@ -69,7 +70,7 @@ export function SellerSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {ITEMS.map((item) => {
-                const showBadge = item.to === "/messages" && unreadTotal > 0;
+                const showBadge = item.to === "/seller/messages" && unreadTotal > 0;
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
