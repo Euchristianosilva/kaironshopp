@@ -4,6 +4,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Placement = "card" | "carousel";
 
+function validStripeImage(url: string | null | undefined) {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" ? [url] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Cria uma campanha de anúncio patrocinado (status pending_payment)
  * e inicia uma Stripe Checkout Session. O webhook confirma o pagamento
@@ -104,6 +114,7 @@ export const createAdCheckout = createServerFn({ method: "POST" })
         amount_cents: amountCents,
         currency: pricing.currency || "brl",
         status: "pending_payment",
+        metadata: data.placement === "carousel" ? { admin_status: "awaiting_payment" } : {},
       })
       .select("id")
       .single();
@@ -120,7 +131,7 @@ export const createAdCheckout = createServerFn({ method: "POST" })
             currency: pricing.currency || "brl",
             product_data: {
               name: `Anúncio ${placementLabel} — ${product.title}`,
-              images: product.image_url ? [product.image_url] : undefined,
+              images: validStripeImage(product.image_url),
             },
             unit_amount: amountCents,
           },
@@ -129,6 +140,7 @@ export const createAdCheckout = createServerFn({ method: "POST" })
       ],
       metadata: {
         kind: "ad_campaign",
+        placement: data.placement,
         campaign_id: campaign.id,
         product_id: product.id,
         user_id: userId,
@@ -142,6 +154,7 @@ export const createAdCheckout = createServerFn({ method: "POST" })
       .update({ stripe_session_id: session.id })
       .eq("id", campaign.id);
 
+    if (!session.url) throw new Error("Stripe não retornou a URL de pagamento");
     return { url: session.url, campaignId: campaign.id, amountCents };
   });
 
