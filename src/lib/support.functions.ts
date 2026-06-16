@@ -282,10 +282,8 @@ export const createAgent = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    console.log("[createAgent] caller:", userId, "payload:", { email: data.email, role: data.role, department: data.department });
     const { isAdmin } = await isSupportOrAdmin(supabase, userId);
     if (!isAdmin) {
-      console.warn("[createAgent] denied: not admin", userId);
       throw new Error("Apenas administrador pode adicionar atendentes");
     }
 
@@ -297,14 +295,14 @@ export const createAgent = createServerFn({ method: "POST" })
       email_confirm: true,
       user_metadata: { full_name: data.full_name },
     });
-    if (cErr) console.warn("[createAgent] createUser error:", cErr.message);
     let uid = created?.user?.id ?? null;
+    const createdNewUser = !!uid;
     if (!uid) {
       // Fallback: page through existing users to find by email
       let page = 1;
       while (!uid && page <= 10) {
         const { data: list, error: lErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
-        if (lErr) { console.error("[createAgent] listUsers error:", lErr.message); break; }
+        if (lErr) break;
         const found = list?.users?.find((u: any) => (u.email ?? "").toLowerCase() === data.email);
         if (found) { uid = found.id; break; }
         if (!list?.users?.length || list.users.length < 1000) break;
@@ -315,25 +313,34 @@ export const createAgent = createServerFn({ method: "POST" })
       const msg = cErr?.message || "Não foi possível criar o usuário (verifique e-mail e senha)";
       throw new Error(msg);
     }
-    console.log("[createAgent] uid:", uid);
 
-    const { error: pErr } = await supabaseAdmin
-      .from("profiles")
-      .upsert({ id: uid, full_name: data.full_name }, { onConflict: "id" });
-    if (pErr) console.warn("[createAgent] profile upsert error:", pErr.message);
+    try {
+      if (!createdNewUser) {
+        const { error: updateUserErr } = await supabaseAdmin.auth.admin.updateUserById(uid, {
+          password: data.password,
+          email_confirm: true,
+          user_metadata: { full_name: data.full_name },
+        });
+        if (updateUserErr) throw new Error("Falha ao atualizar credenciais do usuário: " + updateUserErr.message);
+      }
 
-    const { error: aErr } = await supabaseAdmin
-      .from("support_agents")
-      .upsert(
-        { user_id: uid, role: data.role, department: data.department, active: true },
-        { onConflict: "user_id" },
-      );
-    if (aErr) {
-      console.error("[createAgent] support_agents upsert error:", aErr.message);
-      throw new Error("Falha ao salvar atendente: " + aErr.message);
+      const { error: pErr } = await supabaseAdmin
+        .from("profiles")
+        .upsert({ id: uid, full_name: data.full_name }, { onConflict: "id" });
+      if (pErr) throw new Error("Falha ao salvar perfil: " + pErr.message);
+
+      const { error: aErr } = await supabaseAdmin
+        .from("support_agents")
+        .upsert(
+          { user_id: uid, role: data.role, department: data.department, active: true },
+          { onConflict: "user_id" },
+        );
+      if (aErr) throw new Error("Falha ao salvar atendente: " + aErr.message);
+    } catch (error) {
+      if (createdNewUser) await supabaseAdmin.auth.admin.deleteUser(uid).catch(() => null);
+      throw error;
     }
 
-    console.log("[createAgent] success user_id:", uid);
     return { ok: true, user_id: uid };
   });
 
