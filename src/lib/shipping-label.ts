@@ -5,6 +5,31 @@
 
 import JsBarcode from "jsbarcode";
 import QRCode from "qrcode";
+import kaironLogo from "@/assets/kairon-logo.png.asset.json";
+
+// Cache the platform logo as a data URL so it renders in popup windows
+// and prints reliably (no CORS / no relative-URL issues).
+let cachedLogoDataUrl: string | null | undefined;
+async function getPlatformLogoDataUrl(): Promise<string | null> {
+  if (cachedLogoDataUrl !== undefined) return cachedLogoDataUrl;
+  try {
+    const url = kaironLogo.url.startsWith("http")
+      ? kaironLogo.url
+      : `${window.location.origin}${kaironLogo.url}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("logo fetch failed");
+    const blob = await res.blob();
+    cachedLogoDataUrl = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result));
+      fr.onerror = () => reject(fr.error);
+      fr.readAsDataURL(blob);
+    });
+  } catch {
+    cachedLogoDataUrl = null;
+  }
+  return cachedLogoDataUrl;
+}
 
 export type LabelData = {
   orderId: string;
