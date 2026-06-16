@@ -42,7 +42,11 @@ function AdminTeamPage() {
   const update = useServerFn(updateAgent);
   const remove = useServerFn(removeAgent);
 
-  const { data } = useQuery({ queryKey: ["support-agents"], queryFn: () => list() });
+  const { data, error: listError, isError: listIsError } = useQuery({
+    queryKey: ["support-agents"],
+    queryFn: () => list(),
+    retry: false,
+  });
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -59,12 +63,7 @@ function AdminTeamPage() {
   }, [qc]);
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      console.log("[admin.support-team] submitting", { ...form, password: "***" });
-      const res = await create({ data: form as any });
-      console.log("[admin.support-team] response", res);
-      return res;
-    },
+    mutationFn: () => create({ data: form as any }),
     onSuccess: () => {
       toast.success("Atendente adicionado");
       setOpen(false);
@@ -72,7 +71,6 @@ function AdminTeamPage() {
       qc.invalidateQueries({ queryKey: ["support-agents"] });
     },
     onError: (e: any) => {
-      console.error("[admin.support-team] createAgent error:", e);
       toast.error(e?.message ?? "Erro ao adicionar atendente");
     },
   });
@@ -148,7 +146,11 @@ function AdminTeamPage() {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {agents.length === 0 ? (
+        {listIsError ? (
+          <p className="p-8 text-center text-sm text-destructive flex flex-col items-center gap-2">
+            <Users className="h-6 w-6" /> {(listError as Error)?.message ?? "Erro ao carregar equipe de suporte."}
+          </p>
+        ) : agents.length === 0 ? (
           <p className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
             <Users className="h-6 w-6" /> Nenhum atendente cadastrado.
           </p>
