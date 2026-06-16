@@ -123,40 +123,52 @@ export const createAdCheckout = createServerFn({ method: "POST" })
     // 5) Stripe Checkout
     const stripe = new Stripe(key);
     const placementLabel = data.placement === "carousel" ? "Carrossel Principal" : "Card Patrocinado";
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: pricing.currency || "brl",
-            product_data: {
-              name: `Anúncio ${placementLabel} — ${product.title}`,
-              images: validStripeImage(product.image_url),
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: pricing.currency || "brl",
+              product_data: {
+                name: `Anúncio ${placementLabel} — ${product.title}`,
+                images: validStripeImage(product.image_url),
+              },
+              unit_amount: amountCents,
             },
-            unit_amount: amountCents,
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        metadata: {
+          kind: "ad_campaign",
+          placement: data.placement,
+          campaign_id: campaign.id,
+          product_id: product.id,
+          user_id: userId,
         },
-      ],
-      metadata: {
-        kind: "ad_campaign",
-        placement: data.placement,
-        campaign_id: campaign.id,
-        product_id: product.id,
-        user_id: userId,
-      },
-      success_url: `${data.origin}/seller/promotions?ads=success`,
-      cancel_url: `${data.origin}/seller/promotions?ads=canceled`,
-    });
+        success_url: `${data.origin}/seller/promotions?ads=success`,
+        cancel_url: `${data.origin}/seller/promotions?ads=canceled`,
+      });
 
-    const { error: sessionUpdateErr } = await supabase
-      .from("ad_campaigns")
-      .update({ stripe_session_id: session.id })
-      .eq("id", campaign.id);
-    if (sessionUpdateErr) throw sessionUpdateErr;
+      const { error: sessionUpdateErr } = await supabase
+        .from("ad_campaigns")
+        .update({ stripe_session_id: session.id })
+        .eq("id", campaign.id);
+      if (sessionUpdateErr) throw sessionUpdateErr;
 
-    if (!session.url) throw new Error("Stripe não retornou a URL de pagamento");
-    return { url: session.url, campaignId: campaign.id, amountCents };
+      if (!session.url) throw new Error("Stripe não retornou a URL de pagamento");
+      return { url: session.url, campaignId: campaign.id, amountCents };
+    } catch (error) {
+      await supabase
+        .from("ad_campaigns")
+        .update({
+          status: "canceled",
+          canceled_at: new Date().toISOString(),
+          metadata: { checkout_error: error instanceof Error ? error.message : "stripe_checkout_failed" },
+        })
+        .eq("id", campaign.id);
+      throw error;
+    }
   });
 
 /**
