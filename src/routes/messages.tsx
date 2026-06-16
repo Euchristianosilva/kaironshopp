@@ -108,10 +108,20 @@ function ChatPane({ conversationId, onBack }: { conversationId: string; onBack: 
   useEffect(() => {
     const ch = supabase.channel(`msgs-${conversationId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
-        () => { refetch(); qc.invalidateQueries({ queryKey: ["my-conversations"] }); })
+        async () => {
+          await refetch();
+          qc.invalidateQueries({ queryKey: ["my-conversations"] });
+          qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [conversationId, refetch, qc]);
+
+  useEffect(() => {
+    if (!data) return;
+    qc.invalidateQueries({ queryKey: ["my-conversations"] });
+    qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
+  }, [conversationId, data?.messages.length, qc]);
 
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [data?.messages.length]);
 
@@ -126,6 +136,7 @@ function ChatPane({ conversationId, onBack }: { conversationId: string; onBack: 
       }
       refetch();
       qc.invalidateQueries({ queryKey: ["my-conversations"] });
+      qc.invalidateQueries({ queryKey: ["seller-sidebar-conv-unread"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
