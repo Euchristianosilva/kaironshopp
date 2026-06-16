@@ -36,7 +36,7 @@ export function MessagesCenter({ basePath, activeId }: Props) {
   }, [user, refetch]);
 
   const go = (c?: string) =>
-    navigate({ to: basePath as any, search: c ? { c } : {} });
+    navigate({ to: basePath as any, search: (c ? { c } : {}) as any });
 
   return (
     <div>
