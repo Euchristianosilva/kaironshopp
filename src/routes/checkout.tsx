@@ -30,7 +30,7 @@ function Checkout() {
   const [calculating, setCalculating] = useState(false);
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState({
-    name: "", cpf: "", phone: "", street: "", number: "", complement: "", city: "", state: "",
+    name: "", cpf: "", phone: "", street: "", number: "", complement: "", neighborhood: "", city: "", state: "",
   });
   const [options, setOptions] = useState<ShipOption[]>([]);
   const [shipErr, setShipErr] = useState<string | null>(null);
@@ -47,16 +47,21 @@ function Checkout() {
     setShipErr(null);
     setOptions([]);
     setSelectedId(null);
-    if (!/^\d{5}-?\d{3}$/.test(cep)) {
+    const cepDigits = cep.replace(/\D/g, "");
+    if (!/^\d{8}$/.test(cepDigits)) {
       setShipErr("Informe um CEP válido (00000-000).");
       return;
     }
     if (cart.length === 0) return;
     try {
       setCalculating(true);
+      // Autofill via ViaCEP (em paralelo ao cálculo de frete)
+      const viaCepPromise = fetch(`https://viacep.com.br/ws/${cepDigits}/json/`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
       const res = await calcShip({
         data: {
-          to_zip: cep,
+          to_zip: cepDigits,
           items: cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
         },
       });
@@ -67,6 +72,20 @@ function Checkout() {
       }
       setOptions(all);
       if (all.length === 0 && !shipErr) setShipErr("Nenhuma opção de frete disponível para este CEP.");
+
+      const via = await viaCepPromise;
+      if (via && !via.erro) {
+        setAddress((prev) => ({
+          ...prev,
+          street: prev.street || via.logradouro || "",
+          complement: prev.complement || via.complemento || "",
+          neighborhood: prev.neighborhood || via.bairro || "",
+          city: prev.city || via.localidade || "",
+          state: prev.state || via.uf || "",
+        }));
+      } else if (via?.erro) {
+        setShipErr((e) => e ?? "CEP não encontrado.");
+      }
     } catch (e: any) {
       setShipErr(e?.message ?? "Erro ao calcular frete");
     } finally {
@@ -145,6 +164,7 @@ function Checkout() {
                 <Input placeholder="Endereço" className="sm:col-span-2" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
                 <Input placeholder="Número" value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} />
                 <Input placeholder="Complemento" value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
+                <Input placeholder="Bairro" value={address.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
                 <Input placeholder="Cidade" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
                 <Input placeholder="Estado" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
               </div>
