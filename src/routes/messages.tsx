@@ -117,7 +117,16 @@ function ChatPane({ conversationId, onBack }: { conversationId: string; onBack: 
 
   const sendMut = useMutation({
     mutationFn: () => send({ data: { conversation_id: conversationId, body: text } }),
-    onSuccess: () => { setText(""); refetch(); qc.invalidateQueries({ queryKey: ["my-conversations"] }); },
+    onSuccess: (result) => {
+      setText("");
+      if (result?.message) {
+        qc.setQueryData(["conversation", conversationId], (current: any) => current
+          ? { ...current, messages: [...current.messages.filter((m: any) => m.id !== result.message.id), result.message] }
+          : current);
+      }
+      refetch();
+      qc.invalidateQueries({ queryKey: ["my-conversations"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
