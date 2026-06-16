@@ -12,6 +12,7 @@ export const Route = createFileRoute('/api/public/hooks/ad-scheduler')({
           .from('ad_campaigns')
           .update({ status: 'active' })
           .eq('status', 'scheduled')
+          .or('placement.neq.carousel,metadata->>admin_status.eq.approved,is_manual.eq.true')
           .lte('starts_at', now)
           .gt('ends_at', now)
           .select('id');
