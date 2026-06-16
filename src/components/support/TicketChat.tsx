@@ -124,23 +124,46 @@ export function TicketChat({
         <div className="min-w-0 flex-1">
           <div className="font-bold truncate">{t.subject}</div>
           <div className="text-[11px] text-muted-foreground truncate">
-            {t.sellers?.name ?? "Vendedor"} · {STATUS_LABEL[t.status]}
+            {t.sellers?.name ?? "Vendedor"} · {STATUS_LABEL[t.status]} · {DEPT_LABEL[t.department] ?? "—"}
           </div>
         </div>
         {canManage && (
-          <Select value={t.status} onValueChange={(v) => statusMut.mutate(v)}>
-            <SelectTrigger className="h-8 w-[170px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(STATUS_LABEL).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={t.department ?? "general"} onValueChange={(v) => { if (v !== t.department) transferMut.mutate(v); }}>
+              <SelectTrigger className="h-8 w-[180px]" title="Transferir para outro departamento">
+                <ArrowRightLeft className="h-3.5 w-3.5 mr-1 inline" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(DEPT_LABEL).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={t.status} onValueChange={(v) => statusMut.mutate(v)}>
+              <SelectTrigger className="h-8 w-[170px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(STATUS_LABEL).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </header>
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-muted/20">
         {(data as any).messages.map((m: any) => {
+          if (m.sender_type === "system") {
+            return (
+              <div key={m.id} className="flex justify-center">
+                <div className="text-[11px] bg-muted text-muted-foreground border border-border rounded-full px-3 py-1 flex items-center gap-1.5">
+                  <Info className="h-3 w-3" />
+                  {m.body}
+                </div>
+              </div>
+            );
+          }
           const mine = m.sender_id === me;
           return (
             <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
