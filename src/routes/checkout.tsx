@@ -152,7 +152,7 @@ function Checkout() {
                   <button
                     type="button"
                     onClick={handleCalc}
-                    disabled={calculating || cart.length === 0}
+                    disabled={calculating}
                     className="h-10 px-3 rounded-md bg-primary text-primary-foreground text-sm font-semibold whitespace-nowrap disabled:opacity-50"
                   >
                     {calculating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Calcular"}
