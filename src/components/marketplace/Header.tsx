@@ -118,7 +118,7 @@ export function Header() {
             </Link>
           )}
           <NotificationBell />
-          <Link to="/cart" aria-label="Carrinho" className="relative p-2.5 rounded-lg hover:bg-secondary transition">
+          <Link to="/cart" aria-label="Carrinho" className="relative p-2.5 rounded-lg hover:bg-secondary transition hidden md:inline-flex">
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold grid place-items-center">{cartCount}</span>
