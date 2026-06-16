@@ -14,11 +14,7 @@ export const getSellerFinance = createServerFn({ method: "POST" })
     const stripe = stripeClient();
     const { supabase, userId } = context;
 
-    const { data: seller } = await supabase
-      .from("sellers")
-      .select("*")
-      .eq("owner_id", userId)
-      .maybeSingle();
+    const { data: seller } = await supabase.rpc("get_my_seller");
     if (!seller) throw new Error("Loja não encontrada");
 
     let balance: any = null;
