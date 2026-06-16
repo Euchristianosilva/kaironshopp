@@ -57,7 +57,7 @@ function AdminSupportPage() {
   const activeId = search.t;
 
   return (
-    <AdminShell title="Central de Suporte" description="Gerencie chamados abertos pelos vendedores.">
+    <SupportShell title="Central de Suporte" description="Gerencie chamados abertos pelos vendedores.">
       <div className="mb-4 flex items-center gap-3">
         <span className="text-sm text-muted-foreground">Filtrar:</span>
         <Select value={status} onValueChange={(v) => navigate({ to: "/admin/support", search: { ...search, status: v } })}>
@@ -116,6 +116,6 @@ function AdminSupportPage() {
           )}
         </section>
       </div>
-    </AdminShell>
+    </SupportShell>
   );
 }
