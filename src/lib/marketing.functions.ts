@@ -73,6 +73,7 @@ export const upsertPromotion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: {
     id?: string; product_id: string; name: string; discount_percent: number;
+    type?: "flash" | "exclusive";
     starts_at?: string; ends_at: string; active?: boolean;
   }) => i)
   .handler(async ({ data, context }) => {
@@ -82,6 +83,7 @@ export const upsertPromotion = createServerFn({ method: "POST" })
       product_id: data.product_id,
       name: data.name,
       discount_percent: data.discount_percent,
+      type: data.type ?? "flash",
       starts_at: data.starts_at || new Date().toISOString(),
       ends_at: data.ends_at,
       active: data.active ?? true,
