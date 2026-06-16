@@ -59,14 +59,22 @@ function AdminTeamPage() {
   }, [qc]);
 
   const createMut = useMutation({
-    mutationFn: () => create({ data: form as any }),
+    mutationFn: async () => {
+      console.log("[admin.support-team] submitting", { ...form, password: "***" });
+      const res = await create({ data: form as any });
+      console.log("[admin.support-team] response", res);
+      return res;
+    },
     onSuccess: () => {
       toast.success("Atendente adicionado");
       setOpen(false);
       setForm(EMPTY_FORM);
       qc.invalidateQueries({ queryKey: ["support-agents"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao adicionar"),
+    onError: (e: any) => {
+      console.error("[admin.support-team] createAgent error:", e);
+      toast.error(e?.message ?? "Erro ao adicionar atendente");
+    },
   });
 
   const updateMut = useMutation({
@@ -83,10 +91,12 @@ function AdminTeamPage() {
 
   const agents = (data as any)?.agents ?? [];
 
-  function submit() {
-    if (!form.full_name.trim()) return toast.error("Informe o nome");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return toast.error("E-mail inválido");
-    if (form.password.length < 8) return toast.error("Senha precisa ter ao menos 8 caracteres");
+  function submit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (createMut.isPending) return;
+    if (!form.full_name.trim()) { toast.error("Informe o nome"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { toast.error("E-mail inválido"); return; }
+    if (form.password.length < 8) { toast.error("Senha precisa ter ao menos 8 caracteres"); return; }
     createMut.mutate();
   }
 
