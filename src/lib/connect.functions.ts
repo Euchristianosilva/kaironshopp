@@ -8,12 +8,8 @@ function stripeClient() {
   return new Stripe(key);
 }
 
-async function getSellerForUser(supabase: any, userId: string) {
-  const { data, error } = await supabase
-    .from("sellers")
-    .select("*")
-    .eq("owner_id", userId)
-    .maybeSingle();
+async function getSellerForUser(supabase: any, _userId: string) {
+  const { data, error } = await supabase.rpc("get_my_seller");
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Loja não encontrada. Crie sua loja primeiro.");
   return data;

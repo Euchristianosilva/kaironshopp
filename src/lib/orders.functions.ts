@@ -59,11 +59,7 @@ export const getSellerOrder = createServerFn({ method: "POST" })
       .eq("id", order.buyer_id)
       .maybeSingle();
 
-    const { data: seller } = await supabase
-      .from("sellers")
-      .select("name, phone, whatsapp, email, logo_url, origin_zip, origin_state, origin_city, origin_district, origin_address, origin_number, origin_complement")
-      .eq("id", sellerId)
-      .maybeSingle();
+    const { data: seller } = await supabase.rpc("get_seller_for_owner", { _seller_id: sellerId });
 
     return { order, items: items ?? [], buyer: profile, seller };
   });

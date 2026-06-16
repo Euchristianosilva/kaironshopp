@@ -80,7 +80,8 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     }
     const sellerId = sellerIds[0] as string;
 
-    const { data: seller, error: sellerErr } = await supabase
+    const { supabaseAdmin: _sbAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: seller, error: sellerErr } = await _sbAdmin
       .from("sellers")
       .select("id, name, stripe_account_id, stripe_charges_enabled")
       .eq("id", sellerId)

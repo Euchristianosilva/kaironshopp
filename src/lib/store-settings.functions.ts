@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function getSellerForOwner(supabase: any, userId: string) {
-  const { data } = await supabase.from("sellers").select("*").eq("owner_id", userId).maybeSingle();
+async function getSellerForOwner(supabase: any, _userId: string) {
+  const { data, error } = await supabase.rpc("get_my_seller");
+  if (error) throw new Error(error.message);
   if (!data) throw new Error("Loja não encontrada");
   return data;
 }

@@ -21,7 +21,7 @@ function DashboardPage() {
     queryKey: ["seller", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("sellers").select("*").eq("owner_id", user!.id).maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_seller");
       if (error) throw error;
       return data;
     },
