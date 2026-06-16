@@ -70,6 +70,7 @@ export const createTicket = createServerFn({ method: "POST" })
         seller_id: seller?.id ?? null,
         subject: data.subject,
         category: data.category,
+        department: categoryToDepartment(data.category),
         last_message_preview: data.body.slice(0, 140),
       })
       .select("id")
