@@ -47,16 +47,21 @@ function Checkout() {
     setShipErr(null);
     setOptions([]);
     setSelectedId(null);
-    if (!/^\d{5}-?\d{3}$/.test(cep)) {
+    const cepDigits = cep.replace(/\D/g, "");
+    if (!/^\d{8}$/.test(cepDigits)) {
       setShipErr("Informe um CEP válido (00000-000).");
       return;
     }
     if (cart.length === 0) return;
     try {
       setCalculating(true);
+      // Autofill via ViaCEP (em paralelo ao cálculo de frete)
+      const viaCepPromise = fetch(`https://viacep.com.br/ws/${cepDigits}/json/`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
       const res = await calcShip({
         data: {
-          to_zip: cep,
+          to_zip: cepDigits,
           items: cart.map((i) => ({ product_id: i.product.id, qty: i.qty })),
         },
       });
@@ -67,6 +72,19 @@ function Checkout() {
       }
       setOptions(all);
       if (all.length === 0 && !shipErr) setShipErr("Nenhuma opção de frete disponível para este CEP.");
+
+      const via = await viaCepPromise;
+      if (via && !via.erro) {
+        setAddress((prev) => ({
+          ...prev,
+          street: prev.street || via.logradouro || "",
+          complement: prev.complement || via.complemento || "",
+          city: prev.city || via.localidade || "",
+          state: prev.state || via.uf || "",
+        }));
+      } else if (via?.erro) {
+        setShipErr((e) => e ?? "CEP não encontrado.");
+      }
     } catch (e: any) {
       setShipErr(e?.message ?? "Erro ao calcular frete");
     } finally {
