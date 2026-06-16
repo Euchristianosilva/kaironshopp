@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -62,6 +63,11 @@ import { Route as ApiPublicMelhorEnvioWebhookRouteImport } from './routes/api/pu
 import { Route as ApiPublicMelhorEnvioOauthCallbackRouteImport } from './routes/api/public/melhor-envio/oauth-callback'
 import { Route as ApiPublicHooksAdSchedulerRouteImport } from './routes/api/public/hooks/ad-scheduler'
 
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
@@ -336,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/seller': typeof SellerRouteWithChildren
+  '/support': typeof SupportRoute
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/carousel': typeof AdminCarouselRoute
@@ -388,6 +395,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
+  '/support': typeof SupportRoute
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/carousel': typeof AdminCarouselRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/seller': typeof SellerRouteWithChildren
+  '/support': typeof SupportRoute
   '/admin/ads': typeof AdminAdsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/carousel': typeof AdminCarouselRoute
@@ -499,6 +508,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/messages'
     | '/seller'
+    | '/support'
     | '/admin/ads'
     | '/admin/banners'
     | '/admin/carousel'
@@ -551,6 +561,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/favorites'
     | '/messages'
+    | '/support'
     | '/admin/ads'
     | '/admin/banners'
     | '/admin/carousel'
@@ -605,6 +616,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/messages'
     | '/seller'
+    | '/support'
     | '/admin/ads'
     | '/admin/banners'
     | '/admin/carousel'
@@ -660,6 +672,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   MessagesRoute: typeof MessagesRoute
   SellerRoute: typeof SellerRouteWithChildren
+  SupportRoute: typeof SupportRoute
   CategorySlugRoute: typeof CategorySlugRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -671,6 +684,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seller': {
       id: '/seller'
       path: '/seller'
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   MessagesRoute: MessagesRoute,
   SellerRoute: SellerRouteWithChildren,
+  SupportRoute: SupportRoute,
   CategorySlugRoute: CategorySlugRoute,
   OrderSuccessRoute: OrderSuccessRoute,
   ProductIdRoute: ProductIdRoute,
@@ -1149,13 +1170,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

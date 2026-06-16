@@ -19,23 +19,16 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
-  const { user, role, roleLoading } = useAuth();
+  const { user, role, roleLoading, isSupport, isAdmin } = useAuth();
 
   useEffect(() => {
     if (!user || roleLoading) return;
-    (async () => {
-      // support agents → support center
-      try {
-        const { data: agent } = await supabase
-          .from("support_agents").select("active").eq("user_id", user.id).maybeSingle();
-        if (agent?.active && role !== "admin") {
-          navigate({ to: "/admin/support" });
-          return;
-        }
-      } catch {}
-      navigate({ to: role === "admin" ? "/admin" : role === "seller" ? "/seller" : "/account" });
-    })();
-  }, [user, role, roleLoading, navigate]);
+    if (isSupport && !isAdmin) {
+      navigate({ to: "/admin/support" });
+      return;
+    }
+    navigate({ to: role === "admin" ? "/admin" : role === "seller" ? "/seller" : "/account" });
+  }, [user, role, roleLoading, isSupport, isAdmin, navigate]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

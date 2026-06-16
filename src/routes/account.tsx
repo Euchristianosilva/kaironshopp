@@ -48,8 +48,11 @@ function Account() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { navigate({ to: "/auth" }); return; }
+      const { data: agent } = await supabase
+        .from("support_agents").select("active").eq("user_id", data.user.id).maybeSingle();
+      if (agent?.active) { navigate({ to: "/admin/support" }); return; }
       setUser({ id: data.user.id, email: data.user.email });
       supabase.from("profiles").select("full_name").eq("id", data.user.id).maybeSingle().then(({ data: p }) => {
         if (p?.full_name) setProfileName(p.full_name);
