@@ -33,12 +33,7 @@ export function MobileBottomNav() {
 
   return (
     <>
-      {/* Spacer so content isn't hidden behind the fixed bar on mobile */}
-      <div
-        className="md:hidden"
-        style={{ height: "calc(64px + env(safe-area-inset-bottom, 0px))" }}
-        aria-hidden="true"
-      />
+
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.06)]"
