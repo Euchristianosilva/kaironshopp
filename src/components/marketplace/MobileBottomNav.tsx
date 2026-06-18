@@ -22,6 +22,8 @@ export function MobileBottomNav() {
   const favCount = useStore((s) => s.favorites.length);
   const { user, signOut, role } = useAuth();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [becomeSellerOpen, setBecomeSellerOpen] = useState(false);
+
 
   const isActive = (path: string, exact = false) =>
     exact ? pathname === path : pathname === path || pathname.startsWith(path + "/");
