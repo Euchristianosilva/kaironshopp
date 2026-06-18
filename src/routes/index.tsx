@@ -58,6 +58,12 @@ function Home() {
     queryFn: () => getActiveSponsoredProducts({ data: { placement: "carousel", limit: 6 } }),
     staleTime: 60_000,
   });
+  const { data: flashProducts = [] } = useQuery({
+    queryKey: ["products", "flash-sale"],
+    queryFn: () => fetchFlashSaleProducts(12),
+    refetchInterval: 60_000,
+  });
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
