@@ -141,7 +141,13 @@ function ProductsPage() {
 
 function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; product: ProductRow | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "variants" | "shipping">("basic");
+  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "variants" | "shipping" | "flash">("basic");
+  const toLocalInput = (iso: string | null | undefined) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const off = d.getTimezoneOffset();
+    return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+  };
   const [form, setForm] = useState<any>({
     title: product?.title ?? "",
     description: product?.description ?? "",
@@ -167,7 +173,12 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     condition: (product as any)?.condition ?? "new",
     own_delivery: (product as any)?.own_delivery ?? false,
     carrier: (product as any)?.carrier ?? "",
+    flash_sale_enabled: (product as any)?.flash_sale_enabled ?? false,
+    flash_sale_price: (product as any)?.flash_sale_price ? String((product as any).flash_sale_price) : "",
+    flash_sale_start: toLocalInput((product as any)?.flash_sale_start),
+    flash_sale_end: toLocalInput((product as any)?.flash_sale_end),
   });
+
   const [variants, setVariants] = useState<VariantDraft[]>([]);
 
   const { data: existingImages = [] } = useQuery({
