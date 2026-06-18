@@ -89,6 +89,12 @@ function Home() {
 
         <PromotionsSection />
 
+        {flashProducts.length > 0 && (
+          <Showcase title="⚡ Ofertas Relâmpago" icon={Zap} items={flashProducts} />
+        )}
+
+
+
         <Showcase title="Ofertas do dia" icon={Flame} loading={isLoading} items={products.slice(0, 6)} />
         <Showcase title="Mais vendidos" icon={TrendingUp} loading={isLoading} items={[...products].sort((a, b) => b.sold - a.sold).slice(0, 6)} />
         <Showcase title="Lançamentos" icon={Sparkles} loading={isLoading} items={products.slice(6, 12)} />
