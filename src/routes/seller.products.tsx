@@ -141,7 +141,13 @@ function ProductsPage() {
 
 function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; product: ProductRow | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "variants" | "shipping">("basic");
+  const [tab, setTab] = useState<"basic" | "media" | "specs" | "stock" | "variants" | "shipping" | "flash">("basic");
+  const toLocalInput = (iso: string | null | undefined) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const off = d.getTimezoneOffset();
+    return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+  };
   const [form, setForm] = useState<any>({
     title: product?.title ?? "",
     description: product?.description ?? "",
@@ -167,7 +173,12 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     condition: (product as any)?.condition ?? "new",
     own_delivery: (product as any)?.own_delivery ?? false,
     carrier: (product as any)?.carrier ?? "",
+    flash_sale_enabled: (product as any)?.flash_sale_enabled ?? false,
+    flash_sale_price: (product as any)?.flash_sale_price ? String((product as any).flash_sale_price) : "",
+    flash_sale_start: toLocalInput((product as any)?.flash_sale_start),
+    flash_sale_end: toLocalInput((product as any)?.flash_sale_end),
   });
+
   const [variants, setVariants] = useState<VariantDraft[]>([]);
 
   const { data: existingImages = [] } = useQuery({
@@ -201,6 +212,25 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
   const saveMut = useMutation({
     mutationFn: async () => {
       const primary = images.find((i) => i.is_primary) ?? images[0];
+
+      // Flash-sale client validation
+      let flashEnabled = !!form.flash_sale_enabled;
+      let flashPrice: number | null = null;
+      let flashStart: string | null = null;
+      let flashEnd: string | null = null;
+      if (flashEnabled) {
+        const fp = Number(form.flash_sale_price);
+        if (!form.flash_sale_price || isNaN(fp) || fp <= 0) throw new Error("Informe um preço promocional válido");
+        if (fp >= Number(form.price)) throw new Error("O preço promocional deve ser menor que o preço normal");
+        if (!form.flash_sale_start || !form.flash_sale_end) throw new Error("Informe início e término da oferta relâmpago");
+        const s = new Date(form.flash_sale_start);
+        const e = new Date(form.flash_sale_end);
+        if (e <= s) throw new Error("A data de término deve ser posterior à de início");
+        flashPrice = fp;
+        flashStart = s.toISOString();
+        flashEnd = e.toISOString();
+      }
+
       const payload: any = {
         seller_id: sellerId,
         title: form.title, description: form.description || null,
@@ -219,7 +249,12 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
         condition: form.condition,
         own_delivery: form.own_delivery, carrier: form.carrier || null,
         has_variants: variants.length > 0,
+        flash_sale_enabled: flashEnabled,
+        flash_sale_price: flashPrice,
+        flash_sale_start: flashStart,
+        flash_sale_end: flashEnd,
       };
+
       let productId = product?.id;
       if (product) {
         const { error } = await supabase.from("products").update(payload).eq("id", product.id);
@@ -270,7 +305,9 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
     { id: "stock", label: "Estoque" },
     { id: "variants", label: `Variações${variants.length ? ` (${variants.length})` : ""}` },
     { id: "shipping", label: "Frete" },
+    { id: "flash", label: "⚡ Oferta Relâmpago" },
   ];
+
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 grid place-items-center p-4 overflow-y-auto" onClick={onClose}>
@@ -347,6 +384,53 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
             <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={form.own_delivery} onChange={(e) => setForm({ ...form, own_delivery: e.target.checked })} /> Entrega própria</label>
           </div>
         )}
+        {tab === "flash" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground bg-secondary/50 border border-border rounded p-3">
+              ⚡ Defina um preço promocional por tempo limitado. O produto aparecerá com selo "Oferta Relâmpago" e contador regressivo, e voltará ao preço normal automaticamente ao fim do prazo.
+            </p>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={form.flash_sale_enabled}
+                onChange={(e) => setForm({ ...form, flash_sale_enabled: e.target.checked })}
+              />
+              Ativar oferta relâmpago
+            </label>
+            <div className={`grid sm:grid-cols-2 gap-3 ${form.flash_sale_enabled ? "" : "opacity-50 pointer-events-none"}`}>
+              <Field label="Preço promocional (R$)" className="sm:col-span-2">
+                <input
+                  type="number" min="0" step="0.01"
+                  value={form.flash_sale_price}
+                  onChange={(e) => setForm({ ...form, flash_sale_price: e.target.value })}
+                  className="input"
+                  placeholder="Menor que o preço normal"
+                />
+                {form.flash_sale_enabled && form.flash_sale_price && Number(form.flash_sale_price) >= Number(form.price || 0) && (
+                  <p className="mt-1 text-xs text-destructive font-semibold">O preço promocional deve ser menor que o preço normal (R$ {form.price || "0"}).</p>
+                )}
+              </Field>
+              <Field label="Início (data e hora)">
+                <input
+                  type="datetime-local"
+                  value={form.flash_sale_start}
+                  onChange={(e) => setForm({ ...form, flash_sale_start: e.target.value })}
+                  className="input"
+                />
+              </Field>
+              <Field label="Término (data e hora)">
+                <input
+                  type="datetime-local"
+                  value={form.flash_sale_end}
+                  onChange={(e) => setForm({ ...form, flash_sale_end: e.target.value })}
+                  className="input"
+                />
+              </Field>
+            </div>
+          </div>
+        )}
+
+
 
         <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">
           <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg border border-border font-semibold hover:bg-secondary">Cancelar</button>

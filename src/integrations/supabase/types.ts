@@ -981,6 +981,10 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"]
           created_at: string
           description: string | null
+          flash_sale_enabled: boolean
+          flash_sale_end: string | null
+          flash_sale_price: number | null
+          flash_sale_start: string | null
           free_shipping: boolean | null
           has_variants: boolean
           height_cm: number | null
@@ -1020,6 +1024,10 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"]
           created_at?: string
           description?: string | null
+          flash_sale_enabled?: boolean
+          flash_sale_end?: string | null
+          flash_sale_price?: number | null
+          flash_sale_start?: string | null
           free_shipping?: boolean | null
           has_variants?: boolean
           height_cm?: number | null
@@ -1059,6 +1067,10 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"]
           created_at?: string
           description?: string | null
+          flash_sale_enabled?: boolean
+          flash_sale_end?: string | null
+          flash_sale_price?: number | null
+          flash_sale_start?: string | null
           free_shipping?: boolean | null
           has_variants?: boolean
           height_cm?: number | null

@@ -8,8 +8,9 @@ import { ProductCard } from "@/components/marketplace/ProductCard";
 import { SponsoredProductCard } from "@/components/marketplace/SponsoredProductCard";
 import { PromotionsSection } from "@/components/marketplace/PromotionsSection";
 import { getActiveSponsoredProducts } from "@/lib/sponsored.functions";
-import { fetchAllProducts, type Product } from "@/lib/products";
-import { Flame, TrendingUp, Sparkles, Clock } from "lucide-react";
+import { fetchAllProducts, fetchFlashSaleProducts, type Product } from "@/lib/products";
+import { Flame, TrendingUp, Sparkles, Clock, Zap } from "lucide-react";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,6 +58,12 @@ function Home() {
     queryFn: () => getActiveSponsoredProducts({ data: { placement: "carousel", limit: 6 } }),
     staleTime: 60_000,
   });
+  const { data: flashProducts = [] } = useQuery({
+    queryKey: ["products", "flash-sale"],
+    queryFn: () => fetchFlashSaleProducts(12),
+    refetchInterval: 60_000,
+  });
+
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -81,6 +88,12 @@ function Home() {
         )}
 
         <PromotionsSection />
+
+        {flashProducts.length > 0 && (
+          <Showcase title="⚡ Ofertas Relâmpago" icon={Zap} items={flashProducts} />
+        )}
+
+
 
         <Showcase title="Ofertas do dia" icon={Flame} loading={isLoading} items={products.slice(0, 6)} />
         <Showcase title="Mais vendidos" icon={TrendingUp} loading={isLoading} items={[...products].sort((a, b) => b.sold - a.sold).slice(0, 6)} />
