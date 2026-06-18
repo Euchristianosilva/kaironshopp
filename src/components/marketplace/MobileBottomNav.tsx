@@ -156,7 +156,10 @@ export function MobileBottomNav() {
           </li>
         </ul>
       </nav>
+
+      <BecomeSellerSheet open={becomeSellerOpen} onOpenChange={setBecomeSellerOpen} />
     </>
+
   );
 }
 
