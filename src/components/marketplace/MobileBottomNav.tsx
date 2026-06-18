@@ -124,12 +124,21 @@ export function MobileBottomNav() {
                     <MenuLink to="/messages" icon={MessageCircle} label="Mensagens" onClose={() => setAccountOpen(false)} />
                     <MenuLink to="/favorites" icon={Heart} label="Favoritos" onClose={() => setAccountOpen(false)} />
                     <MenuLink to="/account" icon={Settings} label="Configurações" onClose={() => setAccountOpen(false)} />
-                    {role === "seller" && (
+                    {role === "seller" ? (
                       <MenuLink to="/seller" icon={Store} label="Painel do Vendedor" onClose={() => setAccountOpen(false)} />
-                    )}
+                    ) : role !== "admin" ? (
+                      <button
+                        onClick={() => { setAccountOpen(false); setBecomeSellerOpen(true); }}
+                        className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-secondary/60 active:bg-secondary text-left"
+                      >
+                        <Store className="h-5 w-5 text-primary" />
+                        <span className="font-medium text-sm">Tornar-se vendedor</span>
+                      </button>
+                    ) : null}
                     {role === "admin" && (
                       <MenuLink to="/admin" icon={ShieldCheck} label="Painel Administrativo" onClose={() => setAccountOpen(false)} />
                     )}
+
                     <button
                       onClick={() => {
                         setAccountOpen(false);
