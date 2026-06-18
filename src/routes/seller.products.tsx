@@ -384,6 +384,53 @@ function ProductFormModal({ sellerId, product, onClose }: { sellerId: string; pr
             <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={form.own_delivery} onChange={(e) => setForm({ ...form, own_delivery: e.target.checked })} /> Entrega própria</label>
           </div>
         )}
+        {tab === "flash" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground bg-secondary/50 border border-border rounded p-3">
+              ⚡ Defina um preço promocional por tempo limitado. O produto aparecerá com selo "Oferta Relâmpago" e contador regressivo, e voltará ao preço normal automaticamente ao fim do prazo.
+            </p>
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={form.flash_sale_enabled}
+                onChange={(e) => setForm({ ...form, flash_sale_enabled: e.target.checked })}
+              />
+              Ativar oferta relâmpago
+            </label>
+            <div className={`grid sm:grid-cols-2 gap-3 ${form.flash_sale_enabled ? "" : "opacity-50 pointer-events-none"}`}>
+              <Field label="Preço promocional (R$)" className="sm:col-span-2">
+                <input
+                  type="number" min="0" step="0.01"
+                  value={form.flash_sale_price}
+                  onChange={(e) => setForm({ ...form, flash_sale_price: e.target.value })}
+                  className="input"
+                  placeholder="Menor que o preço normal"
+                />
+                {form.flash_sale_enabled && form.flash_sale_price && Number(form.flash_sale_price) >= Number(form.price || 0) && (
+                  <p className="mt-1 text-xs text-destructive font-semibold">O preço promocional deve ser menor que o preço normal (R$ {form.price || "0"}).</p>
+                )}
+              </Field>
+              <Field label="Início (data e hora)">
+                <input
+                  type="datetime-local"
+                  value={form.flash_sale_start}
+                  onChange={(e) => setForm({ ...form, flash_sale_start: e.target.value })}
+                  className="input"
+                />
+              </Field>
+              <Field label="Término (data e hora)">
+                <input
+                  type="datetime-local"
+                  value={form.flash_sale_end}
+                  onChange={(e) => setForm({ ...form, flash_sale_end: e.target.value })}
+                  className="input"
+                />
+              </Field>
+            </div>
+          </div>
+        )}
+
+
 
         <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">
           <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg border border-border font-semibold hover:bg-secondary">Cancelar</button>
