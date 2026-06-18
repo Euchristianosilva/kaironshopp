@@ -1269,8 +1269,10 @@ export type Database = {
       sellers: {
         Row: {
           banner_url: string | null
+          category: string | null
           created_at: string
           description: string | null
+          document: string | null
           email: string | null
           id: string
           logo_url: string | null
@@ -1284,6 +1286,7 @@ export type Database = {
           origin_zip: string | null
           owner_id: string
           phone: string | null
+          pix_key: string | null
           rating: number | null
           return_policy: string | null
           seo_description: string | null
@@ -1303,8 +1306,10 @@ export type Database = {
         }
         Insert: {
           banner_url?: string | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          document?: string | null
           email?: string | null
           id?: string
           logo_url?: string | null
@@ -1318,6 +1323,7 @@ export type Database = {
           origin_zip?: string | null
           owner_id: string
           phone?: string | null
+          pix_key?: string | null
           rating?: number | null
           return_policy?: string | null
           seo_description?: string | null
@@ -1337,8 +1343,10 @@ export type Database = {
         }
         Update: {
           banner_url?: string | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          document?: string | null
           email?: string | null
           id?: string
           logo_url?: string | null
@@ -1352,6 +1360,7 @@ export type Database = {
           origin_zip?: string | null
           owner_id?: string
           phone?: string | null
+          pix_key?: string | null
           rating?: number | null
           return_policy?: string | null
           seo_description?: string | null
@@ -1779,8 +1788,10 @@ export type Database = {
         Args: never
         Returns: {
           banner_url: string | null
+          category: string | null
           created_at: string
           description: string | null
+          document: string | null
           email: string | null
           id: string
           logo_url: string | null
@@ -1794,6 +1805,7 @@ export type Database = {
           origin_zip: string | null
           owner_id: string
           phone: string | null
+          pix_key: string | null
           rating: number | null
           return_policy: string | null
           seo_description: string | null
@@ -1822,8 +1834,10 @@ export type Database = {
         Args: { _seller_id: string }
         Returns: {
           banner_url: string | null
+          category: string | null
           created_at: string
           description: string | null
+          document: string | null
           email: string | null
           id: string
           logo_url: string | null
@@ -1837,6 +1851,7 @@ export type Database = {
           origin_zip: string | null
           owner_id: string
           phone: string | null
+          pix_key: string | null
           rating: number | null
           return_policy: string | null
           seo_description: string | null
