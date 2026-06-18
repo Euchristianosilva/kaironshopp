@@ -8,8 +8,9 @@ import { ProductCard } from "@/components/marketplace/ProductCard";
 import { SponsoredProductCard } from "@/components/marketplace/SponsoredProductCard";
 import { PromotionsSection } from "@/components/marketplace/PromotionsSection";
 import { getActiveSponsoredProducts } from "@/lib/sponsored.functions";
-import { fetchAllProducts, type Product } from "@/lib/products";
-import { Flame, TrendingUp, Sparkles, Clock } from "lucide-react";
+import { fetchAllProducts, fetchFlashSaleProducts, type Product } from "@/lib/products";
+import { Flame, TrendingUp, Sparkles, Clock, Zap } from "lucide-react";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
