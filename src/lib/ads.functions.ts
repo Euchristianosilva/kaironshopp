@@ -502,6 +502,7 @@ export const createManualAdCampaign = createServerFn({ method: "POST" })
         activated_by: context.userId,
         activated_at: now,
         metadata: { manual: true, activated_by_email: email ?? null },
+        image_url: data.imageUrl ?? null,
       })
       .select("id")
       .single();
