@@ -316,7 +316,7 @@ export const listAllAdCampaigns = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: campaigns, error } = await supabaseAdmin
       .from("ad_campaigns")
-      .select("id, placement, status, starts_at, ends_at, amount_cents, currency, owner_id, product_id, products(title, image_url), sellers(name)")
+      .select("id, placement, status, starts_at, ends_at, amount_cents, currency, owner_id, product_id, image_url, products(title, image_url), sellers(name)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw error;
@@ -458,6 +458,7 @@ export const createManualAdCampaign = createServerFn({ method: "POST" })
     startsAt?: string;
     endsAt?: string;
     priority?: number;
+    imageUrl?: string | null;
   }) => {
     if (!input.productId) throw new Error("productId obrigatório");
     if (!MANUAL_PLACEMENTS.includes(input.placement)) throw new Error("Posição inválida");
@@ -501,6 +502,7 @@ export const createManualAdCampaign = createServerFn({ method: "POST" })
         activated_by: context.userId,
         activated_at: now,
         metadata: { manual: true, activated_by_email: email ?? null },
+        image_url: data.imageUrl ?? null,
       })
       .select("id")
       .single();

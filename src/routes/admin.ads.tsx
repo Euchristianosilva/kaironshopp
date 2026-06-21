@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import { adminUpdateCampaignStatus, listAllAdCampaigns, createManualAdCampaign } from "@/lib/ads.functions";
 import { listProducts } from "@/lib/admin.functions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,16 +27,16 @@ const statusLabel: Record<string, { label: string; variant: any }> = {
   rejected: { label: "Rejeitado", variant: "destructive" },
 };
 
-const PLACEMENTS: { value: string; label: string }[] = [
-  { value: "banner_principal", label: "Banner Principal" },
-  { value: "destaque_home", label: "Destaque da Home" },
-  { value: "patrocinado", label: "Produtos Patrocinados" },
-  { value: "vitrine_topo", label: "Primeira Linha da Vitrine" },
-  { value: "categoria", label: "Categoria Específica" },
-  { value: "busca", label: "Resultado de Busca" },
-  { value: "premium", label: "Área Premium" },
-  { value: "carousel", label: "Carrossel" },
-  { value: "card", label: "Card" },
+const PLACEMENTS: { value: string; label: string; aspect: string; hint: string }[] = [
+  { value: "banner_principal", label: "Banner Principal", aspect: "aspect-[21/9]", hint: "Recomendado 1920×820" },
+  { value: "destaque_home", label: "Destaque da Home", aspect: "aspect-[16/9]", hint: "Recomendado 1280×720" },
+  { value: "patrocinado", label: "Produtos Patrocinados", aspect: "aspect-square", hint: "Recomendado 800×800" },
+  { value: "vitrine_topo", label: "Primeira Linha da Vitrine", aspect: "aspect-[4/3]", hint: "Recomendado 1200×900" },
+  { value: "categoria", label: "Categoria Específica", aspect: "aspect-[3/1]", hint: "Recomendado 1500×500" },
+  { value: "busca", label: "Resultado de Busca", aspect: "aspect-[3/1]", hint: "Recomendado 1500×500" },
+  { value: "premium", label: "Área Premium", aspect: "aspect-[16/9]", hint: "Recomendado 1280×720" },
+  { value: "carousel", label: "Carrossel", aspect: "aspect-[21/9]", hint: "Recomendado 1920×820" },
+  { value: "card", label: "Card", aspect: "aspect-square", hint: "Recomendado 800×800" },
 ];
 const placementLabel = (v: string) => PLACEMENTS.find((p) => p.value === v)?.label ?? v;
 
@@ -154,6 +155,9 @@ function ManualAdModal({ onClose }: { onClose: () => void }) {
   const [placement, setPlacement] = useState(PLACEMENTS[0].value);
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+
+  const currentPlacement = PLACEMENTS.find((p) => p.value === placement) ?? PLACEMENTS[0];
 
   const { data: products = [] } = useQuery({
     queryKey: ["admin-products-search", search],
@@ -166,18 +170,28 @@ function ManualAdModal({ onClose }: { onClose: () => void }) {
       placement: placement as any,
       startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
       endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+      imageUrl: imageUrl || null,
     } }),
     onSuccess: () => {
       toast.success("Anúncio ativado");
       qc.invalidateQueries({ queryKey: ["admin-ad-campaigns"] });
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erro"),
+    onError: (e: any) => {
+      console.error("[createManualAdCampaign]", e);
+      toast.error(e?.message ?? "Erro");
+    },
   });
 
+  const submit = () => {
+    if (!productId) { toast.error("Selecione um produto"); return; }
+    if (!imageUrl) { toast.error("Envie a imagem do anúncio"); return; }
+    mut.mutate();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl p-5 w-full max-w-lg space-y-3" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-card border border-border rounded-xl p-5 w-full max-w-lg space-y-3 my-8" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-lg">Ativar anúncio manualmente</h3>
           <button onClick={onClose} className="h-8 w-8 rounded-md hover:bg-muted flex items-center justify-center"><X className="h-4 w-4" /></button>
@@ -197,7 +211,15 @@ function ManualAdModal({ onClose }: { onClose: () => void }) {
           <select value={placement} onChange={(e) => setPlacement(e.target.value)} className="h-10 w-full px-3 rounded-md border border-border bg-background text-sm">
             {PLACEMENTS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
+          <p className="text-xs text-muted-foreground">{currentPlacement.hint}</p>
         </div>
+        <ImageUploader
+          value={imageUrl}
+          onChange={setImageUrl}
+          folder={`ads/${placement}`}
+          label="Imagem do anúncio"
+          aspect={currentPlacement.aspect}
+        />
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs font-semibold text-muted-foreground">Início (opcional)</label>
@@ -210,7 +232,7 @@ function ManualAdModal({ onClose }: { onClose: () => void }) {
         </div>
         <p className="text-xs text-muted-foreground">Sem datas, o anúncio fica ativo por 7 dias a partir de agora.</p>
         <div className="flex gap-2 pt-2">
-          <Button className="flex-1" disabled={!productId || mut.isPending} onClick={() => mut.mutate()}>
+          <Button className="flex-1" disabled={!productId || !imageUrl || mut.isPending} onClick={submit}>
             {mut.isPending ? "Ativando..." : "Ativar Anúncio"}
           </Button>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
