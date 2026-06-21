@@ -24,6 +24,7 @@ export type Database = {
           currency: string
           ends_at: string
           id: string
+          image_url: string | null
           is_manual: boolean
           metadata: Json
           owner_id: string
@@ -48,6 +49,7 @@ export type Database = {
           currency?: string
           ends_at: string
           id?: string
+          image_url?: string | null
           is_manual?: boolean
           metadata?: Json
           owner_id: string
@@ -72,6 +74,7 @@ export type Database = {
           currency?: string
           ends_at?: string
           id?: string
+          image_url?: string | null
           is_manual?: boolean
           metadata?: Json
           owner_id?: string
