@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import { adminUpdateCampaignStatus, listAllAdCampaigns, createManualAdCampaign } from "@/lib/ads.functions";
 import { listProducts } from "@/lib/admin.functions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
