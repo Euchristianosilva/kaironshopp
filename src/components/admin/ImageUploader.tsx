@@ -36,8 +36,12 @@ export function ImageUploader({ value, onChange, folder, label = "Imagem", aspec
         upsert: false,
       });
       if (error) throw error;
-      const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
-      onChange(data.publicUrl);
+      // Bucket é privado: usar URL assinada de longa duração (10 anos)
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("site-assets")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr) throw signErr;
+      onChange(signed.signedUrl);
       toast.success("Imagem enviada");
     } catch (e: any) {
       toast.error(e?.message ?? "Falha no upload");
